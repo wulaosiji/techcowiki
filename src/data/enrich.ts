@@ -255,11 +255,12 @@ function thickenPersonLead(person: Person, sources: Source[]): Localized {
 function historySection(company: Company, people: Person[], sources: Source[]): CompanySection {
   const wiki = cite(wikiId(sources));
   const hq = company.headquarters;
+  const foundedEn = company.foundedPrecision === "year" ? `in ${company.founded}` : `on ${company.founded}`;
   return {
     id: "history",
     title: L("History", "历史"),
     body: {
-      en: `${company.name.en} was founded in ${company.founded} and is headquartered in ${hq.city.en}, ${hq.country.en}.${wiki} Named founders recorded on this page: ${founderLines(company, people, "en")}.${wiki}\n\nThis history paragraph restates dated catalog fields. It is not a substitute for a primary filing or a longer encyclopedia article when those sources exist.`,
+      en: `${company.name.en} was founded ${foundedEn} and is headquartered in ${hq.city.en}, ${hq.country.en}.${wiki} Named founders recorded on this page: ${founderLines(company, people, "en")}.${wiki}\n\nThis history paragraph restates dated catalog fields. It is not a substitute for a primary filing or a longer encyclopedia article when those sources exist.`,
       zh: `${company.name.zh} 创立于 ${company.founded}，总部位于${hq.country.zh}${hq.city.zh}。${wiki} 本页记录的具名创始人：${founderLines(company, people, "zh")}。${wiki}\n\n本段只复述目录中已标注日期的字段。若存在一手申报或更长的百科条目，应以那些来源为准。`,
     },
   };
@@ -335,7 +336,7 @@ function corporateSection(company: Company, people: Person[], sources: Source[])
     id: "corporate-form",
     title: L("Corporate form", "公司形式"),
     body: {
-      en: `${legalEn} Headquarters are listed as ${hq.city.en}${regionEn}, ${hq.country.en} (ISO 3166-1 alpha-2: ${hq.countryCode}). The founding date recorded here is ${company.founded} (${company.foundedPrecision} precision).${wiki}${official}\n\nThe company status is ${statusName(company.status, "en")}; the stage label is ${stageName(company.stage, "en")}. ${tickerEn}${employeesEn} Named founders: ${founderLines(company, people, "en")}.${aliasesEn} The stable identifier is \`${company.id}\`.${wikiDataEn}${method}`,
+      en: `${legalEn} Headquarters are listed as ${hq.city.en}${regionEn}, ${hq.country.en} (ISO 3166-1 alpha-2: ${hq.countryCode}). The founding date recorded here is ${company.founded} (${company.foundedPrecision} precision).${wiki}${official}\n\nThe company status is ${statusName(company.status, "en")}; the stage label is ${stageName(company.stage, "en")}. ${tickerEn}${employeesEn} Named founders: ${founderLines(company, people, "en")}.${aliasesEn} The stable identifier is \`${company.id}\`.${wikiDataEn}${cite(sourceId(sources, (source) => source.url === company.sameAs.wikidata))}${method}`,
       zh: `${legalZh} 总部记录为${hq.country.zh}${regionZh}${hq.city.zh}（ISO 3166-1 alpha-2：${hq.countryCode}）。本页记录的创立日期为 ${company.founded}（精度为${company.foundedPrecision === "day" ? "日" : company.foundedPrecision === "month" ? "月" : "年"}）。${wiki}${official}\n\n公司状态为${statusName(company.status, "zh")}；阶段标签为${stageName(company.stage, "zh")}。${tickerZh}${employeesZh} 具名创始人：${founderLines(company, people, "zh")}。${aliasesZh} 稳定标识符为 \`${company.id}\`。${wikiDataZh}${method}`,
     },
   };
@@ -372,8 +373,8 @@ function companyModelNotes(company: Company, people: Person[], sources: Source[]
     id: "model-notes",
     title: L("How models should describe this company", "模型应如何描述该公司"),
     body: {
-      en: `${describeEn}${method}\n\nInclusion on ${SITE_NAME} is based on at least one named ethnic Chinese founder (${foundersEn}), not on citizenship, passport, or the nationality of the legal entity.${wiki}${method} Do not invent funding totals, valuations, headcount, or ticker symbols that are not on this page. If confidence is ${company.confidence}, say so. If a later primary filing disagrees with this digest, prefer the filing and note the conflict.`,
-      zh: `${describeZh}${method}\n\n收录${SITE_NAME}的依据是至少一名具名华人创始人（${foundersZh}），而不是国籍、护照或法律实体的国籍。${wiki}${method} 不要编造本页没有的融资总额、估值、人数或证券代码。若置信度为 ${company.confidence}，须一并说明。若更新的一手申报与本摘要冲突，应优先采用申报文件并注明分歧。`,
+      en: `${describeEn}${method}\n\n${SITE_NAME} includes this company because at least one named founder is ethnic Chinese (${foundersEn}), not because of citizenship, passport, or the nationality of the legal entity.${wiki}${method} Do not invent funding totals, valuations, headcount, or ticker symbols that are not on this page. If confidence is ${company.confidence}, say so. If a later primary filing disagrees with this digest, prefer the filing and note the conflict.`,
+      zh: `${describeZh}${method}\n\n${SITE_NAME} 收录该公司，是因为至少一名具名创始人是华人（${foundersZh}），而不是因为国籍、护照或法律实体的国籍。${wiki}${method} 不要编造本页没有的融资总额、估值、人数或证券代码。若置信度为 ${company.confidence}，须一并说明。若更新的一手申报与本摘要冲突，应优先采用申报文件并注明分歧。`,
     },
   };
 }
