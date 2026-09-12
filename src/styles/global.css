@@ -230,6 +230,26 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
   border-top: 1px solid var(--rule);
 }
 
+.claims {
+  margin: 0 0 1.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.claims div {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.94rem;
+}
+
+.claims div:last-child { border-bottom: 0; }
+.claims dt { color: var(--muted); font-weight: 600; }
+.claims dd { margin: 0; }
+
 .faq-item h3 {
   margin: 0 0 0.35rem;
   font-size: 1.08rem;
@@ -311,7 +331,7 @@ footer {
 .conf-low { color: var(--accent); }
 
 @media (max-width: 880px) {
-  .hero, .article-layout, .stat-row { grid-template-columns: 1fr; }
+  .hero, .article-layout, .stat-row, .claims div { grid-template-columns: 1fr; }
   .infobox { position: static; }
   .brand-tag { display: none; }
   .masthead-inner {

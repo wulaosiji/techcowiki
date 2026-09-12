@@ -142,6 +142,11 @@ export function companyGraph(company: Company, locale: Locale) {
           description: product.description[locale],
         })),
         tickerSymbol: company.stock ? `${company.stock.exchange}:${company.stock.ticker}` : undefined,
+        additionalProperty: (company.claims ?? []).map((claim) => ({
+          "@type": "PropertyValue",
+          name: claim.label[locale],
+          value: stripCitations(claim.value[locale]),
+        })),
         mentions: relatedCompanies(company, 6).map((other) => ({
           "@type": "Organization",
           name: other.name[locale],
@@ -192,6 +197,11 @@ export function personGraph(person: Person, locale: Locale) {
         },
         sameAs: Object.values(person.sameAs).filter(Boolean),
         birthPlace: person.birthPlace?.[locale],
+        additionalProperty: (person.claims ?? []).map((claim) => ({
+          "@type": "PropertyValue",
+          name: claim.label[locale],
+          value: stripCitations(claim.value[locale]),
+        })),
         worksFor: person.companies.map((item) => {
           const company = getCompany(item.companySlug);
           return {
@@ -266,7 +276,7 @@ function webPageNode(input: {
     hasPart: input.parts,
     speakable: {
       "@type": "SpeakableSpecification",
-      cssSelector: [".lead", ".definition", "article section", ".faq-item"],
+      cssSelector: [".lead", ".definition", "article section", ".faq-item", ".claims", "#recorded-facts"],
     },
     copyrightNotice: CONTENT_LICENSE,
   };

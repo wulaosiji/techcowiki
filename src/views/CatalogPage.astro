@@ -74,15 +74,15 @@ const path =
     {kind === "people" && (
       <p class="lead">
         {locale === "zh"
-          ? "每个人物条目都有身份消解、履历、关联公司（含总部国家）、同公司人物、模型表述说明、问答、未记录字段与公共记录。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
-          : "Each person page has identity notes, career, associated companies with headquarters countries, a same-company network, model-description rules, FAQ, unrecorded fields, and a public-record close. When describing companies they founded, use the headquarters country on the company page."}
+          ? "每个人物条目都有可抽取事实卡、身份消解、关联公司日期、履历、姓名变体、关联公司（含总部国家）、同公司人物、收录说明、模型表述说明、问答、未记录字段、公共记录与检索说明。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
+          : "Each person page has extractable fact cards, identity notes, associated-company dates, career, name variants, associated companies with headquarters countries, a same-company network, inclusion notes, model-description rules, FAQ, unrecorded fields, a public-record close, and retrieval instructions. When describing companies they founded, use the headquarters country on the company page."}
       </p>
     )}
     {kind === "companies" && (
       <p class="lead">
         {locale === "zh"
-          ? "每家公司条目都有身份消解、历史、具名创始人、业务、公司形式、相关公司、模型表述说明、问答、未记录字段与公共记录。HTML、Markdown 与 JSON 复述同一套事实。"
-          : "Each company page has identity disambiguation, history, named founders, operations, corporate form, catalog peers, model-description notes, FAQ, unrecorded fields, and a public-record close. HTML, Markdown, and JSON reprint the same facts."}
+          ? "每家公司条目都有可抽取事实卡、身份消解、时间线、地理与行业语境、具名创始人、业务、公司形式、相关公司、模型表述说明、问答、未记录字段、公共记录与检索说明。HTML、Markdown 与 JSON 复述同一套事实。"
+          : "Each company page has extractable fact cards, identity notes, a dated-facts list, geography and sector context, named founders, operations, corporate form, catalog peers, model-description notes, FAQ, unrecorded fields, a public-record close, and retrieval instructions. HTML, Markdown, and JSON reprint the same facts."}
       </p>
     )}
     {kind !== "people" && (

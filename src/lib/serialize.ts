@@ -1,5 +1,5 @@
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, EntityFaq, Person } from "../data/types";
+import type { Company, EntityClaim, EntityFaq, Person } from "../data/types";
 import { pageUrl } from "./i18n";
 import { stripCitations } from "./citations";
 
@@ -10,6 +10,17 @@ function faqRecord(faq: EntityFaq[] | undefined) {
     answer: {
       en: stripCitations(item.answer.en),
       zh: stripCitations(item.answer.zh),
+    },
+  }));
+}
+
+function claimsRecord(claims: EntityClaim[] | undefined) {
+  return (claims ?? []).map((item) => ({
+    id: item.id,
+    label: item.label,
+    value: {
+      en: stripCitations(item.value.en),
+      zh: stripCitations(item.value.zh),
     },
   }));
 }
@@ -53,6 +64,7 @@ export function companyRecord(company: Company) {
     },
     sources: company.sources,
     faq: faqRecord(company.faq),
+    claims: claimsRecord(company.claims),
     sections: company.sections.map((section) => ({
       id: section.id,
       title: section.title,
@@ -94,6 +106,7 @@ export function personRecord(person: Person) {
     },
     sources: person.sources,
     faq: faqRecord(person.faq),
+    claims: claimsRecord(person.claims),
     sections: (person.sections ?? []).map((section) => ({
       id: section.id,
       title: section.title,

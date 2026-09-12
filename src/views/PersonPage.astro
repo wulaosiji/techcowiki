@@ -51,6 +51,19 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
           <a href={`${SITE_ORIGIN}/people/${person.slug}.md`}>{t(ui.markdown, locale)}</a>
           <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
+        {(person.claims ?? []).length > 0 && (
+          <section id="recorded-facts">
+            <h2>{locale === "zh" ? "可抽取事实" : "Extractable facts"}</h2>
+            <dl class="claims">
+              {person.claims!.map((item) => (
+                <div>
+                  <dt>{item.label[locale]}</dt>
+                  <dd set:html={renderCitedHtml(item.value[locale], person.sources)} />
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
         {
           (person.sections ?? [])
             .filter((section) => section.id !== "faq")

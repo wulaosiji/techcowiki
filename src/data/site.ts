@@ -297,6 +297,7 @@ export const ui = {
   products: { en: "Products", zh: "产品" },
   related: { en: "See also", zh: "参见" },
   faq: { en: "Frequently asked questions", zh: "常见问题" },
+  claims: { en: "Extractable facts", zh: "可抽取事实" },
   confidence: { en: "Confidence", zh: "置信度" },
   license: { en: "License", zh: "许可" },
   markdown: { en: "Markdown", zh: "Markdown" },

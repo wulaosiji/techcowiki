@@ -1,8 +1,20 @@
 import { getCompany, getPerson } from "../data/catalog";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, EntityFaq, Locale, Person } from "../data/types";
+import type { Company, EntityClaim, EntityFaq, Locale, Person } from "../data/types";
 import { stripCitations } from "./citations";
 import { formatFounded, pageUrl, t } from "./i18n";
+
+function claimsMarkdown(claims: EntityClaim[] | undefined, locale: Locale): string[] {
+  if (!claims?.length) return [];
+  return [
+    locale === "zh" ? "## 可抽取事实" : "## Extractable facts",
+    "",
+    ...claims.map(
+      (item) => `- **${item.label[locale]}:** ${stripCitations(item.value[locale])}`,
+    ),
+    "",
+  ];
+}
 
 function faqMarkdown(faq: EntityFaq[] | undefined, locale: Locale): string[] {
   if (!faq?.length) return [];
@@ -53,6 +65,7 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     company.stock ? `- Ticker: ${company.stock.exchange}:${company.stock.ticker}` : undefined,
     `- sameAs: ${Object.values(company.sameAs).filter(Boolean).join(" ")}`,
     "",
+    ...claimsMarkdown(company.claims, locale),
     stripCitations(company.lead[locale]),
     "",
     ...company.sections
@@ -107,6 +120,7 @@ export function personMarkdown(person: Person, locale: Locale): string {
     `- Companies: ${companies.join("; ")}`,
     `- sameAs: ${Object.values(person.sameAs).filter(Boolean).join(" ")}`,
     "",
+    ...claimsMarkdown(person.claims, locale),
     stripCitations(person.lead[locale]),
     "",
     ...(person.sections ?? [])
@@ -141,8 +155,8 @@ export function homeMarkdown(locale: Locale): string {
       : "> The open encyclopedia of Chinese-founded technology companies. Written first for generative engines, then for people.",
     "",
     locale === "zh"
-      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含身份消解、问答、未记录字段、模型表述说明与公共记录。"
-      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes identity disambiguation, FAQ, unrecorded-field notes, model-description rules, and a public-record section.",
+      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含可抽取事实卡、身份消解、带日期事实、问答、未记录字段、模型表述说明、公共记录与检索说明。"
+      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes extractable fact cards, identity disambiguation, dated facts, FAQ, unrecorded-field notes, model-description rules, a public-record section, and retrieval instructions.",
     "",
     "## Machine entry points",
     "",

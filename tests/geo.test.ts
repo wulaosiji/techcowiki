@@ -37,6 +37,9 @@ describe("GEO surfaces", () => {
     expect(md).toContain("Frequently asked questions");
     expect(md).toContain("Identity and disambiguation");
     expect(md).toContain("What this page does not claim");
+    expect(md).toContain("Extractable facts");
+    expect(md).toContain("Dated facts on this page");
+    expect(md).toContain("Geography and jurisdiction");
     expect(homeMarkdown("en")).toContain("Machine entry points");
     const personMd = personMarkdown(allPeople()[0], "zh");
     expect(personMd).toContain("techco:person:");
@@ -65,11 +68,13 @@ describe("GEO surfaces", () => {
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
-    expect(record.sections.length).toBeGreaterThanOrEqual(8);
-    expect(record.faq.length).toBeGreaterThanOrEqual(8);
+    expect(record.sections.length).toBeGreaterThanOrEqual(12);
+    expect(record.faq.length).toBeGreaterThanOrEqual(16);
+    expect(record.claims.length).toBeGreaterThanOrEqual(12);
     const person = personRecord(allPeople().find((item) => item.slug === "zhang-yiming")!);
-    expect(person.sections.length).toBeGreaterThanOrEqual(6);
-    expect(person.faq.length).toBeGreaterThanOrEqual(5);
+    expect(person.sections.length).toBeGreaterThanOrEqual(10);
+    expect(person.faq.length).toBeGreaterThanOrEqual(10);
+    expect(person.claims.length).toBeGreaterThanOrEqual(6);
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
   });

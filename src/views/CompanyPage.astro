@@ -54,6 +54,19 @@ const cite = `${SITE_NAME}, "${company.name.en}," ${pageUrl(locale, `/companies/
           <a href={mdUrl}>{t(ui.markdown, locale)}</a>
           <a href={jsonUrl}>{t(ui.json, locale)}</a>
         </div>
+        {(company.claims ?? []).length > 0 && (
+          <section id="recorded-facts">
+            <h2>{t(ui.claims, locale)}</h2>
+            <dl class="claims">
+              {company.claims!.map((item) => (
+                <div>
+                  <dt>{item.label[locale]}</dt>
+                  <dd set:html={renderCitedHtml(item.value[locale], company.sources)} />
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
         {
           company.sections
             .filter((section) => section.id !== "faq")

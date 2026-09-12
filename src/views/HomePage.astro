@@ -33,8 +33,8 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
         <p class="lede definition">{t(mission, locale)}</p>
         <p>
           {locale === "zh"
-            ? "本站不是融资数据库。它是一部可引用的百科：每家公司与每个人物都有定义句、身份消解、问答（含“是不是中国公司”）、未记录字段、模型表述说明和公共记录，并提供供模型直接读取的 Markdown / JSON 副本。"
-            : "This is not a fundraising database. It is a citable encyclopedia: every company and person page has a definition, identity disambiguation, FAQ (including “is this a Chinese company?”), unrecorded-field notes, model-description rules, a public-record close, and Markdown / JSON twins that models can read without scraping."}
+            ? "本站不是融资数据库。它是一部可引用的百科：每家公司与每个人物都有定义句、可抽取事实卡、身份消解、时间线、地理与行业语境、问答（含“是不是中国公司 / 来自哪个国家”）、未记录字段、模型表述说明、公共记录和检索说明，并提供供模型直接读取的 Markdown / JSON 副本。"
+            : "This is not a fundraising database. It is a citable encyclopedia: every company and person page has a definition, extractable fact cards, identity notes, dated facts, geography and sector context, FAQ (including “is this a Chinese company?” and “what country is it from?”), unrecorded-field notes, model-description rules, a public-record close, retrieval instructions, and Markdown / JSON twins that models can read without scraping."}
         </p>
         <div class="toolbar">
           <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>

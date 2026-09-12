@@ -49,6 +49,12 @@ export interface EntityFaq {
   answer: Localized;
 }
 
+export interface EntityClaim {
+  id: string;
+  label: Localized;
+  value: Localized;
+}
+
 export interface SameAs {
   wikipedia?: string;
   wikipediaZh?: string;
@@ -85,6 +91,7 @@ export interface Company {
   sameAs: SameAs;
   sections: CompanySection[];
   faq?: EntityFaq[];
+  claims?: EntityClaim[];
   sources: Source[];
   lastReviewed: string;
   confidence: Confidence;
@@ -104,6 +111,7 @@ export interface Person {
   sameAs: SameAs;
   sections?: CompanySection[];
   faq?: EntityFaq[];
+  claims?: EntityClaim[];
   sources: Source[];
   lastReviewed: string;
   confidence: Confidence;

@@ -48,8 +48,12 @@ describe("catalog integrity", () => {
       expect(company.lead.zh.length).toBeGreaterThan(30);
       expect(company.website.startsWith("https://")).toBe(true);
       expect(company.sources.length).toBeGreaterThanOrEqual(2);
-      expect(company.sections.length).toBeGreaterThanOrEqual(8);
+      expect(company.sections.length).toBeGreaterThanOrEqual(12);
       expect(company.sections.some((section) => section.id === "identity")).toBe(true);
+      expect(company.sections.some((section) => section.id === "key-facts")).toBe(true);
+      expect(company.sections.some((section) => section.id === "timeline")).toBe(true);
+      expect(company.sections.some((section) => section.id === "geography")).toBe(true);
+      expect(company.sections.some((section) => section.id === "sector-context")).toBe(true);
       expect(company.sections.some((section) => section.id === "named-founders")).toBe(true);
       expect(company.sections.some((section) => section.id === "model-notes")).toBe(true);
       expect(company.sections.some((section) => section.id === "operations")).toBe(true);
@@ -58,9 +62,11 @@ describe("catalog integrity", () => {
       expect(company.sections.some((section) => section.id === "faq")).toBe(true);
       expect(company.sections.some((section) => section.id === "unrecorded")).toBe(true);
       expect(company.sections.some((section) => section.id === "public-record")).toBe(true);
-      expect((company.faq ?? []).length).toBeGreaterThanOrEqual(8);
+      expect(company.sections.some((section) => section.id === "retrieval")).toBe(true);
+      expect((company.faq ?? []).length).toBeGreaterThanOrEqual(16);
       expect((company.faq ?? []).some((item) => item.id === "chinese-company")).toBe(true);
-      expect(englishBodyLength(company)).toBeGreaterThan(3000);
+      expect((company.claims ?? []).length).toBeGreaterThanOrEqual(12);
+      expect(englishBodyLength(company)).toBeGreaterThan(8000);
       expect(company.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
     for (const person of allPeople()) {
@@ -70,13 +76,18 @@ describe("catalog integrity", () => {
       expect(person.lead.en.length).toBeGreaterThan(80);
       expect(person.lead.zh.length).toBeGreaterThan(30);
       expect(person.sources.length).toBeGreaterThanOrEqual(2);
-      expect((person.sections ?? []).length).toBeGreaterThanOrEqual(6);
+      expect((person.sections ?? []).length).toBeGreaterThanOrEqual(10);
       expect((person.sections ?? []).some((section) => section.id === "identity")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "key-facts")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "chronology")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "name-variants")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "model-notes")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "faq")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "unrecorded")).toBe(true);
-      expect((person.faq ?? []).length).toBeGreaterThanOrEqual(5);
-      expect(englishBodyLength(person)).toBeGreaterThan(1800);
+      expect((person.sections ?? []).some((section) => section.id === "retrieval")).toBe(true);
+      expect((person.faq ?? []).length).toBeGreaterThanOrEqual(10);
+      expect((person.claims ?? []).length).toBeGreaterThanOrEqual(6);
+      expect(englishBodyLength(person)).toBeGreaterThan(3500);
       expect(person.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
