@@ -14,9 +14,20 @@ import {
   sectorName,
   sourceId,
   stageName,
+  standaloneSentence,
   statusName,
   wikiId,
 } from "./copy";
+import {
+  authorityCompanyClaims,
+  authorityCompanyFaqs,
+  authorityPersonClaims,
+  authorityPersonFaqs,
+  companyAuthoritySection,
+  companyComparisonSection,
+  personAuthoritySection,
+  personComparisonSection,
+} from "./geo-authority";
 import {
   companyClaims,
   extraCompanyFaqs,
@@ -46,6 +57,7 @@ import {
   uniqueCompanyFaqs,
   uniquePersonFaqs,
 } from "./geo-unique";
+import { textMentionsSubject } from "./wiki-match";
 import {
   chineseCompanyAnswer,
   foundedEn,
@@ -66,6 +78,7 @@ const METHOD_URL = `${SITE_ORIGIN}/methodology`;
 const SECTION_ORDER = [
   "identity",
   "key-facts",
+  "authority-brief",
   "encyclopedia-context",
   "timeline",
   "chronology",
@@ -81,6 +94,7 @@ const SECTION_ORDER = [
   "sector-context",
   "corporate-form",
   "catalog-peers",
+  "comparison",
   "network",
   "confusion",
   "model-notes",
@@ -295,12 +309,13 @@ function identitySection(company: Company, people: Person[], sources: Source[]):
 
 function historySection(company: Company, people: Person[], sources: Source[]): CompanySection {
   const wiki = cite(wikiId(sources));
+  const official = cite(officialId(sources));
   return {
     id: "history",
     title: L("History", "历史"),
     body: {
-      en: `${company.name.en} was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}.${wiki} Named founders recorded on this page: ${founderLines(company, people, "en")}.${wiki}\n\nThis history paragraph restates dated catalog fields. It is not a substitute for a primary filing or a longer encyclopedia article when those sources exist.`,
-      zh: `${company.name.zh} 创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${wiki} 本页记录的具名创始人：${founderLines(company, people, "zh")}。${wiki}\n\n本段只复述目录中已标注日期的字段。若存在一手申报或更长的百科条目，应以那些来源为准。`,
+      en: `${standaloneSentence(company.name.en, company.definition.en, "en")}${wiki} The dated founding fact on this page is ${foundedEn(company)} (${company.foundedPrecision} precision), with headquarters recorded as ${hqEn(company)}. Named founders: ${founderLines(company, people, "en")}.${wiki}\n\nRecorded product lines after founding, without inventing launch years: ${productLines(company, "en")}. Official website: ${company.website}.${official} Status ${statusName(company.status, "en")}; stage ${stageName(company.stage, "en")}.\n\nThis generated history restates dated catalog fields only. If a longer seed history exists on this page, that text takes precedence. It is not a substitute for a primary filing.`,
+      zh: `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}${wiki}本页带日期的创立事实为 ${foundedZh(company)}，总部记录为${hqZh(company)}。具名创始人：${founderLines(company, people, "zh")}。${wiki}\n\n创立之后已记录、但未编造上线年份的产品线：${productLines(company, "zh")}。官方网站：${company.website}。${official}状态${statusName(company.status, "zh")}；阶段${stageName(company.stage, "zh")}。\n\n这段生成历史只复述目录中已标注日期的字段。若本页已有更长的种子历史，以种子文本为准。它不能代替一手申报。`,
     },
   };
 }
@@ -579,8 +594,8 @@ function companyFaq(
       id: "what",
       question: L(`What is ${company.name.en}?`, `${company.name.zh}是什么？`),
       answer: L(
-        `${company.name.en} is ${company.definition.en} It was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}.${wiki}`,
-        `${company.name.zh}是${company.definition.zh}创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${wiki}`,
+        `${standaloneSentence(company.name.en, company.definition.en, "en")} It was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}.${wiki}`,
+        `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${wiki}`,
       ),
     },
     {
@@ -730,10 +745,12 @@ export function enrichCompany(
     ...companyFaq(withWiki, people, pool, sources),
     ...extraCompanyFaqs(withWiki, pool, sources),
     ...uniqueCompanyFaqs(withWiki, pool, sources),
+    ...authorityCompanyFaqs(withWiki, people, pool, sources),
   ];
   const sections = mergeSections(withWiki.sections, [
     identitySection(withWiki, people, sources),
     keyFactsSection(withWiki, people, sources),
+    companyAuthoritySection(withWiki, people, pool, sources),
     encyclopediaSection(companyWikiSubject(withWiki), withWiki.definition, sources),
     timelineSection(withWiki, sources),
     historySection(withWiki, people, sources),
@@ -745,6 +762,7 @@ export function enrichCompany(
     sectorContextSection(withWiki, pool, sources),
     corporateSection(withWiki, people, sources),
     catalogPeersSection(withWiki, pool, sources),
+    companyComparisonSection(withWiki, pool, sources),
     confusionSection(withWiki, pool, sources),
     companyModelNotes(withWiki, people, sources),
     faqSection(faq),
@@ -762,8 +780,33 @@ export function enrichCompany(
     sources,
     sections,
     faq,
-    claims: [...companyClaims(withWiki, people, sources), ...encyclopediaClaims(companyWikiSubject(withWiki), sources)],
+    claims: [
+      ...companyClaims(withWiki, people, sources),
+      ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
+      ...authorityCompanyClaims(withWiki, pool, sources),
+    ],
   };
+}
+
+function wikiTitleFromUrl(url: string): string {
+  try {
+    return decodeURIComponent(new URL(url).pathname.split("/").pop() ?? "").replace(/_/g, " ");
+  } catch {
+    return url;
+  }
+}
+
+function dropCrossWikiSameAs(person: Person): Person {
+  const subject = personWikiSubject(person);
+  const sameAs = { ...person.sameAs };
+  for (const key of ["wikipedia", "wikipediaZh"] as const) {
+    const url = sameAs[key];
+    if (!url) continue;
+    if (!textMentionsSubject(wikiTitleFromUrl(url), subject)) {
+      delete sameAs[key];
+    }
+  }
+  return { ...person, sameAs };
 }
 
 function personIdentity(person: Person, companies: Company[], sources: Source[]): CompanySection {
@@ -1057,11 +1100,11 @@ function personFaq(person: Person, companies: Company[], sources: Source[]): Ent
       id: "who",
       question: L(`Who is ${person.name.en}?`, `${person.name.zh}是谁？`),
       answer: L(
-        `${person.name.en} is ${person.definition.en} Recorded roles: ${joinList(
+        `${standaloneSentence(person.name.en, person.definition.en, "en")} Recorded roles: ${joinList(
           person.roles.map((role) => role.en),
           "en",
         )}.${wiki}`,
-        `${person.name.zh}是${person.definition.zh}已记录角色：${joinList(
+        `${standaloneSentence(person.name.zh, person.definition.zh, "zh")}已记录角色：${joinList(
           person.roles.map((role) => role.zh),
           "zh",
         )}。${wiki}`,
@@ -1140,23 +1183,27 @@ export function enrichPerson(
   companies: Company[],
   allPeople: Person[] = [],
 ): Person {
-  const withWiki = applyWikiSameAs(person, "person");
+  const sanitized = dropCrossWikiSameAs(person);
+  const withWiki = applyWikiSameAs(sanitized, "person");
   const sources = ensurePersonSources(withWiki, companies);
   const pool = allPeople.length > 0 ? allPeople : [withWiki];
   const faq = [
     ...personFaq(withWiki, companies, sources),
     ...extraPersonFaqs(withWiki, companies, pool, sources),
     ...uniquePersonFaqs(withWiki, sources),
+    ...authorityPersonFaqs(withWiki, companies, sources),
   ];
   const generated = [
     personIdentity(withWiki, companies, sources),
     personKeyFactsSection(withWiki, companies, sources),
+    personAuthoritySection(withWiki, companies, pool, sources),
     encyclopediaSection(personWikiSubject(withWiki), withWiki.definition, sources),
     personChronologySection(withWiki, companies, sources),
     personCareer(withWiki, companies, sources),
     personCompaniesSection(withWiki, companies, sources),
     nameVariantsSection(withWiki, sources),
     personNetwork(withWiki, companies, pool, sources),
+    personComparisonSection(withWiki, companies, pool, sources),
     personConfusionSection(withWiki, companies, pool, sources),
     personInclusionSection(withWiki, companies, sources),
     personModelNotes(withWiki, companies, sources),
@@ -1172,7 +1219,11 @@ export function enrichPerson(
     sources,
     sections,
     faq,
-    claims: [...personClaims(withWiki, companies, sources), ...encyclopediaClaims(personWikiSubject(withWiki), sources)],
+    claims: [
+      ...personClaims(withWiki, companies, sources),
+      ...encyclopediaClaims(personWikiSubject(withWiki), sources),
+      ...authorityPersonClaims(withWiki, companies, sources),
+    ],
   };
 }
 

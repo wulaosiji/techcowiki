@@ -51,6 +51,8 @@ describe("catalog integrity", () => {
       expect(company.sections.length).toBeGreaterThanOrEqual(12);
       expect(company.sections.some((section) => section.id === "identity")).toBe(true);
       expect(company.sections.some((section) => section.id === "key-facts")).toBe(true);
+      expect(company.sections.some((section) => section.id === "authority-brief")).toBe(true);
+      expect(company.sections.some((section) => section.id === "comparison")).toBe(true);
       expect(company.sections.some((section) => section.id === "encyclopedia-context")).toBe(true);
       expect(company.sections.some((section) => section.id === "confusion")).toBe(true);
       expect(company.sections.some((section) => section.id === "timeline")).toBe(true);
@@ -65,10 +67,12 @@ describe("catalog integrity", () => {
       expect(company.sections.some((section) => section.id === "unrecorded")).toBe(true);
       expect(company.sections.some((section) => section.id === "public-record")).toBe(true);
       expect(company.sections.some((section) => section.id === "retrieval")).toBe(true);
-      expect((company.faq ?? []).length).toBeGreaterThanOrEqual(16);
+      expect((company.faq ?? []).length).toBeGreaterThanOrEqual(18);
       expect((company.faq ?? []).some((item) => item.id === "chinese-company")).toBe(true);
-      expect((company.claims ?? []).length).toBeGreaterThanOrEqual(12);
-      expect(englishBodyLength(company)).toBeGreaterThan(8000);
+      expect((company.faq ?? []).some((item) => item.id === "one-sentence")).toBe(true);
+      expect((company.faq ?? []).some((item) => item.id === "catalog-position")).toBe(true);
+      expect((company.claims ?? []).length).toBeGreaterThanOrEqual(14);
+      expect(englishBodyLength(company)).toBeGreaterThan(11000);
       expect(company.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
     for (const person of allPeople()) {
@@ -81,6 +85,8 @@ describe("catalog integrity", () => {
       expect((person.sections ?? []).length).toBeGreaterThanOrEqual(10);
       expect((person.sections ?? []).some((section) => section.id === "identity")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "key-facts")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "authority-brief")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "comparison")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "encyclopedia-context")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "confusion")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "chronology")).toBe(true);
@@ -89,9 +95,10 @@ describe("catalog integrity", () => {
       expect((person.sections ?? []).some((section) => section.id === "faq")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "unrecorded")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "retrieval")).toBe(true);
-      expect((person.faq ?? []).length).toBeGreaterThanOrEqual(10);
-      expect((person.claims ?? []).length).toBeGreaterThanOrEqual(6);
-      expect(englishBodyLength(person)).toBeGreaterThan(3500);
+      expect((person.faq ?? []).length).toBeGreaterThanOrEqual(12);
+      expect((person.faq ?? []).some((item) => item.id === "one-sentence")).toBe(true);
+      expect((person.claims ?? []).length).toBeGreaterThanOrEqual(7);
+      expect(englishBodyLength(person)).toBeGreaterThan(5500);
       expect(person.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
   });
@@ -173,6 +180,37 @@ describe("catalog integrity", () => {
     expect(getCompany("bytedance")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
       /chess player/,
     );
+  });
+
+  test("definitions are not doubled in FAQ answers", () => {
+    for (const company of allCompanies()) {
+      const doubled = `${company.name.en} is ${company.name.en} is`;
+      for (const item of company.faq ?? []) {
+        expect(item.answer.en, `${company.slug} ${item.id}`).not.toContain(doubled);
+      }
+      const brief = company.sections.find((section) => section.id === "authority-brief")?.body.en ?? "";
+      expect(brief.length, company.slug).toBeGreaterThan(400);
+      expect(brief).toContain(company.id);
+    }
+    for (const person of allPeople()) {
+      const doubled = `${person.name.en} is ${person.name.en} is`;
+      for (const item of person.faq ?? []) {
+        expect(item.answer.en, `${person.slug} ${item.id}`).not.toContain(doubled);
+      }
+      if (person.sameAs.wikipedia) {
+        const title = decodeURIComponent(new URL(person.sameAs.wikipedia).pathname.split("/").pop() ?? "").replace(
+          /_/g,
+          " ",
+        );
+        const hay = title.toLowerCase();
+        const mentioned =
+          hay.includes(person.name.en.toLowerCase()) ||
+          person.aliases.some((alias) => alias.length >= 3 && hay.includes(alias.toLowerCase()));
+        expect(mentioned, `${person.slug} still points at ${person.sameAs.wikipedia}`).toBe(true);
+      }
+    }
+    expect(getPerson("yin-qi")?.faq?.find((item) => item.id === "who")?.answer.en).toMatch(/^Yin Qi is a /);
+    expect(getPerson("liang-rubo")?.sameAs.wikipedia ?? "").not.toMatch(/ByteDance/i);
   });
 
   test("every source has an https URL", () => {

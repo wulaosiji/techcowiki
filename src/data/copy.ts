@@ -13,6 +13,17 @@ export function joinList(items: string[], locale: Locale): string {
   return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
+/** Avoid “Name is Name is …” when a definition already starts with the entity name. */
+export function standaloneSentence(name: string, definition: string, locale: Locale): string {
+  const def = definition.trim();
+  if (!def) return name;
+  if (def.startsWith(name)) return def;
+  const lower = def.toLowerCase();
+  const lowerName = name.toLowerCase();
+  if (lower.startsWith(lowerName)) return def;
+  return locale === "zh" ? `${name}是${def}` : `${name} is ${def}`;
+}
+
 export function cite(id: string | undefined): string {
   return id ? `[${id}]` : "";
 }

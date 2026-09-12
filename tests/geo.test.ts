@@ -40,6 +40,8 @@ describe("GEO surfaces", () => {
     expect(md).toContain("What this page does not claim");
     expect(md).toContain("Extractable facts");
     expect(md).toContain("Encyclopedia context");
+    expect(md).toContain("Independent answer brief");
+    expect(md).toContain("How this record differs from catalog neighbors");
     expect(md).toContain("Do not confuse with");
     expect(md).toContain("Dated facts on this page");
     expect(md).toContain("Geography and jurisdiction");
@@ -72,8 +74,8 @@ describe("GEO surfaces", () => {
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
     expect(record.sections.length).toBeGreaterThanOrEqual(12);
-    expect(record.faq.length).toBeGreaterThanOrEqual(16);
-    expect(record.claims.length).toBeGreaterThanOrEqual(12);
+    expect(record.faq.length).toBeGreaterThanOrEqual(18);
+    expect(record.claims.length).toBeGreaterThanOrEqual(14);
     const person = personRecord(allPeople().find((item) => item.slug === "zhang-yiming")!);
     expect(person.sections.length).toBeGreaterThanOrEqual(10);
     expect(person.faq.length).toBeGreaterThanOrEqual(10);
