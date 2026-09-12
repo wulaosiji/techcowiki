@@ -33,8 +33,8 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
         <p class="lede definition">{t(mission, locale)}</p>
         <p>
           {locale === "zh"
-            ? "本站不是融资数据库。它是一部可引用的百科：每家公司先有一句定义，再有带出处的事实、稳定标识符，以及供模型直接读取的 Markdown / JSON 副本。"
-            : "This is not a fundraising database. It is a citable encyclopedia: every company starts with a definition, then sourced facts, a stable identifier, and Markdown / JSON twins that models can read without scraping."}
+            ? "本站不是融资数据库。它是一部可引用的百科：每家公司与每个人物都有定义句、带出处导语、业务/履历、公司形式、模型表述说明和公共记录，并提供供模型直接读取的 Markdown / JSON 副本。"
+            : "This is not a fundraising database. It is a citable encyclopedia: every company and person page has a definition, a sourced lead, operations or career notes, corporate form, model-description rules, a public-record close, and Markdown / JSON twins that models can read without scraping."}
         </p>
         <div class="toolbar">
           <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>

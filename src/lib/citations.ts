@@ -34,3 +34,10 @@ export function escapeHtml(value: string): string {
 export function citationLine(title: string, url: string, accessed: string): string {
   return `${title}. ${url} (accessed ${accessed}).`;
 }
+
+export function splitParagraphs(text: string): string[] {
+  return text
+    .split(/\n\n+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}

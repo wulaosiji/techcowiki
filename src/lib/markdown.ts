@@ -1,3 +1,4 @@
+import { getCompany, getPerson } from "../data/catalog";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
 import { stripCitations } from "./citations";
@@ -5,6 +6,14 @@ import { formatFounded, pageUrl, t } from "./i18n";
 
 export function companyMarkdown(company: Company, locale: Locale): string {
   const url = pageUrl(locale, `/companies/${company.slug}`);
+  const founders = company.founders.map((founder) => {
+    const person = getPerson(founder.personSlug);
+    const name = person ? person.name[locale] : founder.personSlug;
+    return `${name} (${t(founder.role, locale)}; ${founder.personSlug})`;
+  });
+  const products = company.products.map(
+    (product) => `${product.name}: ${t(product.description, locale)}`,
+  );
   const lines = [
     `# ${company.name[locale]}`,
     "",
@@ -18,11 +27,16 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     `- Confidence: ${company.confidence}`,
     `- License: ${CONTENT_LICENSE} (${CONTENT_LICENSE_URL})`,
     `- Founded: ${formatFounded(company.founded, company.foundedPrecision)}`,
-    `- Headquarters: ${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`,
+    `- Headquarters: ${company.headquarters.city[locale]}, ${company.headquarters.country[locale]} (${company.headquarters.countryCode})`,
     `- Status: ${company.status}`,
+    `- Stage: ${company.stage}`,
+    `- Sectors: ${company.sectors.join(", ")}`,
+    `- Regions: ${company.regions.join(", ")}`,
     `- Website: ${company.website}`,
-    `- Founders: ${company.founders.map((founder) => founder.personSlug).join(", ")}`,
-    company.stock ? `- Ticker: ${company.stock.exchange}:${company.stock.ticker}` : "",
+    `- Founders: ${founders.join("; ")}`,
+    `- Products: ${products.join("; ")}`,
+    company.legalName ? `- Legal name: ${company.legalName}` : undefined,
+    company.stock ? `- Ticker: ${company.stock.exchange}:${company.stock.ticker}` : undefined,
     `- sameAs: ${Object.values(company.sameAs).filter(Boolean).join(" ")}`,
     "",
     stripCitations(company.lead[locale]),
@@ -50,6 +64,14 @@ export function companyMarkdown(company: Company, locale: Locale): string {
 
 export function personMarkdown(person: Person, locale: Locale): string {
   const url = pageUrl(locale, `/people/${person.slug}`);
+  const companies = person.companies.map((item) => {
+    const company = getCompany(item.companySlug);
+    const name = company ? company.name[locale] : item.companySlug;
+    const hq = company
+      ? `${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`
+      : "";
+    return `${name} (${t(item.role, locale)}${hq ? `; ${hq}` : ""})`;
+  });
   return [
     `# ${person.name[locale]}`,
     "",
@@ -57,13 +79,25 @@ export function personMarkdown(person: Person, locale: Locale): string {
     "",
     `- Stable ID: \`${person.id}\``,
     `- Canonical URL: ${url}`,
+    `- Markdown twin: ${url}.md`,
+    `- JSON: ${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     `- Last reviewed: ${person.lastReviewed}`,
     `- Confidence: ${person.confidence}`,
-    `- Companies: ${person.companies.map((item) => item.companySlug).join(", ")}`,
+    `- License: ${CONTENT_LICENSE} (${CONTENT_LICENSE_URL})`,
+    `- Roles: ${person.roles.map((role) => t(role, locale)).join("; ")}`,
+    person.birthYear ? `- Birth year: ${person.birthYear}` : undefined,
+    person.birthPlace ? `- Birthplace: ${person.birthPlace[locale]}` : undefined,
+    `- Companies: ${companies.join("; ")}`,
     `- sameAs: ${Object.values(person.sameAs).filter(Boolean).join(" ")}`,
     "",
     stripCitations(person.lead[locale]),
     "",
+    ...(person.sections ?? []).flatMap((section) => [
+      `## ${t(section.title, locale)}`,
+      "",
+      stripCitations(section.body[locale]),
+      "",
+    ]),
     "## Sources",
     "",
     ...person.sources.map(
@@ -73,7 +107,9 @@ export function personMarkdown(person: Person, locale: Locale): string {
     "",
     `How to cite: ${SITE_NAME}, "${person.name.en}," ${url}, last reviewed ${person.lastReviewed}, ${person.id}.`,
     "",
-  ].join("\n");
+  ]
+    .filter((line) => line !== undefined)
+    .join("\n");
 }
 
 export function homeMarkdown(locale: Locale): string {
@@ -85,8 +121,8 @@ export function homeMarkdown(locale: Locale): string {
       : "> The open encyclopedia of Chinese-founded technology companies. Written first for generative engines, then for people.",
     "",
     locale === "zh"
-      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。"
-      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON.",
+      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含业务、公司形式、模型表述说明与公共记录小节。"
+      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes operations, corporate form, model-description notes, and a public-record section.",
     "",
     "## Machine entry points",
     "",

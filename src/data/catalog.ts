@@ -1,12 +1,18 @@
 import { companies as seedCompanies } from "./companies";
+import { enrichCompany, enrichPerson } from "./enrich";
 import { extendedCompanies } from "./extended-companies";
 import { people as seedPeople } from "./people";
 import { extendedPeople } from "./extended-people";
 import { regions, sectors } from "./site";
 import type { Company, Person, Region, Sector } from "./types";
 
-export const companies: Company[] = [...seedCompanies, ...extendedCompanies];
-export const people: Person[] = [...seedPeople, ...extendedPeople];
+const rawCompanies: Company[] = [...seedCompanies, ...extendedCompanies];
+const rawPeople: Person[] = [...seedPeople, ...extendedPeople];
+
+export const companies: Company[] = rawCompanies.map((company) =>
+  enrichCompany(company, rawPeople),
+);
+export const people: Person[] = rawPeople.map((person) => enrichPerson(person, companies));
 
 export function allCompanies(): Company[] {
   return companies;

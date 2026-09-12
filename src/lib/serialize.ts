@@ -81,6 +81,14 @@ export function personRecord(person: Person) {
       json: `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     },
     sources: person.sources,
+    sections: (person.sections ?? []).map((section) => ({
+      id: section.id,
+      title: section.title,
+      body: {
+        en: stripCitations(section.body.en),
+        zh: stripCitations(section.body.zh),
+      },
+    })),
   };
 }
 

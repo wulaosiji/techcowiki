@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCompany } from "../data/catalog";
 import { confidenceLabel, ui } from "../data/site";
 import type { Locale, Person } from "../data/types";
-import { renderCitedHtml, stripCitations } from "../lib/citations";
+import { renderCitedHtml, splitParagraphs, stripCitations } from "../lib/citations";
 import { formatDate, localePath, pageUrl, t } from "../lib/i18n";
 import { personGraph } from "../lib/schema";
 import { SITE_NAME, SITE_ORIGIN } from "../data/site";
@@ -20,7 +20,7 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
 <BaseLayout
   locale={locale}
   title={person.name[locale]}
-  description={stripCitations(person.definition[locale])}
+  description={stripCitations(person.lead[locale]).slice(0, 240)}
   path={`/people/${person.slug}`}
   jsonLd={personGraph(person, locale)}
   lastModified={person.lastReviewed}
@@ -49,6 +49,16 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
           <a href={`${SITE_ORIGIN}/people/${person.slug}.md`}>{t(ui.markdown, locale)}</a>
           <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
+        {
+          (person.sections ?? []).map((section) => (
+            <section id={section.id}>
+              <h2>{t(section.title, locale)}</h2>
+              {splitParagraphs(section.body[locale]).map((paragraph) => (
+                <p set:html={renderCitedHtml(paragraph, person.sources)} />
+              ))}
+            </section>
+          ))
+        }
         <h2>{t(ui.navCompanies, locale)}</h2>
         <ul>
           {person.companies.map((item) => {
@@ -62,6 +72,9 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
                 )}
                 {" — "}
                 {t(item.role, locale)}
+                {company
+                  ? ` · ${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`
+                  : ""}
               </li>
             );
           })}
@@ -83,6 +96,12 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
       <aside class="infobox">
         <h2>{t(ui.infobox, locale)}</h2>
         <dl>
+          {person.birthYear && (
+            <div>
+              <dt>{locale === "zh" ? "出生年" : "Born"}</dt>
+              <dd>{person.birthYear}</dd>
+            </div>
+          )}
           {person.birthPlace && (
             <div>
               <dt>{locale === "zh" ? "出生地" : "Birthplace"}</dt>
@@ -90,13 +109,20 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
             </div>
           )}
           <div>
+            <dt>{locale === "zh" ? "角色" : "Roles"}</dt>
+            <dd>{person.roles.map((role) => t(role, locale)).join(locale === "zh" ? "、" : ", ")}</dd>
+          </div>
+          <div>
             <dt>{t(ui.identifiers, locale)}</dt>
             <dd class="mono">{person.id}</dd>
           </div>
           <div>
             <dt>{t(ui.sameAs, locale)}</dt>
-            <dd>
-              {person.sameAs.wikipedia ? <a href={person.sameAs.wikipedia}>Wikipedia</a> : "—"}
+            <dd class="sameas">
+              {person.sameAs.wikipedia && <a href={person.sameAs.wikipedia}>Wikipedia</a>}
+              {person.sameAs.wikipediaZh && <a href={person.sameAs.wikipediaZh}>维基百科</a>}
+              {person.sameAs.wikidata && <a href={person.sameAs.wikidata}>Wikidata</a>}
+              {!person.sameAs.wikipedia && !person.sameAs.wikipediaZh && !person.sameAs.wikidata && "—"}
             </dd>
           </div>
         </dl>

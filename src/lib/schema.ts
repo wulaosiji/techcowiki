@@ -1,3 +1,4 @@
+import { getCompany, getPerson } from "../data/catalog";
 import {
   CONTENT_LICENSE,
   CONTENT_LICENSE_URL,
@@ -5,11 +6,17 @@ import {
   SITE_NAME,
   SITE_ORIGIN,
   mission,
+  sectors,
   tagline,
 } from "../data/site";
 import type { Company, FaqItem, Locale, Person } from "../data/types";
 import { pageUrl } from "./i18n";
 import { stripCitations } from "./citations";
+
+function richDescription(text: string, limit = 480): string {
+  const clean = stripCitations(text);
+  return clean.length > limit ? `${clean.slice(0, limit - 1).trimEnd()}…` : clean;
+}
 
 export function websiteGraph(locale: Locale) {
   return {
@@ -74,7 +81,7 @@ export function companyGraph(company: Company, locale: Locale) {
           (value, index, list) => list.indexOf(value) === index && value !== company.name[locale],
         ),
         legalName: company.legalName,
-        description: stripCitations(company.definition[locale]),
+        description: richDescription(company.lead[locale]),
         url: company.website,
         foundingDate: company.founded,
         identifier: {
@@ -84,23 +91,45 @@ export function companyGraph(company: Company, locale: Locale) {
         },
         sameAs: Object.values(company.sameAs).filter(Boolean),
         numberOfEmployees: company.employees?.value,
+        knowsAbout: company.sectors.map(
+          (slug) => sectors.find((sector) => sector.slug === slug)?.name[locale] ?? slug,
+        ),
+        foundingLocation: {
+          "@type": "Place",
+          name: `${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`,
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: company.headquarters.city[locale],
+            addressRegion: company.headquarters.region?.[locale],
+            addressCountry: company.headquarters.countryCode,
+          },
+        },
         address: {
           "@type": "PostalAddress",
           addressLocality: company.headquarters.city[locale],
           addressRegion: company.headquarters.region?.[locale],
           addressCountry: company.headquarters.countryCode,
         },
-        founder: company.founders.map((founder) => ({
-          "@type": "Person",
-          name: founder.personSlug,
-          url: pageUrl(locale, `/people/${founder.personSlug}`),
+        founder: company.founders.map((founder) => {
+          const person = getPerson(founder.personSlug);
+          return {
+            "@type": "Person",
+            name: person ? person.name[locale] : founder.personSlug,
+            url: pageUrl(locale, `/people/${founder.personSlug}`),
+            identifier: person?.id,
+          };
+        }),
+        brand: company.products.map((product) => ({
+          "@type": "Brand",
+          name: product.name,
+          description: product.description[locale],
         })),
         tickerSymbol: company.stock ? `${company.stock.exchange}:${company.stock.ticker}` : undefined,
       },
       webPageNode({
         url,
         name: company.name[locale],
-        description: stripCitations(company.definition[locale]),
+        description: richDescription(company.lead[locale]),
         locale,
         dateModified: company.lastReviewed,
         about: `${url}#org`,
@@ -125,7 +154,8 @@ export function personGraph(person: Person, locale: Locale) {
         "@id": `${url}#person`,
         name: person.name[locale],
         alternateName: person.aliases,
-        description: stripCitations(person.definition[locale]),
+        description: richDescription(person.lead[locale]),
+        jobTitle: person.roles.map((role) => role[locale]),
         identifier: {
           "@type": "PropertyValue",
           propertyID: "techco",
@@ -133,11 +163,21 @@ export function personGraph(person: Person, locale: Locale) {
         },
         sameAs: Object.values(person.sameAs).filter(Boolean),
         birthPlace: person.birthPlace?.[locale],
+        worksFor: person.companies.map((item) => {
+          const company = getCompany(item.companySlug);
+          return {
+            "@type": "Organization",
+            name: company ? company.name[locale] : item.companySlug,
+            url: pageUrl(locale, `/companies/${item.companySlug}`),
+            identifier: company?.id,
+            jobTitle: item.role[locale],
+          };
+        }),
       },
       webPageNode({
         url,
         name: person.name[locale],
-        description: stripCitations(person.definition[locale]),
+        description: richDescription(person.lead[locale]),
         locale,
         dateModified: person.lastReviewed,
         about: `${url}#person`,
@@ -189,7 +229,7 @@ function webPageNode(input: {
     publisher: { "@id": `${SITE_ORIGIN}/#org` },
     speakable: {
       "@type": "SpeakableSpecification",
-      cssSelector: [".lead", ".definition"],
+      cssSelector: [".lead", ".definition", "article section"],
     },
     copyrightNotice: CONTENT_LICENSE,
   };

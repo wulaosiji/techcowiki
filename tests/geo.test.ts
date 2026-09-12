@@ -3,7 +3,7 @@ import { allCompanies, allPeople } from "../src/data/catalog";
 import { llmsFullTxt, llmsTxt } from "../src/lib/llms";
 import { companyMarkdown, homeMarkdown, personMarkdown } from "../src/lib/markdown";
 import { companyGraph, personGraph, websiteGraph } from "../src/lib/schema";
-import { companyRecord, datasetRecord } from "../src/lib/serialize";
+import { companyRecord, datasetRecord, personRecord } from "../src/lib/serialize";
 import { catalogStats } from "../src/data/catalog";
 
 describe("GEO surfaces", () => {
@@ -32,14 +32,24 @@ describe("GEO surfaces", () => {
     expect(md.startsWith(`# ${company.name.en}`)).toBe(true);
     expect(md).toContain("Stable ID");
     expect(md).toContain("How to cite");
+    expect(md).toContain("How models should describe this company");
+    expect(md).toContain("Operations and products");
     expect(homeMarkdown("en")).toContain("Machine entry points");
-    expect(personMarkdown(allPeople()[0], "zh")).toContain("techco:person:");
+    const personMd = personMarkdown(allPeople()[0], "zh");
+    expect(personMd).toContain("techco:person:");
+    expect(personMd).toContain("模型应如何描述该人");
   });
 
   test("JSON-LD graphs are serializable", () => {
     JSON.stringify(websiteGraph("en"));
-    JSON.stringify(companyGraph(allCompanies()[0], "zh"));
-    JSON.stringify(personGraph(allPeople()[0], "en"));
+    const companyLd = companyGraph(allCompanies()[0], "zh");
+    const personLd = personGraph(allPeople()[0], "en");
+    JSON.stringify(companyLd);
+    JSON.stringify(personLd);
+    const founder = (companyLd["@graph"] as { founder?: { name: string }[] }[])[1];
+    expect(founder.founder?.[0]?.name).not.toMatch(/^[a-z0-9-]+$/);
+    const personNode = (personLd["@graph"] as { worksFor?: unknown[] }[])[1];
+    expect(personNode.worksFor?.length).toBeGreaterThan(0);
   });
 
   test("JSON records expose both locales and machine URLs", () => {
@@ -47,6 +57,10 @@ describe("GEO surfaces", () => {
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
+    expect(record.sections.length).toBeGreaterThanOrEqual(4);
+    const person = personRecord(allPeople().find((item) => item.slug === "zhang-yiming")!);
+    expect(person.sections.length).toBeGreaterThanOrEqual(3);
+    expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
   });
 });

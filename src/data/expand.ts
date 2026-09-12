@@ -20,6 +20,10 @@ const COUNTRIES: Record<string, Localized> = {
   ID: { en: "Indonesia", zh: "印度尼西亚" },
   MY: { en: "Malaysia", zh: "马来西亚" },
   AE: { en: "United Arab Emirates", zh: "阿拉伯联合酋长国" },
+  AU: { en: "Australia", zh: "澳大利亚" },
+  FR: { en: "France", zh: "法国" },
+  IL: { en: "Israel", zh: "以色列" },
+  NL: { en: "Netherlands", zh: "荷兰" },
 };
 
 function wikiUrl(title: string): string {
@@ -131,6 +135,14 @@ export function expandCompany(row: CompactCompany): Company {
         url: wiki,
         accessed,
         type: "encyclopedia",
+      },
+      {
+        id: "s2",
+        title: `${row.name.en} official website`,
+        publisher: row.name.en,
+        url: row.website,
+        accessed,
+        type: "official",
       },
     ],
     lastReviewed: accessed,

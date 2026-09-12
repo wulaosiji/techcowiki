@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { allPeople, relatedCompanies } from "../data/catalog";
 import { confidenceLabel, regions, sectors, SITE_NAME, SITE_ORIGIN, stageLabel, statusLabel, ui } from "../data/site";
 import type { Company, Locale } from "../data/types";
-import { renderCitedHtml, stripCitations } from "../lib/citations";
+import { renderCitedHtml, splitParagraphs, stripCitations } from "../lib/citations";
 import { formatDate, formatFounded, formatNumber, localePath, pageUrl, t } from "../lib/i18n";
 import { companyGraph } from "../lib/schema";
 
@@ -23,7 +23,7 @@ const cite = `${SITE_NAME}, "${company.name.en}," ${pageUrl(locale, `/companies/
 <BaseLayout
   locale={locale}
   title={company.name[locale]}
-  description={stripCitations(company.definition[locale])}
+  description={stripCitations(company.lead[locale]).slice(0, 240)}
   path={`/companies/${company.slug}`}
   jsonLd={companyGraph(company, locale)}
   lastModified={company.lastReviewed}
@@ -56,7 +56,9 @@ const cite = `${SITE_NAME}, "${company.name.en}," ${pageUrl(locale, `/companies/
           company.sections.map((section) => (
             <section id={section.id}>
               <h2>{t(section.title, locale)}</h2>
-              <p set:html={renderCitedHtml(section.body[locale], company.sources)} />
+              {splitParagraphs(section.body[locale]).map((paragraph) => (
+                <p set:html={renderCitedHtml(paragraph, company.sources)} />
+              ))}
             </section>
           ))
         }

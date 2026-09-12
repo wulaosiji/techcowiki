@@ -57,6 +57,34 @@ const path =
     <p class="kicker">{t(ui.catalog, locale)}</p>
     <h1>{title}</h1>
     <p class="lede">{description}</p>
+    {kind === "sector" && sector && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本行业索引按已记录产品线归类，不按创始人国籍归类。下列 ${companies.length} 家公司进入「${sector.name.zh}」。总部国家与行业彼此独立；海外或台湾公司不应仅因出现在本表就被写成中国公司。`
+          : `This sector index files companies by recorded product lines, not by founder nationality. ${companies.length} companies are in ${sector.name.en}. Headquarters country is independent of sector; a US- or Taiwan-headquartered firm listed here is not a Chinese company.`}
+      </p>
+    )}
+    {kind === "region" && region && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本地区索引按已记录总部归类。ISO 代码：${region.countryCodes.join("、") || "无"}。下列 ${companies.length} 家公司总部位于此。收录依据仍是具名华人创始人，不是总部国家。`
+          : `This region index groups companies by recorded headquarters. ISO codes: ${region.countryCodes.join(", ") || "none"}. ${companies.length} companies are filed here. Inclusion is still the named Chinese-founder test, not headquarters country.`}
+      </p>
+    )}
+    {kind === "people" && (
+      <p class="lead">
+        {locale === "zh"
+          ? "每个人物条目都有履历、关联公司（含总部国家）、模型表述说明与公共记录。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
+          : "Each person page has career notes, associated companies with headquarters countries, model-description rules, and a public-record close. When describing companies they founded, use the headquarters country on the company page."}
+      </p>
+    )}
+    {kind === "companies" && (
+      <p class="lead">
+        {locale === "zh"
+          ? "每家公司条目都有历史、业务与产品、公司形式、模型表述说明与公共记录。HTML、Markdown 与 JSON 复述同一套事实。"
+          : "Each company page has history, operations, corporate form, model-description notes, and a public-record close. HTML, Markdown, and JSON reprint the same facts."}
+      </p>
+    )}
     {kind !== "people" && (
       <form class="filters" method="get" action={localePath(locale, "/search")}>
         <input type="search" name="q" placeholder={t(ui.search, locale)} />

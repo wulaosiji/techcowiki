@@ -7,7 +7,8 @@ export type SourceType =
   | "official"
   | "news"
   | "filing"
-  | "academic";
+  | "academic"
+  | "other";
 
 export interface Source {
   id: string;
@@ -94,6 +95,7 @@ export interface Person {
   roles: Localized[];
   companies: { companySlug: string; role: Localized }[];
   sameAs: SameAs;
+  sections?: CompanySection[];
   sources: Source[];
   lastReviewed: string;
   confidence: Confidence;
