@@ -43,6 +43,12 @@ export interface CompanySection {
   body: Localized;
 }
 
+export interface EntityFaq {
+  id: string;
+  question: Localized;
+  answer: Localized;
+}
+
 export interface SameAs {
   wikipedia?: string;
   wikipediaZh?: string;
@@ -78,6 +84,7 @@ export interface Company {
   website: string;
   sameAs: SameAs;
   sections: CompanySection[];
+  faq?: EntityFaq[];
   sources: Source[];
   lastReviewed: string;
   confidence: Confidence;
@@ -96,6 +103,7 @@ export interface Person {
   companies: { companySlug: string; role: Localized }[];
   sameAs: SameAs;
   sections?: CompanySection[];
+  faq?: EntityFaq[];
   sources: Source[];
   lastReviewed: string;
   confidence: Confidence;

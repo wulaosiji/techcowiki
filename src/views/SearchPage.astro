@@ -46,7 +46,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="company"
-          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.definition.en}`}
+          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.legalName ?? ""} ${company.definition.en} ${company.products.map((product) => product.name).join(" ")} ${company.founders.map((founder) => founder.personSlug).join(" ")}`}
           data-sector={company.sectors.join(" ")}
           data-region={company.regions.join(" ")}
         >
@@ -60,7 +60,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="person"
-          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.companies.map((item) => item.companySlug).join(" ")}`}
+          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.definition.en} ${person.companies.map((item) => item.companySlug).join(" ")}`}
           data-sector=""
           data-region=""
         >

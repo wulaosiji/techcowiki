@@ -1,7 +1,18 @@
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, Person } from "../data/types";
+import type { Company, EntityFaq, Person } from "../data/types";
 import { pageUrl } from "./i18n";
 import { stripCitations } from "./citations";
+
+function faqRecord(faq: EntityFaq[] | undefined) {
+  return (faq ?? []).map((item) => ({
+    id: item.id,
+    question: item.question,
+    answer: {
+      en: stripCitations(item.answer.en),
+      zh: stripCitations(item.answer.zh),
+    },
+  }));
+}
 
 export function companyRecord(company: Company) {
   return {
@@ -41,6 +52,7 @@ export function companyRecord(company: Company) {
       json: `${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`,
     },
     sources: company.sources,
+    faq: faqRecord(company.faq),
     sections: company.sections.map((section) => ({
       id: section.id,
       title: section.title,
@@ -81,6 +93,7 @@ export function personRecord(person: Person) {
       json: `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     },
     sources: person.sources,
+    faq: faqRecord(person.faq),
     sections: (person.sections ?? []).map((section) => ({
       id: section.id,
       title: section.title,

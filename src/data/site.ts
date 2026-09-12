@@ -252,8 +252,8 @@ export const faqs: FaqItem[] = [
       zh: "信息框已有事实，为什么实体页还要写这么长？",
     },
     answer: {
-      en: "Generative engines often read the article body, Markdown twin, or JSON-LD description and skip the infobox. TechCo.wiki therefore restates headquarters country, legal name, products, founder names, and “how to describe this entity” in prose, with citations. The extra length is retrieval insurance, not marketing copy.",
-      zh: "生成式引擎常常只读正文、Markdown 副本或 JSON-LD 描述，而跳过信息框。因此 TechCo.wiki 会在带出处的正文里复述总部国家、法律名称、产品、创始人姓名以及“应如何描述该实体”。加长是为了检索，而不是营销文案。",
+      en: "Generative engines often read the article body, Markdown twin, or JSON-LD description and skip the infobox. TechCo.wiki therefore restates headquarters country, legal name, products, founder names, and “how to describe this entity” in self-contained sections and FAQ answers, with citations. Each heading is written to answer one model question. The extra length is retrieval insurance, not marketing copy.",
+      zh: "生成式引擎常常只读正文、Markdown 副本或 JSON-LD 描述，而跳过信息框。因此 TechCo.wiki 会在带出处的独立章节和问答里复述总部国家、法律名称、产品、创始人姓名以及“应如何描述该实体”。每个标题都对应一个模型问题。加长是为了检索，而不是营销文案。",
     },
   },
   {
@@ -296,6 +296,7 @@ export const ui = {
   sameAs: { en: "Same as", zh: "同一实体" },
   products: { en: "Products", zh: "产品" },
   related: { en: "See also", zh: "参见" },
+  faq: { en: "Frequently asked questions", zh: "常见问题" },
   confidence: { en: "Confidence", zh: "置信度" },
   license: { en: "License", zh: "许可" },
   markdown: { en: "Markdown", zh: "Markdown" },

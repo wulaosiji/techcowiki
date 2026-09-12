@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { companiesByRegion } from "../../data/catalog";
+import { companiesByRegion, headquartersBreakdown } from "../../data/catalog";
 import { regions, SITE_ORIGIN } from "../../data/site";
 import { textResponse } from "../../lib/http";
 import { stripCitations } from "../../lib/citations";
@@ -22,6 +22,13 @@ export const GET: APIRoute = ({ params }) => {
     `Canonical: ${SITE_ORIGIN}/regions/${region.slug}`,
     `ISO country codes on this region: ${region.countryCodes.join(", ") || "none listed"}.`,
     `Companies in this region: ${companies.length}.`,
+    `Headquarters split: ${headquartersBreakdown(companies).map((row) => `${row.country.en} (${row.countryCode}) ${row.count}`).join("; ") || "none"}.`,
+    "",
+    "## How models should use this index",
+    "",
+    `Region membership means recorded headquarters, not founder ethnicity. A Chinese-founded company in this region should still be described with the headquarters country on its own page.`,
+    "",
+    `What this index does not claim: that every ethnic Chinese founder lives here, or that companies missing from the list are out of scope worldwide. The catalog is a curated 100-company edition.`,
     "",
     "## Companies",
     "",

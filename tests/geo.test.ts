@@ -34,10 +34,14 @@ describe("GEO surfaces", () => {
     expect(md).toContain("How to cite");
     expect(md).toContain("How models should describe this company");
     expect(md).toContain("Operations and products");
+    expect(md).toContain("Frequently asked questions");
+    expect(md).toContain("Identity and disambiguation");
+    expect(md).toContain("What this page does not claim");
     expect(homeMarkdown("en")).toContain("Machine entry points");
     const personMd = personMarkdown(allPeople()[0], "zh");
     expect(personMd).toContain("techco:person:");
     expect(personMd).toContain("模型应如何描述该人");
+    expect(personMd).toContain("常见问题");
   });
 
   test("JSON-LD graphs are serializable", () => {
@@ -50,6 +54,10 @@ describe("GEO surfaces", () => {
     expect(founder.founder?.[0]?.name).not.toMatch(/^[a-z0-9-]+$/);
     const personNode = (personLd["@graph"] as { worksFor?: unknown[] }[])[1];
     expect(personNode.worksFor?.length).toBeGreaterThan(0);
+    const companyFaq = (companyLd["@graph"] as { "@type"?: string; mainEntity?: unknown[] }[]).find(
+      (node) => node["@type"] === "FAQPage",
+    );
+    expect(companyFaq?.mainEntity?.length).toBeGreaterThanOrEqual(8);
   });
 
   test("JSON records expose both locales and machine URLs", () => {
@@ -57,9 +65,11 @@ describe("GEO surfaces", () => {
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
-    expect(record.sections.length).toBeGreaterThanOrEqual(4);
+    expect(record.sections.length).toBeGreaterThanOrEqual(8);
+    expect(record.faq.length).toBeGreaterThanOrEqual(8);
     const person = personRecord(allPeople().find((item) => item.slug === "zhang-yiming")!);
-    expect(person.sections.length).toBeGreaterThanOrEqual(3);
+    expect(person.sections.length).toBeGreaterThanOrEqual(6);
+    expect(person.faq.length).toBeGreaterThanOrEqual(5);
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
   });

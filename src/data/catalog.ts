@@ -10,9 +10,11 @@ const rawCompanies: Company[] = [...seedCompanies, ...extendedCompanies];
 const rawPeople: Person[] = [...seedPeople, ...extendedPeople];
 
 export const companies: Company[] = rawCompanies.map((company) =>
-  enrichCompany(company, rawPeople),
+  enrichCompany(company, rawPeople, rawCompanies),
 );
-export const people: Person[] = rawPeople.map((person) => enrichPerson(person, companies));
+export const people: Person[] = rawPeople.map((person) =>
+  enrichPerson(person, companies, rawPeople),
+);
 
 export function allCompanies(): Company[] {
   return companies;
@@ -76,6 +78,11 @@ export function searchEntities(query: string): { companies: Company[]; people: P
         ...company.aliases,
         company.definition.en,
         company.definition.zh,
+        company.lead.en,
+        company.legalName ?? "",
+        ...company.products.map((product) => `${product.name} ${product.description.en}`),
+        ...company.founders.map((founder) => founder.personSlug),
+        ...(company.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
       ]),
     ),
     people: people.filter((person) =>
@@ -87,9 +94,33 @@ export function searchEntities(query: string): { companies: Company[]; people: P
         ...person.aliases,
         person.definition.en,
         person.definition.zh,
+        person.lead.en,
+        ...person.companies.map((item) => item.companySlug),
+        ...(person.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
       ]),
     ),
   };
+}
+
+export function headquartersBreakdown(list: Company[]): {
+  countryCode: string;
+  country: { en: string; zh: string };
+  count: number;
+}[] {
+  const map = new Map<string, { country: { en: string; zh: string }; count: number }>();
+  for (const company of list) {
+    const prev = map.get(company.headquarters.countryCode);
+    if (prev) prev.count += 1;
+    else {
+      map.set(company.headquarters.countryCode, {
+        country: company.headquarters.country,
+        count: 1,
+      });
+    }
+  }
+  return [...map.entries()]
+    .map(([countryCode, value]) => ({ countryCode, ...value }))
+    .sort((a, b) => b.count - a.count || a.countryCode.localeCompare(b.countryCode));
 }
 
 export function catalogStats() {

@@ -39,7 +39,9 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
         <h1>{person.name[locale]}</h1>
         <p class="aliases">{person.name[locale === "zh" ? "en" : "zh"]}</p>
         <p class="definition" set:html={renderCitedHtml(person.definition[locale], person.sources)} />
-        <p class="lead" set:html={renderCitedHtml(person.lead[locale], person.sources)} />
+        {splitParagraphs(person.lead[locale]).map((paragraph) => (
+          <p class="lead" set:html={renderCitedHtml(paragraph, person.sources)} />
+        ))}
         <div class="toolbar">
           <span>{t(ui.lastReviewed, locale)}: {formatDate(person.lastReviewed, locale)}</span>
           <span>
@@ -50,15 +52,30 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
           <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
         {
-          (person.sections ?? []).map((section) => (
-            <section id={section.id}>
-              <h2>{t(section.title, locale)}</h2>
-              {splitParagraphs(section.body[locale]).map((paragraph) => (
-                <p set:html={renderCitedHtml(paragraph, person.sources)} />
-              ))}
-            </section>
-          ))
+          (person.sections ?? [])
+            .filter((section) => section.id !== "faq")
+            .map((section) => (
+              <section id={section.id}>
+                <h2>{t(section.title, locale)}</h2>
+                {splitParagraphs(section.body[locale]).map((paragraph) => (
+                  <p set:html={renderCitedHtml(paragraph, person.sources)} />
+                ))}
+              </section>
+            ))
         }
+        {(person.faq ?? []).length > 0 && (
+          <section id="faq">
+            <h2>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h2>
+            {person.faq!.map((item) => (
+              <div class="faq-item" id={`faq-${item.id}`}>
+                <h3>{item.question[locale]}</h3>
+                {splitParagraphs(item.answer[locale]).map((paragraph) => (
+                  <p set:html={renderCitedHtml(paragraph, person.sources)} />
+                ))}
+              </div>
+            ))}
+          </section>
+        )}
         <h2>{t(ui.navCompanies, locale)}</h2>
         <ul>
           {person.companies.map((item) => {

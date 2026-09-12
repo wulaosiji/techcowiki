@@ -1,8 +1,22 @@
 import { getCompany, getPerson } from "../data/catalog";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, Locale, Person } from "../data/types";
+import type { Company, EntityFaq, Locale, Person } from "../data/types";
 import { stripCitations } from "./citations";
 import { formatFounded, pageUrl, t } from "./i18n";
+
+function faqMarkdown(faq: EntityFaq[] | undefined, locale: Locale): string[] {
+  if (!faq?.length) return [];
+  return [
+    locale === "zh" ? "## 常见问题" : "## Frequently asked questions",
+    "",
+    ...faq.flatMap((item) => [
+      `### ${item.question[locale]}`,
+      "",
+      stripCitations(item.answer[locale]),
+      "",
+    ]),
+  ];
+}
 
 export function companyMarkdown(company: Company, locale: Locale): string {
   const url = pageUrl(locale, `/companies/${company.slug}`);
@@ -41,12 +55,15 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     "",
     stripCitations(company.lead[locale]),
     "",
-    ...company.sections.flatMap((section) => [
-      `## ${t(section.title, locale)}`,
-      "",
-      stripCitations(section.body[locale]),
-      "",
-    ]),
+    ...company.sections
+      .filter((section) => section.id !== "faq")
+      .flatMap((section) => [
+        `## ${t(section.title, locale)}`,
+        "",
+        stripCitations(section.body[locale]),
+        "",
+      ]),
+    ...faqMarkdown(company.faq, locale),
     "## Sources",
     "",
     ...company.sources.map(
@@ -92,12 +109,15 @@ export function personMarkdown(person: Person, locale: Locale): string {
     "",
     stripCitations(person.lead[locale]),
     "",
-    ...(person.sections ?? []).flatMap((section) => [
-      `## ${t(section.title, locale)}`,
-      "",
-      stripCitations(section.body[locale]),
-      "",
-    ]),
+    ...(person.sections ?? [])
+      .filter((section) => section.id !== "faq")
+      .flatMap((section) => [
+        `## ${t(section.title, locale)}`,
+        "",
+        stripCitations(section.body[locale]),
+        "",
+      ]),
+    ...faqMarkdown(person.faq, locale),
     "## Sources",
     "",
     ...person.sources.map(
@@ -121,8 +141,8 @@ export function homeMarkdown(locale: Locale): string {
       : "> The open encyclopedia of Chinese-founded technology companies. Written first for generative engines, then for people.",
     "",
     locale === "zh"
-      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含业务、公司形式、模型表述说明与公共记录小节。"
-      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes operations, corporate form, model-description notes, and a public-record section.",
+      ? "默认使用英语规范文本，并提供完整简体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含身份消解、问答、未记录字段、模型表述说明与公共记录。"
+      : "English is the canonical text, with a complete Simplified Chinese edition. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes identity disambiguation, FAQ, unrecorded-field notes, model-description rules, and a public-record section.",
     "",
     "## Machine entry points",
     "",

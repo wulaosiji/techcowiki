@@ -1,4 +1,4 @@
-import { getCompany, getPerson } from "../data/catalog";
+import { getCompany, getPerson, relatedCompanies } from "../data/catalog";
 import {
   CONTENT_LICENSE,
   CONTENT_LICENSE_URL,
@@ -9,13 +9,30 @@ import {
   sectors,
   tagline,
 } from "../data/site";
-import type { Company, FaqItem, Locale, Person } from "../data/types";
+import type { Company, EntityFaq, FaqItem, Locale, Person } from "../data/types";
 import { pageUrl } from "./i18n";
 import { stripCitations } from "./citations";
 
 function richDescription(text: string, limit = 480): string {
   const clean = stripCitations(text);
   return clean.length > limit ? `${clean.slice(0, limit - 1).trimEnd()}…` : clean;
+}
+
+function entityFaqGraph(url: string, faq: EntityFaq[] | undefined, locale: Locale) {
+  const items = faq ?? [];
+  return {
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    url,
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question[locale],
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: stripCitations(item.answer[locale]),
+      },
+    })),
+  };
 }
 
 export function websiteGraph(locale: Locale) {
@@ -125,6 +142,12 @@ export function companyGraph(company: Company, locale: Locale) {
           description: product.description[locale],
         })),
         tickerSymbol: company.stock ? `${company.stock.exchange}:${company.stock.ticker}` : undefined,
+        mentions: relatedCompanies(company, 6).map((other) => ({
+          "@type": "Organization",
+          name: other.name[locale],
+          url: pageUrl(locale, `/companies/${other.slug}`),
+          identifier: other.id,
+        })),
       },
       webPageNode({
         url,
@@ -133,7 +156,13 @@ export function companyGraph(company: Company, locale: Locale) {
         locale,
         dateModified: company.lastReviewed,
         about: `${url}#org`,
+        parts: company.sections.map((section) => ({
+          "@type": "WebPageElement",
+          name: section.title[locale],
+          cssSelector: `#${section.id}`,
+        })),
       }),
+      entityFaqGraph(url, company.faq, locale),
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
         { name: locale === "zh" ? "公司" : "Companies", url: pageUrl(locale, "/companies") },
@@ -181,7 +210,13 @@ export function personGraph(person: Person, locale: Locale) {
         locale,
         dateModified: person.lastReviewed,
         about: `${url}#person`,
+        parts: (person.sections ?? []).map((section) => ({
+          "@type": "WebPageElement",
+          name: section.title[locale],
+          cssSelector: `#${section.id}`,
+        })),
       }),
+      entityFaqGraph(url, person.faq, locale),
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
         { name: locale === "zh" ? "人物" : "People", url: pageUrl(locale, "/people") },
@@ -214,6 +249,7 @@ function webPageNode(input: {
   locale: Locale;
   dateModified: string;
   about: string;
+  parts?: { "@type": string; name: string; cssSelector: string }[];
 }) {
   return {
     "@type": "WebPage",
@@ -227,9 +263,10 @@ function webPageNode(input: {
     isAccessibleForFree: true,
     about: { "@id": input.about },
     publisher: { "@id": `${SITE_ORIGIN}/#org` },
+    hasPart: input.parts,
     speakable: {
       "@type": "SpeakableSpecification",
-      cssSelector: [".lead", ".definition", "article section"],
+      cssSelector: [".lead", ".definition", "article section", ".faq-item"],
     },
     copyrightNotice: CONTENT_LICENSE,
   };
