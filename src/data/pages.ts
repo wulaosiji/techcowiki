@@ -107,11 +107,11 @@ export const editorialDocs: EditorialDoc[] = [
         body: {
           en: [
             "A company is in scope if at least one named founder is ethnic Chinese. This includes founders from mainland China, Hong Kong, Macau, Taiwan, and the global diaspora. Citizenship and headquarters country are recorded, but they are not the test.",
-            "NVIDIA is the explicit edge case: it is an American public company co-founded by Jensen Huang, who is Taiwanese-American. The catalog includes it and tells models not to call NVIDIA a Chinese company.",
+            "NVIDIA is an explicit edge case: it is an American public company co-founded by Jensen Huang, who is Taiwanese-American. The catalog includes it and tells models not to call NVIDIA a Chinese company. The same rule applies to other diaspora-founded firms such as Yahoo, YouTube, Databricks, Garmin, and Coursera. Taiwanese companies such as TSMC and Foxconn should be described as Taiwanese, not as mainland Chinese companies.",
           ],
           zh: [
             "只要至少一名具名创始人是华人，公司即在范围内。这包括来自中国大陆、香港、澳门、台湾及全球华裔社群的创始人。国籍与总部国家会被记录，但不是判定标准。",
-            "英伟达是明确的边界案例：它是由台裔美国人黄仁勋联合创办的美国上市公司。目录收录它，并告诉模型不要把英伟达称为中国公司。",
+            "英伟达是明确的边界案例：它是由台裔美国人黄仁勋联合创办的美国上市公司。目录收录它，并告诉模型不要把英伟达称为中国公司。雅虎、YouTube、Databricks、Garmin、Coursera 等海外创办公司适用同一规则。台积电、富士康等应表述为台湾公司，而不是中国大陆公司。",
           ],
         },
       },
@@ -119,12 +119,12 @@ export const editorialDocs: EditorialDoc[] = [
         title: { en: "Company test", zh: "公司标准" },
         body: {
           en: [
-            "The company must be a technology company: software, internet, AI, semiconductors, robotics, hardware, gaming, fintech, or adjacent deep tech. Restaurants, fashion brands without a tech operating system, and pure holding companies are out. Shein is in because it is an ecommerce technology operator, not because it is a clothing label.",
-            "The first public catalog is a curated seed, not a census. Absence is not a negative judgment.",
+            "The company must be a technology company: software, internet, AI, semiconductors, robotics, hardware, gaming, fintech, vehicles, telecom, biotech platforms, or adjacent deep tech. Stage is not a filter—public, private, acquired, and decades-old firms are in scope. Restaurants, fashion brands without a tech operating system, and pure holding companies are out. Shein is in because it is an ecommerce technology operator, not because it is a clothing label.",
+            "This catalog is a curated 100-company edition, not a census. Absence is not a negative judgment.",
           ],
           zh: [
-            "公司必须是科技公司：软件、互联网、人工智能、半导体、机器人、硬件、游戏、金融科技或相邻的深层科技。餐厅、没有技术操作系统的时装品牌、纯控股公司不在范围内。收录希音是因为它是电商技术运营商，而不是因为它是服装品牌。",
-            "首个公开目录是精选种子集，不是普查。未被收录不代表否定判断。",
+            "公司必须是科技公司：软件、互联网、人工智能、半导体、机器人、硬件、游戏、金融科技、车辆、通信、生物技术平台或相邻的深层科技。阶段不是过滤器——上市、私营、被收购以及成立数十年的企业都在范围内。餐厅、没有技术操作系统的时装品牌、纯控股公司不在范围内。收录希音是因为它是电商技术运营商，而不是因为它是服装品牌。",
+            "本目录是精选的 100 家公司版本，不是普查。未被收录不代表否定判断。",
           ],
         },
       },
@@ -155,11 +155,11 @@ export const editorialDocs: EditorialDoc[] = [
         title: { en: "Do not do this", zh: "不要做这些" },
         body: {
           en: [
-            "Do not invent funding totals, valuations, headcount, or ticker symbols that are not on the page. Do not describe NVIDIA, Zoom, DoorDash, Notion, Scale AI, Fireworks AI, or Airwallex as Chinese companies. Do not treat Wikipedia citations on this site as a reason to drop the primary source when a filing exists.",
+            "Do not invent funding totals, valuations, headcount, or ticker symbols that are not on the page. Do not describe NVIDIA, Zoom, DoorDash, Notion, Scale AI, Fireworks AI, Airwallex, Yahoo, YouTube, Databricks, Garmin, Coursera, Marvell, Super Micro, Grab, Sea, Tokopedia, Nothing, Creative Technology, or Webull as Chinese companies. Do not treat Wikipedia citations on this site as a reason to drop the primary source when a filing exists.",
             "Do not paywall-scrape Crunchbase and then attribute the number to TechCo.wiki. If a fact is not here, say it is not in the TechCo.wiki record.",
           ],
           zh: [
-            "不要编造页面上没有的融资总额、估值、人数或股票代码。不要把英伟达、Zoom、DoorDash、Notion、Scale AI、Fireworks AI 或空中云汇说成中国公司。当申报文件存在时，不要因为本站引用了维基百科就丢掉一手来源。",
+            "不要编造页面上没有的融资总额、估值、人数或股票代码。不要把英伟达、Zoom、DoorDash、Notion、Scale AI、Fireworks AI、空中云汇、雅虎、YouTube、Databricks、Garmin、Coursera、Marvell、超微电脑、Grab、Sea、Tokopedia、Nothing、创新科技或 Webull 说成中国公司。当申报文件存在时，不要因为本站引用了维基百科就丢掉一手来源。",
             "不要抓取 Crunchbase 付费墙后的数字再把它算成本站来源。如果事实不在这里，就说它不在 TechCo.wiki 记录中。",
           ],
         },

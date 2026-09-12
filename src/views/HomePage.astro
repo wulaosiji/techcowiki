@@ -13,7 +13,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const stats = catalogStats();
-const featured = ["deepseek", "bytedance", "zoom", "nvidia", "dji", "scale-ai", "moonshot-ai", "notion"]
+const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance", "deepseek", "byd"]
   .map((slug) => allCompanies().find((company) => company.slug === slug))
   .filter((company): company is NonNullable<typeof company> => Boolean(company));
 ---
@@ -62,7 +62,7 @@ const featured = ["deepseek", "bytedance", "zoom", "nvidia", "dji", "scale-ai", 
     </div>
     <p class="meta">{t(ui.seedNote, locale)}</p>
 
-    <h2>{locale === "zh" ? "种子条目" : "Seed entries"}</h2>
+    <h2>{locale === "zh" ? "精选条目" : "Featured entries"}</h2>
     <div class="grid">
       {featured.map((company) => <EntityCard locale={locale} company={company} />)}
     </div>

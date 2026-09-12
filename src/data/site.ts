@@ -98,6 +98,38 @@ export const sectors: Sector[] = [
       zh: "自动驾驶软件、Robotaxi 与车辆自主系统。",
     },
   },
+  {
+    slug: "electric-vehicles",
+    name: { en: "Electric vehicles", zh: "电动汽车" },
+    definition: {
+      en: "Battery-electric cars, EV batteries, and related vehicle platforms.",
+      zh: "纯电汽车、动力电池及相关车辆平台。",
+    },
+  },
+  {
+    slug: "telecommunications",
+    name: { en: "Telecommunications", zh: "通信" },
+    definition: {
+      en: "Network equipment, carrier infrastructure, and related devices.",
+      zh: "网络设备、运营商基础设施及相关终端。",
+    },
+  },
+  {
+    slug: "biotechnology",
+    name: { en: "Biotechnology", zh: "生物技术" },
+    definition: {
+      en: "Genomics, contract research and manufacturing, and drug-development platforms.",
+      zh: "基因组学、合同研究与生产，以及药物开发平台。",
+    },
+  },
+  {
+    slug: "education",
+    name: { en: "Education technology", zh: "教育科技" },
+    definition: {
+      en: "Online tutoring, learning platforms, and education software.",
+      zh: "在线辅导、学习平台与教育软件。",
+    },
+  },
 ];
 
 export const regions: Region[] = [
@@ -136,6 +168,24 @@ export const regions: Region[] = [
       zh: "总部位于澳大利亚的公司。",
     },
     countryCodes: ["AU"],
+  },
+  {
+    slug: "europe",
+    name: { en: "Europe", zh: "欧洲" },
+    definition: {
+      en: "Companies headquartered in Europe, including the United Kingdom.",
+      zh: "总部位于欧洲（含英国）的公司。",
+    },
+    countryCodes: ["GB", "DE", "FR", "NL", "IE", "CH", "SE"],
+  },
+  {
+    slug: "middle-east",
+    name: { en: "Middle East", zh: "中东" },
+    definition: {
+      en: "Companies whose principal reported base is in the Middle East.",
+      zh: "主要被报道的运营基地位于中东的公司。",
+    },
+    countryCodes: ["AE", "SA", "IL"],
   },
 ];
 
@@ -249,8 +299,8 @@ export const ui = {
   filterSector: { en: "All sectors", zh: "全部行业" },
   filterRegion: { en: "All regions", zh: "全部地区" },
   seedNote: {
-    en: "This first public catalog is a curated seed, not a census.",
-    zh: "首个公开目录是精选种子集，不是全量普查。",
+    en: "This catalog is a curated 100-company edition, not a census. Public and decades-old firms are in scope; absence is not a negative judgment.",
+    zh: "本目录是精选的 100 家公司版本，不是普查。上市公司与成立数十年的企业都在范围内；缺席不代表否定判断。",
   },
 } satisfies Record<string, Localized>;
 

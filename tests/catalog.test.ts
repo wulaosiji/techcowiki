@@ -3,6 +3,10 @@ import { allCompanies, allPeople, getPerson } from "../src/data/catalog";
 import { usedSourceIds } from "../src/lib/citations";
 
 describe("catalog integrity", () => {
+  test("curated catalog has 100 companies", () => {
+    expect(allCompanies()).toHaveLength(100);
+  });
+
   test("company slugs and ids are unique", () => {
     const slugs = allCompanies().map((company) => company.slug);
     const ids = allCompanies().map((company) => company.id);
@@ -45,18 +49,29 @@ describe("catalog integrity", () => {
       expect(company.sources.length).toBeGreaterThan(0);
       expect(company.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
+    for (const person of allPeople()) {
+      expect(person.id.startsWith("techco:person:")).toBe(true);
+      expect(person.definition.en.length).toBeGreaterThan(40);
+      expect(person.definition.zh.length).toBeGreaterThan(16);
+      expect(person.lead.en.length).toBeGreaterThan(80);
+      expect(person.lead.zh.length).toBeGreaterThan(30);
+      expect(person.sources.length).toBeGreaterThan(0);
+      expect(person.lastReviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
   });
 
   test("citation tokens resolve to sources", () => {
-    for (const company of allCompanies()) {
-      const ids = new Set(company.sources.map((source) => source.id));
+    for (const entity of [...allCompanies(), ...allPeople()]) {
+      const ids = new Set(entity.sources.map((source) => source.id));
       const used = [
-        ...usedSourceIds(company.definition.en),
-        ...usedSourceIds(company.lead.en),
-        ...company.sections.flatMap((section) => usedSourceIds(section.body.en)),
+        ...usedSourceIds(entity.definition.en),
+        ...usedSourceIds(entity.lead.en),
+        ...("sections" in entity
+          ? entity.sections.flatMap((section) => usedSourceIds(section.body.en))
+          : []),
       ];
       for (const id of used) {
-        expect(ids.has(id), `${company.slug} missing ${id}`).toBe(true);
+        expect(ids.has(id), `${entity.slug} missing ${id}`).toBe(true);
       }
     }
   });

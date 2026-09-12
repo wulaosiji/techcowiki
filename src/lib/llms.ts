@@ -1,5 +1,4 @@
-import { companies } from "../data/companies";
-import { people } from "../data/people";
+import { companies, people } from "../data/catalog";
 import { regions, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
 import { companyMarkdown, homeMarkdown, personMarkdown } from "./markdown";
 

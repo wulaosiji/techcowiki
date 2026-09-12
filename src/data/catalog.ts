@@ -1,7 +1,12 @@
-import { companies } from "./companies";
-import { people } from "./people";
+import { companies as seedCompanies } from "./companies";
+import { extendedCompanies } from "./extended-companies";
+import { people as seedPeople } from "./people";
+import { extendedPeople } from "./extended-people";
 import { regions, sectors } from "./site";
 import type { Company, Person, Region, Sector } from "./types";
+
+export const companies: Company[] = [...seedCompanies, ...extendedCompanies];
+export const people: Person[] = [...seedPeople, ...extendedPeople];
 
 export function allCompanies(): Company[] {
   return companies;
