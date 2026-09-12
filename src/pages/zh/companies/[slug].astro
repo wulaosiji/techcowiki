@@ -1,0 +1,12 @@
+---
+import CompanyPage from "../../../views/CompanyPage.astro";
+import { allCompanies, getCompany } from "../../../data/catalog";
+
+export function getStaticPaths() {
+  return allCompanies().map((company) => ({ params: { slug: company.slug } }));
+}
+
+const company = getCompany(Astro.params.slug!);
+if (!company) throw new Error("Missing company");
+---
+<CompanyPage locale="zh" company={company} />

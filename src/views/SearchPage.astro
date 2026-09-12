@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntityCard from "../components/EntityCard.astro";
+import { allCompanies, allPeople } from "../data/catalog";
+import { regions, sectors, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { t } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const companies = allCompanies();
+const people = allPeople();
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(ui.search, locale)}
+  description={t(ui.search, locale)}
+  path="/search"
+>
+  <div class="wrap">
+    <h1>{t(ui.search, locale)}</h1>
+    <p class="meta">
+      {locale === "zh"
+        ? "完整目录写在本页 HTML 中。查询参数只用于筛选显示，不会隐藏给爬虫的内容。"
+        : "The full catalog is in this HTML. Query parameters only hide cards in the browser; crawlers still see every entity."}
+    </p>
+    <form class="search-form" method="get">
+      <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} />
+      <select name="sector" id="sector">
+        <option value="">{t(ui.filterSector, locale)}</option>
+        {sectors.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+      </select>
+      <select name="region" id="region">
+        <option value="">{t(ui.filterRegion, locale)}</option>
+        {regions.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+      </select>
+      <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
+    </form>
+    <h2>{t(ui.navCompanies, locale)}</h2>
+    <div class="grid" id="company-grid">
+      {companies.map((company) => (
+        <div
+          class="entity"
+          data-kind="company"
+          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.definition.en}`}
+          data-sector={company.sectors.join(" ")}
+          data-region={company.regions.join(" ")}
+        >
+          <EntityCard locale={locale} company={company} />
+        </div>
+      ))}
+    </div>
+    <h2>{t(ui.navPeople, locale)}</h2>
+    <div class="grid" id="people-grid">
+      {people.map((person) => (
+        <div
+          class="entity"
+          data-kind="person"
+          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")}`}
+          data-sector=""
+          data-region=""
+        >
+          <EntityCard locale={locale} person={person} />
+        </div>
+      ))}
+    </div>
+  </div>
+  <script is:inline>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var q = (params.get("q") || "").toLowerCase();
+      var sector = params.get("sector") || "";
+      var region = params.get("region") || "";
+      var qInput = document.getElementById("q");
+      var sectorInput = document.getElementById("sector");
+      var regionInput = document.getElementById("region");
+      if (qInput) qInput.value = params.get("q") || "";
+      if (sectorInput) sectorInput.value = sector;
+      if (regionInput) regionInput.value = region;
+      document.querySelectorAll(".entity").forEach(function (node) {
+        var hay = (node.getAttribute("data-haystack") || "").toLowerCase();
+        var sectors = node.getAttribute("data-sector") || "";
+        var regions = node.getAttribute("data-region") || "";
+        var kind = node.getAttribute("data-kind");
+        var ok = !q || hay.indexOf(q) !== -1;
+        if (kind === "company" && sector) ok = ok && sectors.indexOf(sector) !== -1;
+        if (kind === "company" && region) ok = ok && regions.indexOf(region) !== -1;
+        node.hidden = !ok;
+      });
+    })();
+  </script>
+</BaseLayout>

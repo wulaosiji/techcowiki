@@ -1,0 +1,11 @@
+/* TEAM */
+Project: TechCo.wiki
+Site: https://techco.wiki
+Repository: https://github.com/wulaosiji/techcowiki
+
+/* SITE */
+Standards: HTML5, schema.org JSON-LD, llms.txt v2, OpenAPI 3.1
+Language: English (canonical), zh-Hans
+License: CC BY-SA 4.0 (content), MIT (code)
+Doctype: HTML5
+Software: Astro

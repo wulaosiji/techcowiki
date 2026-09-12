@@ -1,0 +1,106 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCompany } from "../data/catalog";
+import { confidenceLabel, ui } from "../data/site";
+import type { Locale, Person } from "../data/types";
+import { renderCitedHtml, stripCitations } from "../lib/citations";
+import { formatDate, localePath, pageUrl, t } from "../lib/i18n";
+import { personGraph } from "../lib/schema";
+import { SITE_NAME, SITE_ORIGIN } from "../data/site";
+
+interface Props {
+  locale: Locale;
+  person: Person;
+}
+
+const { locale, person } = Astro.props;
+const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${person.slug}`)}, last reviewed ${person.lastReviewed}, ${person.id}.`;
+---
+
+<BaseLayout
+  locale={locale}
+  title={person.name[locale]}
+  description={stripCitations(person.definition[locale])}
+  path={`/people/${person.slug}`}
+  jsonLd={personGraph(person, locale)}
+  lastModified={person.lastReviewed}
+>
+  <div class="wrap">
+    <nav class="breadcrumbs">
+      <a href={localePath(locale, "/")}>{t(ui.home, locale)}</a>
+      {" / "}
+      <a href={localePath(locale, "/people")}>{t(ui.navPeople, locale)}</a>
+      {" / "}
+      {person.name[locale]}
+    </nav>
+    <div class="article-layout">
+      <article>
+        <p class="kicker">{person.id}</p>
+        <h1>{person.name[locale]}</h1>
+        <p class="aliases">{person.name[locale === "zh" ? "en" : "zh"]}</p>
+        <p class="definition" set:html={renderCitedHtml(person.definition[locale], person.sources)} />
+        <p class="lead" set:html={renderCitedHtml(person.lead[locale], person.sources)} />
+        <div class="toolbar">
+          <span>{t(ui.lastReviewed, locale)}: {formatDate(person.lastReviewed, locale)}</span>
+          <span>
+            {t(ui.confidence, locale)}:
+            <b class={`conf-${person.confidence}`}>{t(confidenceLabel[person.confidence], locale)}</b>
+          </span>
+          <a href={`${SITE_ORIGIN}/people/${person.slug}.md`}>{t(ui.markdown, locale)}</a>
+          <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
+        </div>
+        <h2>{t(ui.navCompanies, locale)}</h2>
+        <ul>
+          {person.companies.map((item) => {
+            const company = getCompany(item.companySlug);
+            return (
+              <li>
+                {company ? (
+                  <a href={localePath(locale, `/companies/${company.slug}`)}>{company.name[locale]}</a>
+                ) : (
+                  item.companySlug
+                )}
+                {" — "}
+                {t(item.role, locale)}
+              </li>
+            );
+          })}
+        </ul>
+        <h2>{t(ui.sources, locale)}</h2>
+        <ol class="sources">
+          {person.sources.map((source) => (
+            <li id={`source-${source.id}`}>
+              <a href={source.url} rel="nofollow noopener">{source.title}</a>
+              {`. ${source.publisher}. Accessed ${source.accessed}.`}
+            </li>
+          ))}
+        </ol>
+        <aside class="cite-box">
+          <h2>{t(ui.citeThis, locale)}</h2>
+          <p class="mono">{cite}</p>
+        </aside>
+      </article>
+      <aside class="infobox">
+        <h2>{t(ui.infobox, locale)}</h2>
+        <dl>
+          {person.birthPlace && (
+            <div>
+              <dt>{locale === "zh" ? "出生地" : "Birthplace"}</dt>
+              <dd>{person.birthPlace[locale]}</dd>
+            </div>
+          )}
+          <div>
+            <dt>{t(ui.identifiers, locale)}</dt>
+            <dd class="mono">{person.id}</dd>
+          </div>
+          <div>
+            <dt>{t(ui.sameAs, locale)}</dt>
+            <dd>
+              {person.sameAs.wikipedia ? <a href={person.sameAs.wikipedia}>Wikipedia</a> : "—"}
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

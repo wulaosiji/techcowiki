@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntityCard from "../components/EntityCard.astro";
+import { allCompanies, allPeople, companiesByRegion, companiesBySector } from "../data/catalog";
+import { regions, sectors, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, t } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  kind: "companies" | "people" | "sector" | "region";
+  slug?: string;
+}
+
+const { locale, kind, slug } = Astro.props;
+const companies =
+  kind === "sector" && slug
+    ? companiesBySector(slug)
+    : kind === "region" && slug
+      ? companiesByRegion(slug)
+      : allCompanies();
+const people = kind === "people" ? allPeople() : [];
+const sector = sectors.find((item) => item.slug === slug);
+const region = regions.find((item) => item.slug === slug);
+const title =
+  kind === "people"
+    ? t(ui.navPeople, locale)
+    : kind === "sector" && sector
+      ? sector.name[locale]
+      : kind === "region" && region
+        ? region.name[locale]
+        : t(ui.navCompanies, locale);
+const description =
+  kind === "sector" && sector
+    ? sector.definition[locale]
+    : kind === "region" && region
+      ? region.definition[locale]
+      : kind === "people"
+        ? locale === "zh"
+          ? "TechCo.wiki 收录的华人科技创业者。"
+          : "Chinese-heritage technology founders recorded by TechCo.wiki."
+        : locale === "zh"
+          ? "华人创办科技公司的开放目录。"
+          : "Open catalog of Chinese-founded technology companies.";
+const path =
+  kind === "people"
+    ? "/people"
+    : kind === "sector"
+      ? `/sectors/${slug}`
+      : kind === "region"
+        ? `/regions/${slug}`
+        : "/companies";
+---
+
+<BaseLayout locale={locale} title={title} description={description} path={path}>
+  <div class="wrap">
+    <p class="kicker">{t(ui.catalog, locale)}</p>
+    <h1>{title}</h1>
+    <p class="lede">{description}</p>
+    {kind !== "people" && (
+      <form class="filters" method="get" action={localePath(locale, "/search")}>
+        <input type="search" name="q" placeholder={t(ui.search, locale)} />
+        <select name="sector">
+          <option value="">{t(ui.filterSector, locale)}</option>
+          {sectors.map((item) => (
+            <option value={item.slug} selected={kind === "sector" && item.slug === slug}>
+              {item.name[locale]}
+            </option>
+          ))}
+        </select>
+        <select name="region">
+          <option value="">{t(ui.filterRegion, locale)}</option>
+          {regions.map((item) => (
+            <option value={item.slug} selected={kind === "region" && item.slug === slug}>
+              {item.name[locale]}
+            </option>
+          ))}
+        </select>
+        <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
+      </form>
+    )}
+    <p class="meta">{kind === "people" ? people.length : companies.length} {kind === "people" ? t(ui.navPeople, locale) : t(ui.navCompanies, locale)}</p>
+    <div class="grid">
+      {kind === "people"
+        ? people.map((person) => <EntityCard locale={locale} person={person} />)
+        : companies.map((company) => <EntityCard locale={locale} company={company} />)}
+    </div>
+  </div>
+</BaseLayout>

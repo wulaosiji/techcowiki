@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { EditorialDoc } from "../data/pages";
+import type { Locale } from "../data/types";
+import { localePath, t } from "../lib/i18n";
+import { ui } from "../data/site";
+
+interface Props {
+  locale: Locale;
+  doc: EditorialDoc;
+}
+
+const { locale, doc } = Astro.props;
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(doc.title, locale)}
+  description={t(doc.description, locale)}
+  path={`/${doc.slug}`}
+>
+  <div class="wrap">
+    <nav class="breadcrumbs">
+      <a href={localePath(locale, "/")}>{t(ui.home, locale)}</a>
+      {" / "}
+      {t(doc.title, locale)}
+    </nav>
+    <h1>{t(doc.title, locale)}</h1>
+    <p class="lede">{t(doc.description, locale)}</p>
+    <div class="prose">
+      {doc.blocks.map((block) => (
+        <section>
+          <h2>{t(block.title, locale)}</h2>
+          {block.body[locale].map((paragraph) => <p>{paragraph}</p>)}
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

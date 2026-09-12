@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntityCard from "../components/EntityCard.astro";
+import { catalogStats, allCompanies } from "../data/catalog";
+import { faqs, mission, regions, sectors, SITE_NAME, SITE_ORIGIN, tagline, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, t } from "../lib/i18n";
+import { websiteGraph } from "../lib/schema";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const stats = catalogStats();
+const featured = ["deepseek", "bytedance", "zoom", "nvidia", "dji", "scale-ai", "moonshot-ai", "notion"]
+  .map((slug) => allCompanies().find((company) => company.slug === slug))
+  .filter((company): company is NonNullable<typeof company> => Boolean(company));
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(tagline, locale)}
+  description={t(mission, locale)}
+  path="/"
+  jsonLd={websiteGraph(locale)}
+>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <p class="kicker">{SITE_NAME}</p>
+        <h1>{t(tagline, locale)}</h1>
+        <p class="lede definition">{t(mission, locale)}</p>
+        <p>
+          {locale === "zh"
+            ? "本站不是融资数据库。它是一部可引用的百科：每家公司先有一句定义，再有带出处的事实、稳定标识符，以及供模型直接读取的 Markdown / JSON 副本。"
+            : "This is not a fundraising database. It is a citable encyclopedia: every company starts with a definition, then sourced facts, a stable identifier, and Markdown / JSON twins that models can read without scraping."}
+        </p>
+        <div class="toolbar">
+          <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>
+          <a class="btn" href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
+          <a class="btn" href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
+        </div>
+      </div>
+      <aside class="machine-box">
+        <h2>{t(ui.machineIndex, locale)}</h2>
+        <ul>
+          <li><a href={`${SITE_ORIGIN}/llms.txt`}>/llms.txt</a></li>
+          <li><a href={`${SITE_ORIGIN}/llms-full.txt`}>/llms-full.txt</a></li>
+          <li><a href={`${SITE_ORIGIN}/api/v1/openapi.json`}>/api/v1/openapi.json</a></li>
+          <li><a href={`${SITE_ORIGIN}/api/v1/companies.json`}>/api/v1/companies.json</a></li>
+          <li><a href={`${SITE_ORIGIN}/api/v1/dataset.json`}>/api/v1/dataset.json</a></li>
+        </ul>
+      </aside>
+    </section>
+
+    <div class="stat-row">
+      <div class="stat"><b>{stats.companies}</b>{locale === "zh" ? "家公司" : "companies"}</div>
+      <div class="stat"><b>{stats.people}</b>{locale === "zh" ? "位人物" : "people"}</div>
+      <div class="stat"><b>{stats.sectors}</b>{locale === "zh" ? "个行业" : "sectors"}</div>
+      <div class="stat"><b>{stats.sources}</b>{locale === "zh" ? "个独立来源" : "unique sources"}</div>
+    </div>
+    <p class="meta">{t(ui.seedNote, locale)}</p>
+
+    <h2>{locale === "zh" ? "种子条目" : "Seed entries"}</h2>
+    <div class="grid">
+      {featured.map((company) => <EntityCard locale={locale} company={company} />)}
+    </div>
+
+    <h2>{t(ui.navSectors, locale)}</h2>
+    <div class="chips">
+      {sectors.map((sector) => (
+        <a class="chip" href={localePath(locale, `/sectors/${sector.slug}`)}>{sector.name[locale]}</a>
+      ))}
+    </div>
+    <h2>{locale === "zh" ? "地区" : "Regions"}</h2>
+    <div class="chips">
+      {regions.map((region) => (
+        <a class="chip" href={localePath(locale, `/regions/${region.slug}`)}>{region.name[locale]}</a>
+      ))}
+    </div>
+
+    <h2>{locale === "zh" ? "模型应如何理解本站" : "How a model should read this site"}</h2>
+    <div class="prose">
+      <p>{faqs[3].answer[locale]}</p>
+      <p>
+        <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
+        {" · "}
+        <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
+      </p>
+    </div>
+  </div>
+</BaseLayout>

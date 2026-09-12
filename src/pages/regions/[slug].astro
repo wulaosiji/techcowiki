@@ -1,0 +1,9 @@
+---
+import CatalogPage from "../../views/CatalogPage.astro";
+import { regions } from "../../data/site";
+
+export function getStaticPaths() {
+  return regions.map((region) => ({ params: { slug: region.slug } }));
+}
+---
+<CatalogPage locale="en" kind="region" slug={Astro.params.slug} />

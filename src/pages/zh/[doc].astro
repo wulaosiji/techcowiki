@@ -1,0 +1,12 @@
+---
+import EditorialPage from "../../views/EditorialPage.astro";
+import { editorialDocs, getEditorial } from "../../data/pages";
+
+export function getStaticPaths() {
+  return editorialDocs.map((doc) => ({ params: { doc: doc.slug } }));
+}
+
+const doc = getEditorial(Astro.params.doc!);
+if (!doc) throw new Error("Missing document");
+---
+<EditorialPage locale="zh" doc={doc} />

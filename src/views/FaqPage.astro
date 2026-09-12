@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { faqs } from "../data/site";
+import type { Locale } from "../data/types";
+import { faqGraph } from "../lib/schema";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<BaseLayout
+  locale={locale}
+  title={locale === "zh" ? "常见问题" : "FAQ"}
+  description={locale === "zh" ? "关于 TechCo.wiki 的常见问题。" : "Frequently asked questions about TechCo.wiki."}
+  path="/faq"
+  jsonLd={faqGraph(faqs, locale)}
+>
+  <div class="wrap">
+    <h1>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h1>
+    {faqs.map((item) => (
+      <section>
+        <h2>{item.question[locale]}</h2>
+        <p>{item.answer[locale]}</p>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

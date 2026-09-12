@@ -1,0 +1,5 @@
+Contact: https://github.com/wulaosiji/techcowiki/issues
+Expires: 2027-09-12T00:00:00.000Z
+Preferred-Languages: en, zh
+Canonical: https://techco.wiki/.well-known/security.txt
+Policy: https://techco.wiki/about

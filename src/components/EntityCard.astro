@@ -1,0 +1,34 @@
+---
+import type { Company, Locale, Person } from "../data/types";
+import { localePath } from "../lib/i18n";
+import { stripCitations } from "../lib/citations";
+
+
+interface Props {
+  locale: Locale;
+  company?: Company;
+  person?: Person;
+}
+
+const { locale, company, person } = Astro.props;
+const href = company
+  ? localePath(locale, `/companies/${company.slug}`)
+  : localePath(locale, `/people/${person!.slug}`);
+const name = company ? company.name[locale] : person!.name[locale];
+const sub = company ? company.name[locale === "zh" ? "en" : "zh"] : person!.name[locale === "zh" ? "en" : "zh"];
+const text = stripCitations((company ?? person!).definition[locale]);
+---
+
+<a class="card" href={href}>
+  <div class="name">{name}</div>
+  <div class="sub">{sub}</div>
+  <p>{text}</p>
+  {company && (
+    <div class="chips">
+      {company.sectors.slice(0, 2).map((sector) => (
+        <span class="chip">{sector.replaceAll("-", " ")}</span>
+      ))}
+      <span class="chip">{company.headquarters.country[locale]}</span>
+    </div>
+  )}
+</a>
