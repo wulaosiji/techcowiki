@@ -36,6 +36,15 @@ import {
   timelineSection,
 } from "./geo-depth";
 import {
+  applyWikiSameAs,
+  confusionSection,
+  encyclopediaClaims,
+  encyclopediaSection,
+  personConfusionSection,
+  uniqueCompanyFaqs,
+  uniquePersonFaqs,
+} from "./geo-unique";
+import {
   chineseCompanyAnswer,
   foundedEn,
   foundedZh,
@@ -55,6 +64,7 @@ const METHOD_URL = `${SITE_ORIGIN}/methodology`;
 const SECTION_ORDER = [
   "identity",
   "key-facts",
+  "encyclopedia-context",
   "timeline",
   "chronology",
   "history",
@@ -70,6 +80,7 @@ const SECTION_ORDER = [
   "corporate-form",
   "catalog-peers",
   "network",
+  "confusion",
   "model-notes",
   "faq",
   "unrecorded",
@@ -710,42 +721,46 @@ export function enrichCompany(
   people: Person[],
   allCompanies: Company[] = [],
 ): Company {
-  const pool = allCompanies.length > 0 ? allCompanies : [company];
-  const sources = ensureCompanySources(company);
+  const withWiki = applyWikiSameAs(company, "company");
+  const pool = allCompanies.length > 0 ? allCompanies : [withWiki];
+  const sources = ensureCompanySources(withWiki);
   const faq = [
-    ...companyFaq(company, people, pool, sources),
-    ...extraCompanyFaqs(company, pool, sources),
+    ...companyFaq(withWiki, people, pool, sources),
+    ...extraCompanyFaqs(withWiki, pool, sources),
+    ...uniqueCompanyFaqs(withWiki, pool, sources),
   ];
-  const sections = mergeSections(company.sections, [
-    identitySection(company, people, sources),
-    keyFactsSection(company, people, sources),
-    timelineSection(company, sources),
-    historySection(company, people, sources),
-    inclusionSection(company, people, sources),
-    scopeSection(company, sources),
-    namedFoundersSection(company, people, sources),
-    operationsSection(company, sources),
-    geographySection(company, pool, sources),
-    sectorContextSection(company, pool, sources),
-    corporateSection(company, people, sources),
-    catalogPeersSection(company, pool, sources),
-    companyModelNotes(company, people, sources),
+  const sections = mergeSections(withWiki.sections, [
+    identitySection(withWiki, people, sources),
+    keyFactsSection(withWiki, people, sources),
+    encyclopediaSection("company", withWiki.name, withWiki.slug, withWiki.definition, sources),
+    timelineSection(withWiki, sources),
+    historySection(withWiki, people, sources),
+    inclusionSection(withWiki, people, sources),
+    scopeSection(withWiki, sources),
+    namedFoundersSection(withWiki, people, sources),
+    operationsSection(withWiki, sources),
+    geographySection(withWiki, pool, sources),
+    sectorContextSection(withWiki, pool, sources),
+    corporateSection(withWiki, people, sources),
+    catalogPeersSection(withWiki, pool, sources),
+    confusionSection(withWiki, pool, sources),
+    companyModelNotes(withWiki, people, sources),
     faqSection(faq),
-    unrecordedSection(company, sources),
-    companyPublicRecord(company, sources),
-    retrievalSection(company, sources),
+    unrecordedSection(withWiki, sources),
+    companyPublicRecord(withWiki, sources),
+    retrievalSection(withWiki, sources),
   ]);
   return {
-    ...company,
-    lead: thickenCompanyLead(company, sources, pool),
+    ...withWiki,
+    lead: thickenCompanyLead(withWiki, sources, pool),
     sameAs: {
-      ...company.sameAs,
-      official: company.sameAs.official ?? company.website,
+      ...withWiki.sameAs,
+      official: withWiki.sameAs.official ?? withWiki.website,
     },
     sources,
     sections,
     faq,
-    claims: companyClaims(company, people, sources),
+    claims: [...companyClaims(withWiki, people, sources), ...encyclopediaClaims("company", withWiki.slug, sources)],
   };
 }
 
@@ -1123,35 +1138,39 @@ export function enrichPerson(
   companies: Company[],
   allPeople: Person[] = [],
 ): Person {
-  const sources = ensurePersonSources(person, companies);
-  const pool = allPeople.length > 0 ? allPeople : [person];
+  const withWiki = applyWikiSameAs(person, "person");
+  const sources = ensurePersonSources(withWiki, companies);
+  const pool = allPeople.length > 0 ? allPeople : [withWiki];
   const faq = [
-    ...personFaq(person, companies, sources),
-    ...extraPersonFaqs(person, companies, pool, sources),
+    ...personFaq(withWiki, companies, sources),
+    ...extraPersonFaqs(withWiki, companies, pool, sources),
+    ...uniquePersonFaqs(withWiki, sources),
   ];
   const generated = [
-    personIdentity(person, companies, sources),
-    personKeyFactsSection(person, companies, sources),
-    personChronologySection(person, companies, sources),
-    personCareer(person, companies, sources),
-    personCompaniesSection(person, companies, sources),
-    nameVariantsSection(person, sources),
-    personNetwork(person, companies, pool, sources),
-    personInclusionSection(person, companies, sources),
-    personModelNotes(person, companies, sources),
+    personIdentity(withWiki, companies, sources),
+    personKeyFactsSection(withWiki, companies, sources),
+    encyclopediaSection("person", withWiki.name, withWiki.slug, withWiki.definition, sources),
+    personChronologySection(withWiki, companies, sources),
+    personCareer(withWiki, companies, sources),
+    personCompaniesSection(withWiki, companies, sources),
+    nameVariantsSection(withWiki, sources),
+    personNetwork(withWiki, companies, pool, sources),
+    personConfusionSection(withWiki, companies, pool, sources),
+    personInclusionSection(withWiki, companies, sources),
+    personModelNotes(withWiki, companies, sources),
     faqSection(faq),
-    personUnrecorded(person, sources),
-    personPublicRecord(person, sources),
-    personRetrievalSection(person, sources),
+    personUnrecorded(withWiki, sources),
+    personPublicRecord(withWiki, sources),
+    personRetrievalSection(withWiki, sources),
   ];
-  const sections = mergeSections(person.sections ?? [], generated);
+  const sections = mergeSections(withWiki.sections ?? [], generated);
   return {
-    ...person,
-    lead: thickenPersonLead(person, sources, companies),
+    ...withWiki,
+    lead: thickenPersonLead(withWiki, sources, companies),
     sources,
     sections,
     faq,
-    claims: personClaims(person, companies, sources),
+    claims: [...personClaims(withWiki, companies, sources), ...encyclopediaClaims("person", withWiki.slug, sources)],
   };
 }
 

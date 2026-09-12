@@ -84,6 +84,7 @@ export function searchEntities(query: string): { companies: Company[]; people: P
         ...company.founders.map((founder) => founder.personSlug),
         ...(company.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
         ...(company.claims ?? []).flatMap((item) => [item.label.en, item.value.en]),
+        ...company.sections.flatMap((section) => [section.title.en, section.body.en]),
       ]),
     ),
     people: people.filter((person) =>
@@ -99,6 +100,7 @@ export function searchEntities(query: string): { companies: Company[]; people: P
         ...person.companies.map((item) => item.companySlug),
         ...(person.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
         ...(person.claims ?? []).flatMap((item) => [item.label.en, item.value.en]),
+        ...(person.sections ?? []).flatMap((section) => [section.title.en, section.body.en]),
       ]),
     ),
   };

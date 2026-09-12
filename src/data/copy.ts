@@ -73,11 +73,21 @@ export function sourceId(sources: Source[], predicate: (source: Source) => boole
 
 export function wikiId(sources: Source[]): string | undefined {
   return (
+    wikiEnId(sources) ??
     sourceId(
       sources,
       (source) => source.type === "encyclopedia" && source.url.includes("wikipedia.org/wiki/"),
-    ) ?? sourceId(sources, (source) => source.type === "encyclopedia")
+    ) ??
+    sourceId(sources, (source) => source.type === "encyclopedia")
   );
+}
+
+export function wikiEnId(sources: Source[]): string | undefined {
+  return sourceId(sources, (source) => source.url.includes("en.wikipedia.org/wiki/"));
+}
+
+export function wikiZhId(sources: Source[]): string | undefined {
+  return sourceId(sources, (source) => source.url.includes("zh.wikipedia.org/wiki/"));
 }
 
 export function officialId(sources: Source[]): string | undefined {

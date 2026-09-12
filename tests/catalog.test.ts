@@ -51,6 +51,8 @@ describe("catalog integrity", () => {
       expect(company.sections.length).toBeGreaterThanOrEqual(12);
       expect(company.sections.some((section) => section.id === "identity")).toBe(true);
       expect(company.sections.some((section) => section.id === "key-facts")).toBe(true);
+      expect(company.sections.some((section) => section.id === "encyclopedia-context")).toBe(true);
+      expect(company.sections.some((section) => section.id === "confusion")).toBe(true);
       expect(company.sections.some((section) => section.id === "timeline")).toBe(true);
       expect(company.sections.some((section) => section.id === "geography")).toBe(true);
       expect(company.sections.some((section) => section.id === "sector-context")).toBe(true);
@@ -79,6 +81,8 @@ describe("catalog integrity", () => {
       expect((person.sections ?? []).length).toBeGreaterThanOrEqual(10);
       expect((person.sections ?? []).some((section) => section.id === "identity")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "key-facts")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "encyclopedia-context")).toBe(true);
+      expect((person.sections ?? []).some((section) => section.id === "confusion")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "chronology")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "name-variants")).toBe(true);
       expect((person.sections ?? []).some((section) => section.id === "model-notes")).toBe(true);
@@ -126,6 +130,14 @@ describe("catalog integrity", () => {
     );
     expect(tsmc?.faq?.find((item) => item.id === "chinese-company")?.answer.en).toMatch(
       /Taiwan-headquartered/,
+    );
+    const nvidiaEncyclopedia = nvidia?.sections.find((section) => section.id === "encyclopedia-context")?.body.en;
+    expect(nvidiaEncyclopedia).toMatch(/Santa Clara/);
+    expect(nvidiaEncyclopedia).toMatch(/third-party Wikipedia extract/);
+    expect(nvidia?.faq?.some((item) => item.id === "wikipedia-describe")).toBe(true);
+    expect(nvidia?.faq?.some((item) => item.id.startsWith("product-"))).toBe(true);
+    expect(getPerson("jensen-huang")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
+      /Nvidia/,
     );
   });
 

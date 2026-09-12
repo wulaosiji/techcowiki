@@ -38,6 +38,8 @@ describe("GEO surfaces", () => {
     expect(md).toContain("Identity and disambiguation");
     expect(md).toContain("What this page does not claim");
     expect(md).toContain("Extractable facts");
+    expect(md).toContain("Encyclopedia context");
+    expect(md).toContain("Do not confuse with");
     expect(md).toContain("Dated facts on this page");
     expect(md).toContain("Geography and jurisdiction");
     expect(homeMarkdown("en")).toContain("Machine entry points");
