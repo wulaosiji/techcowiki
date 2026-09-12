@@ -177,20 +177,10 @@ const cite = `${SITE_NAME}, "${company.name.en}," ${pageUrl(locale, `/companies/
           </div>
           <div>
             <dt>{t(ui.sameAs, locale)}</dt>
-            <dd>
+            <dd class="sameas">
               {company.sameAs.wikipedia && <a href={company.sameAs.wikipedia}>Wikipedia</a>}
-              {company.sameAs.wikidata && (
-                <>
-                  {company.sameAs.wikipedia && " · "}
-                  <a href={company.sameAs.wikidata}>Wikidata</a>
-                </>
-              )}
-              {company.sameAs.wikipediaZh && (
-                <>
-                  {" · "}
-                  <a href={company.sameAs.wikipediaZh}>维基百科</a>
-                </>
-              )}
+              {company.sameAs.wikidata && <a href={company.sameAs.wikidata}>Wikidata</a>}
+              {company.sameAs.wikipediaZh && <a href={company.sameAs.wikipediaZh}>维基百科</a>}
             </dd>
           </div>
           <div>

@@ -1,4 +1,5 @@
 ---
+import { sectors } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
 import { localePath } from "../lib/i18n";
 import { stripCitations } from "../lib/citations";
@@ -25,8 +26,8 @@ const text = stripCitations((company ?? person!).definition[locale]);
   <p>{text}</p>
   {company && (
     <div class="chips">
-      {company.sectors.slice(0, 2).map((sector) => (
-        <span class="chip">{sector.replaceAll("-", " ")}</span>
+      {company.sectors.slice(0, 2).map((slug) => (
+        <span class="chip">{sectors.find((item) => item.slug === slug)?.name[locale] ?? slug}</span>
       ))}
       <span class="chip">{company.headquarters.country[locale]}</span>
     </div>

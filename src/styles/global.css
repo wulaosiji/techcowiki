@@ -64,6 +64,8 @@ a:hover { color: var(--link-hover); }
   justify-content: space-between;
   gap: 1rem;
   min-height: 4rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0;
 }
 
 .brand {
@@ -215,7 +217,12 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
   font-size: 0.92rem;
 }
 .infobox dt { color: var(--muted); }
-.infobox dd { margin: 0; }
+.infobox dd { margin: 0; overflow-wrap: anywhere; }
+.infobox .sameas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
 
 .breadcrumbs {
   font-size: 0.85rem;
@@ -296,4 +303,9 @@ footer {
   .hero, .article-layout, .stat-row { grid-template-columns: 1fr; }
   .infobox { position: static; }
   .brand-tag { display: none; }
+  .masthead-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav { width: 100%; }
 }

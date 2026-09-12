@@ -60,7 +60,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="person"
-          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")}`}
+          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.companies.map((item) => item.companySlug).join(" ")}`}
           data-sector=""
           data-region=""
         >
