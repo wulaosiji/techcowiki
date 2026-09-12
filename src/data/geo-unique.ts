@@ -12,6 +12,7 @@ import {
 import { foundedEn, foundedZh, hqEn, hqZh, nationalityRule } from "./nationality";
 import { SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityClaim, EntityFaq, Localized, Person, Source } from "./types";
+import { matchWikiRecord, type WikiSubject } from "./wiki-match";
 import { wikiExtract, type WikiExtractRecord, type WikiGloss } from "./wiki-extracts";
 
 const METHOD_URL = `${SITE_ORIGIN}/methodology`;
@@ -41,11 +42,42 @@ function quoteGloss(gloss: WikiGloss, citeToken: string): { en: string; zh: stri
   };
 }
 
-export function applyWikiSameAs<T extends { sameAs: Company["sameAs"]; slug: string }>(
-  entity: T,
-  kind: "company" | "person",
-): T {
-  const record = wikiExtract(kind, entity.slug);
+export function companyWikiSubject(
+  company: Pick<Company, "slug" | "name" | "aliases" | "legalName">,
+): WikiSubject {
+  return {
+    kind: "company",
+    slug: company.slug,
+    name: company.name,
+    aliases: company.aliases,
+    extraNames: company.legalName ? [company.legalName] : [],
+  };
+}
+
+export function personWikiSubject(person: Pick<Person, "slug" | "name" | "aliases">): WikiSubject {
+  return {
+    kind: "person",
+    slug: person.slug,
+    name: person.name,
+    aliases: person.aliases,
+  };
+}
+
+function matchedExtract(subject: WikiSubject): WikiExtractRecord | undefined {
+  return matchWikiRecord(subject, wikiExtract(subject.kind, subject.slug));
+}
+
+export function applyWikiSameAs<
+  T extends { sameAs: Company["sameAs"]; slug: string; name: Localized; aliases?: string[]; legalName?: string },
+>(entity: T, kind: "company" | "person"): T {
+  const subject: WikiSubject = {
+    kind,
+    slug: entity.slug,
+    name: entity.name,
+    aliases: entity.aliases,
+    extraNames: entity.legalName ? [entity.legalName] : [],
+  };
+  const record = matchedExtract(subject);
   if (!record?.zh?.url || entity.sameAs.wikipediaZh) return entity;
   return {
     ...entity,
@@ -57,13 +89,12 @@ export function applyWikiSameAs<T extends { sameAs: Company["sameAs"]; slug: str
 }
 
 export function encyclopediaSection(
-  kind: "company" | "person",
-  name: Localized,
-  slug: string,
+  subject: WikiSubject,
   definition: Localized,
   sources: Source[],
 ): CompanySection {
-  const record = wikiExtract(kind, slug);
+  const record = matchedExtract(subject);
+  const name = subject.name;
   const method = methodCite(sources);
   const enCite = cite(wikiEnId(sources)) || wikiCite(sources);
   const zhCite = cite(wikiZhId(sources)) || enCite;
@@ -259,7 +290,7 @@ export function uniqueCompanyFaqs(
   const method = methodCite(sources);
   const wiki = wikiCite(sources);
   const official = officialCite(sources);
-  const record = wikiExtract("company", company.slug);
+  const record = matchedExtract(companyWikiSubject(company));
   const neighbors = confusionCompanies(company, allCompanies, 4);
   const faqs: EntityFaq[] = company.products.map((product, index) => ({
     id: productFaqId(product.name, index),
@@ -309,7 +340,7 @@ export function uniqueCompanyFaqs(
 }
 
 export function uniquePersonFaqs(person: Person, sources: Source[]): EntityFaq[] {
-  const record = wikiExtract("person", person.slug);
+  const record = matchedExtract(personWikiSubject(person));
   const wiki = wikiCite(sources);
   if (!record?.en?.extract) return [];
   return [
@@ -326,12 +357,8 @@ export function uniquePersonFaqs(person: Person, sources: Source[]): EntityFaq[]
   ];
 }
 
-export function encyclopediaClaims(
-  kind: "company" | "person",
-  slug: string,
-  sources: Source[],
-): EntityClaim[] {
-  const record = wikiExtract(kind, slug);
+export function encyclopediaClaims(subject: WikiSubject, sources: Source[]): EntityClaim[] {
+  const record = matchedExtract(subject);
   const claims: EntityClaim[] = [];
   if (record?.en?.description) {
     claims.push({
@@ -356,6 +383,6 @@ export function encyclopediaClaims(
   return claims;
 }
 
-export function wikiRecord(kind: "company" | "person", slug: string): WikiExtractRecord | undefined {
-  return wikiExtract(kind, slug);
+export function wikiRecord(subject: WikiSubject): WikiExtractRecord | undefined {
+  return matchedExtract(subject);
 }

@@ -5,6 +5,7 @@ import { companyMarkdown, homeMarkdown, personMarkdown } from "../src/lib/markdo
 import { companyGraph, personGraph, websiteGraph } from "../src/lib/schema";
 import { companyRecord, datasetRecord, personRecord } from "../src/lib/serialize";
 import { catalogStats } from "../src/data/catalog";
+import { matchWikiRecord } from "../src/data/wiki-match";
 
 describe("GEO surfaces", () => {
   test("llms.txt lists every company and person markdown twin", () => {
@@ -79,5 +80,42 @@ describe("GEO surfaces", () => {
     expect(person.claims.length).toBeGreaterThanOrEqual(6);
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
+  });
+
+  test("wiki matching keeps attributed extracts and drops crossed Wikidata labels", () => {
+    const jensen = {
+      kind: "person" as const,
+      slug: "jensen-huang",
+      name: { en: "Jensen Huang", zh: "黄仁勋" },
+      aliases: ["Jen-Hsun Huang", "黄仁勋"],
+    };
+    const kept = matchWikiRecord(jensen, {
+      en: {
+        title: "Jensen Huang",
+        description: "Taiwanese and American businessman (born 1963)",
+        extract: "Jen-Hsun Jensen Huang is the founder, president, and CEO of Nvidia.",
+        url: "https://en.wikipedia.org/wiki/Jensen_Huang",
+      },
+      wikidataDescription: { en: "punishment In Uzbekistan" },
+    });
+    expect(kept?.en?.title).toBe("Jensen Huang");
+    expect(kept?.wikidataDescription).toBeUndefined();
+
+    const borrowed = matchWikiRecord(
+      {
+        kind: "person",
+        slug: "liang-rubo",
+        name: { en: "Liang Rubo", zh: "梁汝波" },
+        aliases: ["梁汝波"],
+      },
+      {
+        en: {
+          title: "ByteDance",
+          extract: "ByteDance is a Chinese internet technology company based in Haidian, Beijing.",
+          url: "https://en.wikipedia.org/wiki/ByteDance",
+        },
+      },
+    );
+    expect(borrowed).toBeUndefined();
   });
 });

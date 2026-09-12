@@ -277,7 +277,7 @@ export const people: Person[] = [
     sameAs: {
       wikipedia: "https://en.wikipedia.org/wiki/Lei_Jun",
       wikipediaZh: "https://zh.wikipedia.org/wiki/%E9%9B%B7%E5%86%9B",
-      wikidata: "https://www.wikidata.org/wiki/Q5361663",
+      wikidata: "https://www.wikidata.org/wiki/Q9000717",
     },
     sources: [
       {
@@ -436,7 +436,7 @@ export const people: Person[] = [
     sameAs: {
       wikipedia: "https://en.wikipedia.org/wiki/Jensen_Huang",
       wikipediaZh: "https://zh.wikipedia.org/wiki/%E9%BB%83%E4%BB%81%E5%8B%B3",
-      wikidata: "https://www.wikidata.org/wiki/Q16999218",
+      wikidata: "https://www.wikidata.org/wiki/Q305177",
     },
     sources: [
       {

@@ -4,6 +4,7 @@ import { extendedCompanies } from "../src/data/extended-companies.ts";
 import { people as seedPeople } from "../src/data/people.ts";
 import { extendedPeople } from "../src/data/extended-people.ts";
 import type { WikiExtractRecord, WikiGloss } from "../src/data/wiki-extracts.ts";
+import { matchWikiRecord, type WikiSubject } from "../src/data/wiki-match.ts";
 
 const UA = "TechCoWikiBot/1.0 (https://techco.wiki; zhuhe1983@gmail.com)";
 
@@ -186,6 +187,32 @@ await mapPool(targets, 2, async (target) => {
   }
   process.stdout.write(".");
 });
+
+function subjectFor(key: string): WikiSubject | undefined {
+  const [kind, slug] = key.split(":") as ["company" | "person", string];
+  if (kind === "company") {
+    const company = companies.find((item) => item.slug === slug);
+    if (!company) return undefined;
+    return {
+      kind,
+      slug,
+      name: company.name,
+      aliases: company.aliases,
+      extraNames: company.legalName ? [company.legalName] : [],
+    };
+  }
+  const person = people.find((item) => item.slug === slug);
+  if (!person) return undefined;
+  return { kind, slug, name: person.name, aliases: person.aliases };
+}
+
+for (const key of Object.keys(records)) {
+  const subject = subjectFor(key);
+  if (!subject) continue;
+  const matched = matchWikiRecord(subject, records[key]);
+  if (matched) records[key] = matched;
+  else delete records[key];
+}
 
 const withEn = Object.values(records).filter((record) => record.en).length;
 const withZh = Object.values(records).filter((record) => record.zh).length;

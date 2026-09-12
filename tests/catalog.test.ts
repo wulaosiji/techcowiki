@@ -141,6 +141,40 @@ describe("catalog integrity", () => {
     );
   });
 
+  test("Wikipedia extracts must mention the entity and drop mismatched Wikidata glosses", () => {
+    const leaked = /chess player|punishment In Uzbekistan|scientific article published|BAS\/HVAC|American baseball player/i;
+    for (const company of allCompanies()) {
+      const body = company.sections.find((section) => section.id === "encyclopedia-context")?.body.en ?? "";
+      expect(body, company.slug).not.toMatch(leaked);
+      const wdClaim = company.claims?.find((claim) => claim.id === "wikidata-description")?.value.en ?? "";
+      expect(wdClaim, company.slug).not.toMatch(leaked);
+    }
+    for (const person of allPeople()) {
+      const body = person.sections?.find((section) => section.id === "encyclopedia-context")?.body.en ?? "";
+      expect(body, person.slug).not.toMatch(leaked);
+      if (body.includes("The article “")) {
+        const hay = body.toLowerCase();
+        const english = person.name.en.toLowerCase();
+        const mentioned =
+          hay.includes(english) ||
+          person.aliases.some((alias) => alias.length >= 3 && hay.includes(alias.toLowerCase()));
+        expect(mentioned, `${person.slug} extract does not mention the person`).toBe(true);
+      }
+    }
+    const jensen = getPerson("jensen-huang")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en;
+    expect(jensen).toMatch(/Nvidia/);
+    expect(jensen).not.toMatch(/Uzbekistan|punishment/i);
+    expect(getPerson("liang-rubo")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
+      /The article “ByteDance”/,
+    );
+    expect(getCompany("bytedance")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
+      /ByteDance/,
+    );
+    expect(getCompany("bytedance")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
+      /chess player/,
+    );
+  });
+
   test("every source has an https URL", () => {
     for (const entity of [...allCompanies(), ...allPeople()]) {
       for (const source of entity.sources) {

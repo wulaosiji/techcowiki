@@ -62,7 +62,7 @@ export const companies: Company[] = [
     sameAs: {
       wikipedia: "https://en.wikipedia.org/wiki/ByteDance",
       wikipediaZh: "https://zh.wikipedia.org/wiki/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8",
-      wikidata: "https://www.wikidata.org/wiki/Q28480833",
+      wikidata: "https://www.wikidata.org/wiki/Q55606242",
       official: "https://www.bytedance.com",
     },
     sections: [
@@ -222,7 +222,7 @@ export const companies: Company[] = [
     sameAs: {
       wikipedia: "https://en.wikipedia.org/wiki/Zoom_Communications",
       wikipediaZh: "https://zh.wikipedia.org/wiki/Zoom",
-      wikidata: "https://www.wikidata.org/wiki/Q42376455",
+      wikidata: "https://www.wikidata.org/wiki/Q17460900",
       official: "https://www.zoom.com",
     },
     sections: [
@@ -300,7 +300,7 @@ export const companies: Company[] = [
     sameAs: {
       wikipedia: "https://en.wikipedia.org/wiki/DoorDash",
       wikipediaZh: "https://zh.wikipedia.org/wiki/DoorDash",
-      wikidata: "https://www.wikidata.org/wiki/Q16989217",
+      wikidata: "https://www.wikidata.org/wiki/Q20714323",
       official: "https://www.doordash.com",
     },
     sections: [

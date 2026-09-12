@@ -37,10 +37,12 @@ import {
 } from "./geo-depth";
 import {
   applyWikiSameAs,
+  companyWikiSubject,
   confusionSection,
   encyclopediaClaims,
   encyclopediaSection,
   personConfusionSection,
+  personWikiSubject,
   uniqueCompanyFaqs,
   uniquePersonFaqs,
 } from "./geo-unique";
@@ -732,7 +734,7 @@ export function enrichCompany(
   const sections = mergeSections(withWiki.sections, [
     identitySection(withWiki, people, sources),
     keyFactsSection(withWiki, people, sources),
-    encyclopediaSection("company", withWiki.name, withWiki.slug, withWiki.definition, sources),
+    encyclopediaSection(companyWikiSubject(withWiki), withWiki.definition, sources),
     timelineSection(withWiki, sources),
     historySection(withWiki, people, sources),
     inclusionSection(withWiki, people, sources),
@@ -760,7 +762,7 @@ export function enrichCompany(
     sources,
     sections,
     faq,
-    claims: [...companyClaims(withWiki, people, sources), ...encyclopediaClaims("company", withWiki.slug, sources)],
+    claims: [...companyClaims(withWiki, people, sources), ...encyclopediaClaims(companyWikiSubject(withWiki), sources)],
   };
 }
 
@@ -1149,7 +1151,7 @@ export function enrichPerson(
   const generated = [
     personIdentity(withWiki, companies, sources),
     personKeyFactsSection(withWiki, companies, sources),
-    encyclopediaSection("person", withWiki.name, withWiki.slug, withWiki.definition, sources),
+    encyclopediaSection(personWikiSubject(withWiki), withWiki.definition, sources),
     personChronologySection(withWiki, companies, sources),
     personCareer(withWiki, companies, sources),
     personCompaniesSection(withWiki, companies, sources),
@@ -1170,7 +1172,7 @@ export function enrichPerson(
     sources,
     sections,
     faq,
-    claims: [...personClaims(withWiki, companies, sources), ...encyclopediaClaims("person", withWiki.slug, sources)],
+    claims: [...personClaims(withWiki, companies, sources), ...encyclopediaClaims(personWikiSubject(withWiki), sources)],
   };
 }
 
