@@ -44,6 +44,18 @@ npm run preview
 
 `dist/` 是静态站点，可直接放到 Cloudflare Pages、GitHub Pages 或任何静态主机。`public/_headers` 已写好 CORS 与 `rel=describedby`。
 
+## Cloudflare 开发 demo
+
+当前开发预览部署在 Cloudflare Pages：<https://techcowiki.pages.dev>
+
+本地已登录 Wrangler 后重新发布：
+
+```bash
+npm run deploy
+```
+
+这会构建 `dist/` 并直传到 Pages 项目 `techcowiki`。自定义域 `techco.wiki` 可在项目就绪后接到同一个 Pages 项目。
+
 ## 信息架构
 
 - `/companies/{slug}` 公司实体
