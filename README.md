@@ -37,32 +37,35 @@ Crunchbase 一类产品把事实放在登录墙后，模型很难稳定引用。
 
 ## 本地开发
 
+代理与贡献者先读根目录 [AGENTS.md](./AGENTS.md)（项目 Harness）。不要只跑 `npm test` 就宣布 UI / 内链 / 404 / 部署完成。
+
 ```bash
 npm install
-npm test
-npm run dev
+npm test                          # 第 1 层：函数与源码契约
+npm run build && npm run harness  # 第 2 层：dist/ HTML 合同
+npm run preview                   # http://127.0.0.1:4321
+npm run e2e                       # 第 3 层：浏览器点击（无 Chrome 则跳过）
 ```
 
-生产构建：
-
-```bash
-npm run build
-npm run preview
-```
-
-`dist/` 是静态站点，可直接放到 Cloudflare Pages、GitHub Pages 或任何静态主机。`public/_headers` 已写好 CORS 与 `rel=describedby`。
+`dist/` 是静态站点。`public/_headers` 写好 CORS 与 `rel=describedby`。中文缺失 URL 的 404 由 `public/_worker.js` 处理——Astro preview 不会执行它。
 
 ## Cloudflare 开发 demo
 
-当前开发预览部署在 Cloudflare Pages：<https://techcowiki.pages.dev>
+当前开发预览：<https://techcowiki.pages.dev>
 
-本地已登录 Wrangler 后重新发布：
+本地已登录 Wrangler 时：
 
 ```bash
 npm run deploy
 ```
 
-这会构建 `dist/` 并直传到 Pages 项目 `techcowiki`。自定义域 `techco.wiki` 可在项目就绪后接到同一个 Pages 项目。
+Wrangler 未登录时不要假设这条命令可用。生产是 Pages Direct Upload；步骤与「测过函数仍可能在线上失败」的原因写在 [AGENTS.md](./AGENTS.md)。部署后：
+
+```bash
+HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host
+```
+
+自定义域 `techco.wiki` 可在项目就绪后接到同一个 Pages 项目；在用户点名之前不要改 DNS。
 
 ## 信息架构
 
