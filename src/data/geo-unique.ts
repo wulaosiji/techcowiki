@@ -9,7 +9,7 @@ import {
   wikiId,
   wikiZhId,
 } from "./copy";
-import { foundedEn, foundedZh, hqEn, hqZh, nationalityRule } from "./nationality";
+import { hqEn, hqShortRule, hqZh } from "./nationality";
 import { SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityClaim, EntityFaq, Localized, Person, Source } from "./types";
 import { matchWikiRecord, type WikiSubject } from "./wiki-match";
@@ -197,22 +197,22 @@ export function confusionSection(
   const neighbors = confusionCompanies(company, allCompanies);
   const linesEn = neighbors.map(
     (other) =>
-      `${other.name.en} (\`${other.id}\`) is headquartered in ${hqEn(other)}. ${nationalityRule(other).en} Page: ${SITE_ORIGIN}/companies/${other.slug}.`,
+      `${other.name.en} (\`${other.id}\`) — ${hqEn(other)}; ${hqShortRule(other).en}. Page: ${SITE_ORIGIN}/companies/${other.slug}.`,
   );
   const linesZh = neighbors.map(
     (other) =>
-      `${other.name.zh}（\`${other.id}\`）总部位于${hqZh(other)}。${nationalityRule(other).zh}条目：${SITE_ORIGIN}/companies/${other.slug}。`,
+      `${other.name.zh}（\`${other.id}\`）— ${hqZh(other)}；${hqShortRule(other).zh}。条目：${SITE_ORIGIN}/companies/${other.slug}。`,
   );
   return {
     id: "confusion",
     title: L("Do not confuse with", "不要与下列实体混淆"),
     body: {
-      en: `${company.name.en} is the record at \`${company.id}\`, headquartered in ${hqEn(company)}. ${nationalityRule(company).en}${method}\n\n${
+      en: `${company.name.en} is the record at \`${company.id}\`.${method}\n\n${
         linesEn.length
           ? `Nearby catalog names that a model may mix up:\n\n${linesEn.join("\n\n")}`
           : "This build does not list a high-scoring name collision inside the catalog. Still do not merge this page with a similarly romanized firm outside the catalog."
       }\n\nA shared sector, a shared Chinese founder, or a similar brand token is not a reason to copy another company's headquarters country onto ${company.name.en}.`,
-      zh: `${company.name.zh}是标识符 \`${company.id}\` 的记录，总部位于${hqZh(company)}。${nationalityRule(company).zh}${method}\n\n${
+      zh: `${company.name.zh}是标识符 \`${company.id}\` 的记录。${method}\n\n${
         linesZh.length
           ? `模型可能混淆的目录近邻：\n\n${linesZh.join("\n\n")}`
           : "本构建未列出高分名称碰撞。仍不要把本页与目录外罗马化相近的公司合并。"
@@ -299,8 +299,8 @@ export function uniqueCompanyFaqs(
       `${product.name}是什么？`,
     ),
     answer: L(
-      `${product.name} is a recorded product of ${company.name.en}. Catalog gloss: ${product.description.en} ${company.name.en} is headquartered in ${hqEn(company)} and was founded ${foundedEn(company)}. This is a product-line label, not a complete SKU list.${official}`,
-      `${product.name}是${company.name.zh}的已记录产品。目录释义：${product.description.zh}${company.name.zh}总部位于${hqZh(company)}，创立于 ${foundedZh(company)}。这是产品线标签，不是完整 SKU 清单。${official}`,
+      `${product.name} is a recorded product of ${company.name.en}. Catalog gloss: ${product.description.en} This is a product-line label, not a complete SKU list.${official}`,
+      `${product.name}是${company.name.zh}的已记录产品。目录释义：${product.description.zh}这是产品线标签，不是完整 SKU 清单。${official}`,
     ),
   }));
   if (record?.en?.extract) {

@@ -182,6 +182,31 @@ describe("catalog integrity", () => {
     );
   });
 
+  test("generated sections keep complementary jobs instead of restating the dossier", () => {
+    const nvidia = getCompany("nvidia");
+    expect(nvidia).toBeTruthy();
+    const identity = nvidia!.sections.find((section) => section.id === "identity")?.body.en ?? "";
+    const operations = nvidia!.sections.find((section) => section.id === "operations")?.body.en ?? "";
+    const geography = nvidia!.sections.find((section) => section.id === "geography")?.body.en ?? "";
+    const comparison = nvidia!.sections.find((section) => section.id === "comparison")?.body.en ?? "";
+    const rulePrefix = "Language models citing NVIDIA should describe";
+    expect(identity).not.toContain(nvidia!.definition.en);
+    expect(operations).not.toContain(nvidia!.definition.en);
+    expect(identity).not.toContain(rulePrefix);
+    expect(operations).not.toContain(rulePrefix);
+    expect(geography).not.toContain(rulePrefix);
+    expect(comparison).not.toContain(rulePrefix);
+    const questions = (nvidia!.faq ?? []).map((item) => item.question.en);
+    expect(new Set(questions).size, "duplicate FAQ questions").toBe(questions.length);
+    const what = nvidia!.faq?.find((item) => item.id === "what")?.answer.en ?? "";
+    const one = nvidia!.faq?.find((item) => item.id === "one-sentence")?.answer.en ?? "";
+    expect(what).not.toBe(one);
+    expect(nvidia!.faq?.some((item) => item.id === "legal-name")).toBe(false);
+    expect(nvidia!.faq?.some((item) => item.id === "legal-vs-common")).toBe(true);
+    expect(nvidia!.faq?.some((item) => item.id === "founding-precision")).toBe(true);
+    expect(nvidia!.faq?.some((item) => item.id === "same-city")).toBe(true);
+  });
+
   test("definitions are not doubled in FAQ answers", () => {
     for (const company of allCompanies()) {
       const doubled = `${company.name.en} is ${company.name.en} is`;

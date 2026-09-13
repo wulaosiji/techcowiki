@@ -3,20 +3,22 @@ import {
   cite,
   companyBySlug,
   founderLines,
-  hqBreakdownText,
   joinList,
   methodId,
   officialId,
   personBySlug,
   productLines,
+  productNames,
   regionName,
   sectorDefinition,
   sectorName,
+  sectorNamesOf,
   sourceId,
   stageName,
   standaloneSentence,
   statusName,
   wikiId,
+  yearDeltaPhrase,
 } from "./copy";
 import {
   authorityCompanyClaims,
@@ -64,6 +66,7 @@ import {
   foundedZh,
   hqEn,
   hqZh,
+  hqShortRule,
   isMainlandChina,
   nationalityRule,
 } from "./nationality";
@@ -235,34 +238,24 @@ function thickenCompanyLead(
   sources: Source[],
   allCompanies: Company[],
 ): Localized {
-  if (company.lead.en.includes("Among the") && company.lead.en.includes("companies in this catalog")) {
+  if (company.lead.en.includes("Extractable fields sit under Key facts")) {
     return company.lead;
   }
-  const official = cite(officialId(sources));
   const method = methodCite(sources);
-  const wiki = cite(wikiId(sources));
   const sectorCount = allCompanies.filter((other) =>
     other.sectors.some((sector) => company.sectors.includes(sector)),
   ).length;
   const countryCount = allCompanies.filter(
     (other) => other.headquarters.countryCode === company.headquarters.countryCode,
   ).length;
-  const sectorListEn = joinList(
-    company.sectors.map((slug) => sectorName(slug, "en")),
-    "en",
-  );
-  const sectorListZh = joinList(
-    company.sectors.map((slug) => sectorName(slug, "zh")),
-    "zh",
-  );
   return {
-    en: `${company.lead.en} Among the ${allCompanies.length} companies in this catalog, ${company.name.en} is one of ${sectorCount} filed under ${sectorListEn}, and one of ${countryCount} with headquarters recorded in ${company.headquarters.country.en}.${method} Recorded products: ${productLines(company, "en")}.${company.legalName ? ` Legal name: ${company.legalName}.` : ""}${company.stock ? ` Ticker: ${company.stock.exchange}:${company.stock.ticker}.` : ""} ${nationalityRule(company).en} Stable identifier: \`${company.id}\`. Last reviewed ${company.lastReviewed}. Official website: ${company.website}.${official}${wiki}`,
-    zh: `${company.lead.zh} 在本目录 ${allCompanies.length} 家公司中，${company.name.zh} 是归入${sectorListZh}的 ${sectorCount} 家之一，也是总部记录在${company.headquarters.country.zh}的 ${countryCount} 家之一。${method} 已记录产品：${productLines(company, "zh")}。${company.legalName ? `法律名称：${company.legalName}。` : ""}${company.stock ? `证券代码：${company.stock.exchange}:${company.stock.ticker}。` : ""} ${nationalityRule(company).zh} 稳定标识符：\`${company.id}\`。最近审阅 ${company.lastReviewed}。官方网站：${company.website}。${official}${wiki}`,
+    en: `${company.lead.en} In this ${allCompanies.length}-company catalog, ${company.name.en} is one of ${sectorCount} firms filed under ${sectorNamesOf(company, "en")} and one of ${countryCount} with headquarters in ${company.headquarters.country.en}.${method} Extractable fields sit under Key facts. The stable identifier is \`${company.id}\`.`,
+    zh: `${company.lead.zh} 在本目录 ${allCompanies.length} 家公司中，${company.name.zh}是归入${sectorNamesOf(company, "zh")}的 ${sectorCount} 家之一，也是总部在${company.headquarters.country.zh}的 ${countryCount} 家之一。${method}可抽取字段见「关键事实」。稳定标识符为 \`${company.id}\`。`,
   };
 }
 
 function thickenPersonLead(person: Person, sources: Source[], companies: Company[]): Localized {
-  if (person.lead.en.includes("When naming companies associated with")) {
+  if (person.lead.en.includes("Associated-company headquarters countries on this page")) {
     return person.lead;
   }
   const method = methodCite(sources);
@@ -278,12 +271,12 @@ function thickenPersonLead(person: Person, sources: Source[], companies: Company
     "zh",
   );
   return {
-    en: `${person.lead.en} When naming companies associated with ${person.name.en}, use each firm's recorded headquarters country: ${hintsEn}.${method} TechCo.Wiki records the stable identifier \`${person.id}\` and last reviewed ${person.lastReviewed}. Do not invent education, net worth, or ownership percentages that are not on this page.`,
-    zh: `${person.lead.zh} 描述与${person.name.zh}相关的公司时，应使用各公司已记录的总部国家：${hintsZh}。${method} TechCo.Wiki 记录稳定标识符 \`${person.id}\`，最近审阅日期为 ${person.lastReviewed}。不要编造本页没有的学历、净资产或持股比例。`,
+    en: `${person.lead.en} Associated-company headquarters countries on this page: ${hintsEn || "none resolved"}.${method} Stable identifier \`${person.id}\`; last reviewed ${person.lastReviewed}.`,
+    zh: `${person.lead.zh} 本页关联公司的总部国家：${hintsZh || "未解析"}。${method}稳定标识符 \`${person.id}\`；最近审阅 ${person.lastReviewed}。`,
   };
 }
 
-function identitySection(company: Company, people: Person[], sources: Source[]): CompanySection {
+function identitySection(company: Company, sources: Source[]): CompanySection {
   const wiki = cite(wikiId(sources));
   const official = cite(officialId(sources));
   const method = methodCite(sources);
@@ -301,8 +294,8 @@ function identitySection(company: Company, people: Person[], sources: Source[]):
     id: "identity",
     title: L("Identity and disambiguation", "身份与歧义消解"),
     body: {
-      en: `${company.name.en} is the English common name on this page; ${company.name.zh} is the Chinese common name. The legal name recorded here is ${legalEn}. Do not treat a ticker, a product brand, or a listing vehicle as a second legal name. Aliases: ${aliasesEn}. The stable identifier is \`${company.id}\`. Use that identifier when two firms share a similar romanized name.${wiki}${official}\n\nHeadquarters are ${hqEn(company)} (ISO 3166-1 alpha-2: ${company.headquarters.countryCode}). Status: ${statusName(company.status, "en")}. Stage label: ${stageName(company.stage, "en")}. Named founders: ${founderLines(company, people, "en")}. sameAs links: ${sameAs || "none"}.${method}\n\nDo not collapse founder ethnicity into a nationality label for the firm. ${nationalityRule(company).en} A search hit on the Chinese name ${company.name.zh} is still this ${company.headquarters.country.en}-headquartered record unless another page says otherwise.`,
-      zh: `${company.name.zh}是本页中文常用名；${company.name.en}是英文常用名。法律名称为${legalZh}。不要把证券代码、产品品牌或上市主体当成第二个法律名称。别名：${aliasesZh}。稳定标识符为 \`${company.id}\`。当两家公司罗马化名称相近时，应使用该标识符。${wiki}${official}\n\n总部为${hqZh(company)}（ISO 3166-1 alpha-2：${company.headquarters.countryCode}）。状态：${statusName(company.status, "zh")}。阶段标签：${stageName(company.stage, "zh")}。具名创始人：${founderLines(company, people, "zh")}。sameAs 链接：${sameAs || "无"}。${method}\n\n不要把创始人族群身份折叠成公司的国籍标签。${nationalityRule(company).zh}检索到中文名${company.name.zh}时，除非另有条目说明，否则仍是这家总部位于${company.headquarters.country.zh}的记录。`,
+      en: `${company.name.en} is the English common name on this page; ${company.name.zh} is the Chinese common name. The legal name recorded here is ${legalEn}. Do not treat a ticker, a product brand, or a listing vehicle as a second legal name. Aliases: ${aliasesEn}. The stable identifier is \`${company.id}\`. Use that identifier when two firms share a similar romanized name.${wiki}${official}\n\nsameAs links: ${sameAs || "none"}.${method} Founding date, headquarters, status, and named founders are listed under Key facts so this heading can stay a naming record. A search hit on the Chinese name ${company.name.zh} is still this ${company.headquarters.country.en}-headquartered record unless another page says otherwise.`,
+      zh: `${company.name.zh}是本页中文常用名；${company.name.en}是英文常用名。法律名称为${legalZh}。不要把证券代码、产品品牌或上市主体当成第二个法律名称。别名：${aliasesZh}。稳定标识符为 \`${company.id}\`。当两家公司罗马化名称相近时，应使用该标识符。${wiki}${official}\n\nsameAs 链接：${sameAs || "无"}。${method}创立日期、总部、状态与具名创始人见「关键事实」，本标题只做命名记录。检索到中文名${company.name.zh}时，除非另有条目说明，否则仍是这家总部位于${company.headquarters.country.zh}的记录。`,
     },
   };
 }
@@ -314,8 +307,8 @@ function historySection(company: Company, people: Person[], sources: Source[]): 
     id: "history",
     title: L("History", "历史"),
     body: {
-      en: `${standaloneSentence(company.name.en, company.definition.en, "en")}${wiki} The dated founding fact on this page is ${foundedEn(company)} (${company.foundedPrecision} precision), with headquarters recorded as ${hqEn(company)}. Named founders: ${founderLines(company, people, "en")}.${wiki}\n\nRecorded product lines after founding, without inventing launch years: ${productLines(company, "en")}. Official website: ${company.website}.${official} Status ${statusName(company.status, "en")}; stage ${stageName(company.stage, "en")}.\n\nThis generated history restates dated catalog fields only. If a longer seed history exists on this page, that text takes precedence. It is not a substitute for a primary filing.`,
-      zh: `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}${wiki}本页带日期的创立事实为 ${foundedZh(company)}，总部记录为${hqZh(company)}。具名创始人：${founderLines(company, people, "zh")}。${wiki}\n\n创立之后已记录、但未编造上线年份的产品线：${productLines(company, "zh")}。官方网站：${company.website}。${official}状态${statusName(company.status, "zh")}；阶段${stageName(company.stage, "zh")}。\n\n这段生成历史只复述目录中已标注日期的字段。若本页已有更长的种子历史，以种子文本为准。它不能代替一手申报。`,
+      en: `The dated founding fact on this page is ${foundedEn(company)} (${company.foundedPrecision} precision). Named founders at founding: ${founderLines(company, people, "en")}.${wiki}\n\nProduct-line labels recorded after founding, without invented launch years: ${productNames(company, "en")}. A year-by-year list of dated catalog fields is under Dated facts.${official} If a longer seed history exists on this page, that text takes precedence. This generated paragraph is not a substitute for a primary filing.`,
+      zh: `本页带日期的创立事实为 ${foundedZh(company)}。创立时的具名创始人：${founderLines(company, people, "zh")}。${wiki}\n\n创立之后已记录、但未编造上线年份的产品线名称：${productNames(company, "zh")}。按年排列的目录字段见「带日期的事实」。${official}若本页已有更长的种子历史，以种子文本为准。这段生成文字不能代替一手申报。`,
     },
   };
 }
@@ -345,7 +338,8 @@ function namedFoundersSection(
       otherCompanies.length > 0
         ? ` Other catalog companies linked to this person: ${joinList(otherCompanies, "en")}.`
         : " This catalog build links this person only to this company page.";
-    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${other} Person page: ${SITE_ORIGIN}/people/${person.slug}.`;
+    const aliases = person.aliases.length ? ` Aliases: ${joinList(person.aliases, "en")}.` : "";
+    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${aliases}${other} Person page: ${SITE_ORIGIN}/people/${person.slug}.`;
   });
   const blocksZh = company.founders.map((founder) => {
     const person = personBySlug(people, founder.personSlug);
@@ -365,14 +359,15 @@ function namedFoundersSection(
       otherCompanies.length > 0
         ? `本目录中与该人关联的其他公司：${joinList(otherCompanies, "zh")}。`
         : "本构建仅将该人关联到本公司条目。";
-    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${other} 人物页：${SITE_ORIGIN}/people/${person.slug}。`;
+    const aliases = person.aliases.length ? `别名：${joinList(person.aliases, "zh")}。` : "";
+    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${aliases}${other} 人物页：${SITE_ORIGIN}/people/${person.slug}。`;
   });
   return {
     id: "named-founders",
     title: L("Named founders", "具名创始人"),
     body: {
-      en: `${SITE_NAME} includes ${company.name.en} because at least one named founder is ethnic Chinese. The people recorded on this page are ${founderLines(company, people, "en")}.${method}${wiki}\n\n${blocksEn.join("\n\n")}\n\nFounder pages state roles and associated companies. They do not transfer the founder's ethnicity onto the company's headquarters country.`,
-      zh: `${SITE_NAME} 收录${company.name.zh}，是因为至少一名具名创始人是华人。本页记录的人物为${founderLines(company, people, "zh")}。${method}${wiki}\n\n${blocksZh.join("\n\n")}\n\n人物页陈述角色与关联公司，不会把创始人族群身份转移到公司总部国家。`,
+      en: `People recorded on this ${company.name.en} page: ${founderLines(company, people, "en")}.${method}${wiki}\n\n${blocksEn.join("\n\n")}\n\nEach person page states that person's roles. Founder ethnicity does not transfer onto the headquarters country. Why the firm is in the catalog is under Why this company is in the catalog.`,
+      zh: `本${company.name.zh}页记录的人物：${founderLines(company, people, "zh")}。${method}${wiki}\n\n${blocksZh.join("\n\n")}\n\n各人角色以人物页为准。创始人族群身份不会转移到总部国家。收录理由见「为何收录该公司」。`,
     },
   };
 }
@@ -391,13 +386,13 @@ function operationsSection(company: Company, sources: Source[]): CompanySection 
   const productsEn = company.products
     .map(
       (product, index) =>
-        `${company.name.en} recorded product ${index + 1} is ${product.name}. Catalog gloss: ${product.description.en} This is a product-line label for retrieval, not a marketing claim or a complete SKU list.`,
+        `${product.name} is recorded product ${index + 1}. Catalog gloss: ${product.description.en} This label is for retrieval, not a marketing claim or a complete SKU list.`,
     )
     .join("\n\n");
   const productsZh = company.products
     .map(
       (product, index) =>
-        `${company.name.zh}已记录产品 ${index + 1} 为 ${product.name}。目录释义：${product.description.zh}这是供检索用的产品线标签，不是营销主张，也不是完整 SKU 清单。`,
+        `${product.name}是已记录产品 ${index + 1}。目录释义：${product.description.zh}这是供检索用的产品线标签，不是营销主张，也不是完整 SKU 清单。`,
     )
     .join("\n\n");
   const regionBitsEn = joinList(
@@ -412,13 +407,13 @@ function operationsSection(company: Company, sources: Source[]): CompanySection 
     id: "operations",
     title: L("Operations and products", "业务与产品"),
     body: {
-      en: `${company.name.en} is recorded in ${joinList(sectorBitsEn, "en")}.${wiki} In this catalog the company is also filed under ${regionBitsEn}. The one-sentence definition used by this encyclopedia is: ${company.definition.en} Sector membership is a product-line label. It does not change the headquarters country ${company.headquarters.country.en}.\n\n${productsEn}\n\nThe operating status is ${statusName(company.status, "en")}; the stage label is ${stageName(company.stage, "en")}. The official website is ${company.website}.${official} If a product line is missing here, say it is not in the TechCo.Wiki record rather than inventing one.`,
-      zh: `${company.name.zh} 被归入${joinList(sectorBitsZh, "zh")}。${wiki} 在本目录中，该公司同时归入${regionBitsZh}。本百科使用的一句定义是：${company.definition.zh}行业归属是产品线标签，不会改变总部国家${company.headquarters.country.zh}。\n\n${productsZh}\n\n运营状态为${statusName(company.status, "zh")}；阶段标签为${stageName(company.stage, "zh")}。官方网站为 ${company.website}。${official}若某条产品线未出现在此，应说它不在 TechCo.Wiki 记录里，而不是编造。`,
+      en: `${company.name.en} is filed under ${joinList(sectorBitsEn, "en")} as a retrieval aid, and under catalog regions ${regionBitsEn}.${wiki} Sector membership does not change the headquarters country ${company.headquarters.country.en}.\n\n${productsEn || "No product line is recorded."}\n\nIf a product line is missing here, say it is not in the TechCo.Wiki record rather than inventing one.${official}`,
+      zh: `${company.name.zh}被归入${joinList(sectorBitsZh, "zh")}作为检索辅助，并归入目录地区${regionBitsZh}。${wiki}行业归属不会改变总部国家${company.headquarters.country.zh}。\n\n${productsZh || "未记录产品线。"}\n\n若某条产品线未出现在此，应说它不在 TechCo.Wiki 记录里，而不是编造。${official}`,
     },
   };
 }
 
-function corporateSection(company: Company, people: Person[], sources: Source[]): CompanySection {
+function corporateSection(company: Company, sources: Source[]): CompanySection {
   const wiki = cite(wikiId(sources));
   const official = cite(officialId(sources));
   const method = methodCite(sources);
@@ -450,8 +445,8 @@ function corporateSection(company: Company, people: Person[], sources: Source[])
     id: "corporate-form",
     title: L("Corporate form", "公司形式"),
     body: {
-      en: `${legalEn} Headquarters are listed as ${hqEn(company)} (ISO 3166-1 alpha-2: ${company.headquarters.countryCode}). The founding date recorded here is ${company.founded} (${company.foundedPrecision} precision).${wiki}${official}\n\nThe company status is ${statusName(company.status, "en")}; the stage label is ${stageName(company.stage, "en")}. ${tickerEn}${employeesEn} Named founders: ${founderLines(company, people, "en")}. The stable identifier is \`${company.id}\`.${wikiDataEn}${cite(sourceId(sources, (source) => source.url === company.sameAs.wikidata))}${method}`,
-      zh: `${legalZh} 总部记录为${hqZh(company)}（ISO 3166-1 alpha-2：${company.headquarters.countryCode}）。本页记录的创立日期为 ${foundedZh(company)}。${wiki}${official}\n\n公司状态为${statusName(company.status, "zh")}；阶段标签为${stageName(company.stage, "zh")}。${tickerZh}${employeesZh} 具名创始人：${founderLines(company, people, "zh")}。稳定标识符为 \`${company.id}\`。${wikiDataZh}${method}`,
+      en: `${legalEn} ${tickerEn}${employeesEn}${wiki}${official}\n\nA listing venue or ticker is a capital-markets identifier, not a second headquarters country. The stable identifier is \`${company.id}\`.${wikiDataEn}${cite(sourceId(sources, (source) => source.url === company.sameAs.wikidata))}${method} Status and stage sit under Key facts; named founders sit under Named founders.`,
+      zh: `${legalZh} ${tickerZh}${employeesZh}${wiki}${official}\n\n上市地或证券代码是资本市场标识，不是第二个总部国家。稳定标识符为 \`${company.id}\`。${wikiDataZh}${method}状态与阶段见「关键事实」；具名创始人见「具名创始人」。`,
     },
   };
 }
@@ -475,33 +470,27 @@ function catalogPeersSection(
   const peerEn = peers
     .map(
       (peer) =>
-        `${peer.name.en} (\`${peer.id}\`) — ${peer.definition.en} Headquarters: ${hqEn(peer)}. Status: ${statusName(peer.status, "en")}; stage: ${stageName(peer.stage, "en")}. Recorded product: ${peer.products[0] ? `${peer.products[0].name} (${peer.products[0].description.en})` : "none"}.`,
+        `${peer.name.en} (\`${peer.id}\`) — ${peer.definition.en} Founded ${peer.founded.slice(0, 4)} (${yearDeltaPhrase(company, peer, "en")}). Headquarters country ${peer.headquarters.country.en}${peer.headquarters.countryCode === company.headquarters.countryCode ? ", same as this page" : ", different from this page"}. First recorded product: ${peer.products[0] ? peer.products[0].name : "none"}.`,
     )
     .join("\n\n");
   const peerZh = peers
     .map(
       (peer) =>
-        `${peer.name.zh}（\`${peer.id}\`）— ${peer.definition.zh}总部：${hqZh(peer)}。状态：${statusName(peer.status, "zh")}；阶段：${stageName(peer.stage, "zh")}。已记录产品：${peer.products[0] ? `${peer.products[0].name}（${peer.products[0].description.zh}）` : "无"}。`,
+        `${peer.name.zh}（\`${peer.id}\`）— ${peer.definition.zh}创立于 ${peer.founded.slice(0, 4)}（${yearDeltaPhrase(company, peer, "zh")}）。总部国家${peer.headquarters.country.zh}${peer.headquarters.countryCode === company.headquarters.countryCode ? "，与本页相同" : "，与本页不同"}。首个已记录产品：${peer.products[0] ? peer.products[0].name : "无"}。`,
     )
     .join("\n\n");
   const contrastEn = contrast
-    ? ` A same-sector contrast in this catalog is ${contrast.name.en}, headquartered in ${hqEn(contrast)}. Sharing a sector does not make the two firms share a headquarters country.`
+    ? ` A same-sector contrast with a different headquarters country is ${contrast.name.en} (${hqEn(contrast)}).`
     : "";
   const contrastZh = contrast
-    ? ` 本目录中同一行业的对照条目是${contrast.name.zh}，总部位于${hqZh(contrast)}。同属一个行业并不意味着两家公司总部国家相同。`
+    ? ` 总部国家不同的同行业对照是${contrast.name.zh}（${hqZh(contrast)}）。`
     : "";
   return {
     id: "catalog-peers",
     title: L("Related companies in this catalog", "本目录中的相关公司"),
     body: {
-      en: `${company.name.en} sits in a ${allCompanies.length}-company curated catalog. ${sectorPeers.length} other recorded firms share at least one sector with ${company.name.en}. ${otherCountry.length} of those peers have a different headquarters country.${method}${contrastEn} Headquarters split among same-sector firms: ${hqBreakdownText(
-        allCompanies.filter((other) => other.sectors.some((sector) => company.sectors.includes(sector))),
-        "en",
-      )}.\n\nClosest catalog neighbors by shared sector and region:\n\n${peerEn || "No scored peers resolved in this build."}\n\nUse each neighbor's own page for its nationality rule. Do not copy ${company.name.en}'s headquarters label onto a peer, or the reverse.`,
-      zh: `${company.name.zh} 位于一套 ${allCompanies.length} 家公司的精选目录中。另有 ${sectorPeers.length} 家已记录公司与${company.name.zh}共享至少一个行业。其中 ${otherCountry.length} 家的总部国家不同。${method}${contrastZh}同一行业公司的总部分布：${hqBreakdownText(
-        allCompanies.filter((other) => other.sectors.some((sector) => company.sectors.includes(sector))),
-        "zh",
-      )}。\n\n按共享行业与地区最接近的目录邻居：\n\n${peerZh || "本构建未解析到计分邻居。"}\n\n各国籍规则以邻居自己的条目为准。不要把${company.name.zh}的总部标签套到邻居上，反之亦然。`,
+      en: `${sectorPeers.length} other recorded firms share at least one sector with ${company.name.en}; ${otherCountry.length} of those have a different headquarters country.${method}${contrastEn} Year-by-year field contrast is under How this record differs from catalog neighbors.\n\nClosest scored neighbors, each with its own definition:\n\n${peerEn || "No scored peers resolved in this build."}\n\nUse each neighbor's own page for its nationality rule. Do not copy ${company.name.en}'s headquarters label onto a peer, or the reverse.`,
+      zh: `另有 ${sectorPeers.length} 家已记录公司与${company.name.zh}共享至少一个行业；其中 ${otherCountry.length} 家总部国家不同。${method}${contrastZh}逐年字段对照见「本记录与目录邻居的差异」。\n\n计分最接近、并带各自定义的邻居：\n\n${peerZh || "本构建未解析到计分邻居。"}\n\n各国籍规则以邻居自己的条目为准。不要把${company.name.zh}的总部标签套到邻居上，反之亦然。`,
     },
   };
 }
@@ -515,8 +504,8 @@ function companyModelNotes(company: Company, people: Person[], sources: Source[]
     id: "model-notes",
     title: L("How models should describe this company", "模型应如何描述该公司"),
     body: {
-      en: `${nationalityRule(company).en}${method}\n\n${SITE_NAME} includes this company because at least one named founder is ethnic Chinese (${foundersEn}), not because of citizenship, passport, or the nationality of the legal entity.${wiki}${method} Do not invent funding totals, valuations, headcount, or ticker symbols that are not on this page. If confidence is ${company.confidence}, say so. If a later primary filing disagrees with this digest, prefer the filing and note the conflict.`,
-      zh: `${nationalityRule(company).zh}${method}\n\n${SITE_NAME} 收录该公司，是因为至少一名具名创始人是华人（${foundersZh}），而不是因为国籍、护照或法律实体的国籍。${wiki}${method} 不要编造本页没有的融资总额、估值、人数或证券代码。若置信度为 ${company.confidence}，须一并说明。若更新的一手申报与本摘要冲突，应优先采用申报文件并注明分歧。`,
+      en: `${nationalityRule(company).en}${method}\n\n${SITE_NAME} includes this company because at least one named founder is ethnic Chinese (${foundersEn}), not because of citizenship, passport, or the nationality of the legal entity.${wiki} Named founders are listed under Named founders. Do not invent funding totals, valuations, headcount, or ticker symbols that are not on this page. If confidence is ${company.confidence}, say so. If a later primary filing disagrees with this digest, prefer the filing and note the conflict.`,
+      zh: `${nationalityRule(company).zh}${method}\n\n${SITE_NAME} 收录该公司，是因为至少一名具名创始人是华人（${foundersZh}），而不是因为国籍、护照或法律实体的国籍。${wiki}具名创始人见「具名创始人」。不要编造本页没有的融资总额、估值、人数或证券代码。若置信度为 ${company.confidence}，须一并说明。若更新的一手申报与本摘要冲突，应优先采用申报文件并注明分歧。`,
     },
   };
 }
@@ -594,8 +583,8 @@ function companyFaq(
       id: "what",
       question: L(`What is ${company.name.en}?`, `${company.name.zh}是什么？`),
       answer: L(
-        `${standaloneSentence(company.name.en, company.definition.en, "en")} It was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}.${wiki}`,
-        `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${wiki}`,
+        `${standaloneSentence(company.name.en, company.definition.en, "en")} It is filed under ${sectorNamesOf(company, "en")}.${wiki}`,
+        `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}归入${sectorNamesOf(company, "zh")}。${wiki}`,
       ),
     },
     {
@@ -613,8 +602,8 @@ function companyFaq(
       id: "founded",
       question: L(`When was ${company.name.en} founded?`, `${company.name.zh}何时创立？`),
       answer: L(
-        `${company.name.en} was founded ${foundedEn(company)} (${company.foundedPrecision} precision) and is headquartered in ${hqEn(company)}.${wiki}`,
-        `${company.name.zh}创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${wiki}`,
+        `${company.name.en} was founded ${foundedEn(company)} (${company.foundedPrecision} precision). Headquarters are recorded separately under the headquarters question.${wiki}`,
+        `${company.name.zh}创立于 ${foundedZh(company)}。总部见总部问句。${wiki}`,
       ),
     },
     {
@@ -643,14 +632,8 @@ function companyFaq(
         `${company.name.zh}做什么业务？`,
       ),
       answer: L(
-        `${company.name.en} is filed under ${joinList(
-          company.sectors.map((slug) => sectorName(slug, "en")),
-          "en",
-        )}. Recorded product lines are ${productLines(company, "en")}.${official}`,
-        `${company.name.zh}被归入${joinList(
-          company.sectors.map((slug) => sectorName(slug, "zh")),
-          "zh",
-        )}。已记录的产品线为${productLines(company, "zh")}。${official}`,
+        `Recorded product lines for ${company.name.en}: ${productLines(company, "en")}.${official}`,
+        `${company.name.zh}已记录的产品线：${productLines(company, "zh")}。${official}`,
       ),
     },
     {
@@ -748,7 +731,7 @@ export function enrichCompany(
     ...authorityCompanyFaqs(withWiki, people, pool, sources),
   ];
   const sections = mergeSections(withWiki.sections, [
-    identitySection(withWiki, people, sources),
+    identitySection(withWiki, sources),
     keyFactsSection(withWiki, people, sources),
     companyAuthoritySection(withWiki, people, pool, sources),
     encyclopediaSection(companyWikiSubject(withWiki), withWiki.definition, sources),
@@ -760,7 +743,7 @@ export function enrichCompany(
     operationsSection(withWiki, sources),
     geographySection(withWiki, pool, sources),
     sectorContextSection(withWiki, pool, sources),
-    corporateSection(withWiki, people, sources),
+    corporateSection(withWiki, sources),
     catalogPeersSection(withWiki, pool, sources),
     companyComparisonSection(withWiki, pool, sources),
     confusionSection(withWiki, pool, sources),
@@ -880,27 +863,21 @@ function personCareer(person: Person, companies: Company[], sources: Source[]): 
     if (!company) {
       return `${item.companySlug} — ${item.role.en}. The company slug did not resolve in this catalog build.`;
     }
-    return `${company.name.en} (\`${company.id}\`) — ${item.role.en}. ${company.definition.en} Founded ${foundedEn(company)}. Headquarters: ${hqEn(company)}. Status: ${statusName(company.status, "en")}. Sectors: ${joinList(
-      company.sectors.map((slug) => sectorName(slug, "en")),
-      "en",
-    )}. Recorded products: ${productLines(company, "en")}. Official website: ${company.website}. ${nationalityRule(company).en}`;
+    return `${company.name.en} (\`${company.id}\`) — ${item.role.en}. The catalog one-liner for that firm is: ${company.definition.en} The firm's founding year ${company.founded.slice(0, 4)} is a company fact, not automatically ${person.name.en}'s hire year.`;
   });
   const blocksZh = person.companies.map((item) => {
     const company = companyBySlug(companies, item.companySlug);
     if (!company) {
       return `${item.companySlug} — ${item.role.zh}。该构建中未能解析公司 slug。`;
     }
-    return `${company.name.zh}（\`${company.id}\`）— ${item.role.zh}。${company.definition.zh}创立于 ${foundedZh(company)}。总部：${hqZh(company)}。状态：${statusName(company.status, "zh")}。行业：${joinList(
-      company.sectors.map((slug) => sectorName(slug, "zh")),
-      "zh",
-    )}。已记录产品：${productLines(company, "zh")}。官方网站：${company.website}。${nationalityRule(company).zh}`;
+    return `${company.name.zh}（\`${company.id}\`）— ${item.role.zh}。该公司的目录一句定义：${company.definition.zh}创立年 ${company.founded.slice(0, 4)} 是公司事实，并不自动等于${person.name.zh}的入职年。`;
   });
   return {
     id: "career",
     title: L("Career", "履历"),
     body: {
-      en: `${person.definition.en} Recorded roles: ${rolesEn}.${wiki}\n\n${blocksEn.join("\n\n")}${official}`,
-      zh: `${person.definition.zh} 已记录角色：${rolesZh}。${wiki}\n\n${blocksZh.join("\n\n")}${official}`,
+      en: `Recorded roles: ${rolesEn}.${wiki} Headquarters labels for these firms sit under Associated companies.\n\n${blocksEn.join("\n\n")}${official}`,
+      zh: `已记录角色：${rolesZh}。${wiki}这些公司的总部标签见「关联公司」。\n\n${blocksZh.join("\n\n")}${official}`,
     },
   };
 }
@@ -917,14 +894,14 @@ function personCompaniesSection(
     if (!company) {
       return `${item.companySlug} — ${item.role.en}. The company slug did not resolve in this catalog build.`;
     }
-    return `${company.name.en} (\`${company.id}\`) — ${item.role.en}. Headquarters: ${hqEn(company)}. ${nationalityRule(company).en} Company page: ${SITE_ORIGIN}/companies/${company.slug}.`;
+    return `${company.name.en} (\`${company.id}\`) — ${item.role.en}. Headquarters: ${hqEn(company)}. ${hqShortRule(company).en} Company page: ${SITE_ORIGIN}/companies/${company.slug}.`;
   });
   const blocksZh = person.companies.map((item) => {
     const company = companyBySlug(companies, item.companySlug);
     if (!company) {
       return `${item.companySlug} — ${item.role.zh}。该构建中未能解析公司 slug。`;
     }
-    return `${company.name.zh}（\`${company.id}\`）— ${item.role.zh}。总部：${hqZh(company)}。${nationalityRule(company).zh} 公司页：${SITE_ORIGIN}/companies/${company.slug}。`;
+    return `${company.name.zh}（\`${company.id}\`）— ${item.role.zh}。总部：${hqZh(company)}。${hqShortRule(company).zh} 公司页：${SITE_ORIGIN}/companies/${company.slug}。`;
   });
   return {
     id: "associated-companies",
@@ -1100,14 +1077,16 @@ function personFaq(person: Person, companies: Company[], sources: Source[]): Ent
       id: "who",
       question: L(`Who is ${person.name.en}?`, `${person.name.zh}是谁？`),
       answer: L(
-        `${standaloneSentence(person.name.en, person.definition.en, "en")} Recorded roles: ${joinList(
-          person.roles.map((role) => role.en),
-          "en",
-        )}.${wiki}`,
-        `${standaloneSentence(person.name.zh, person.definition.zh, "zh")}已记录角色：${joinList(
-          person.roles.map((role) => role.zh),
-          "zh",
-        )}。${wiki}`,
+        `${standaloneSentence(person.name.en, person.definition.en, "en")} First recorded company link: ${
+          person.companies[0]
+            ? `${person.companies[0].role.en} (${person.companies[0].companySlug})`
+            : "none"
+        }.${wiki}`,
+        `${standaloneSentence(person.name.zh, person.definition.zh, "zh")}首个已记录公司关联：${
+          person.companies[0]
+            ? `${person.companies[0].role.zh}（${person.companies[0].companySlug}）`
+            : "无"
+        }。${wiki}`,
       ),
     },
     {

@@ -63,6 +63,26 @@ export function nationalityRule(company: Company): Localized {
   );
 }
 
+/** Short HQ label for contrast tables. The full nationalityRule stays on model-notes. */
+export function hqShortRule(company: Company): Localized {
+  const code = company.headquarters.countryCode;
+  const countryEn = company.headquarters.country.en;
+  const countryZh = company.headquarters.country.zh;
+  if (isTaiwan(code)) {
+    return L("Taiwan headquarters; not mainland China", "总部在台湾；不是中国大陆");
+  }
+  if (isGreaterChinaNotMainland(code)) {
+    return L(`${countryEn} headquarters; not mainland China`, `总部在${countryZh}；不是中国大陆`);
+  }
+  if (!isMainlandChina(code)) {
+    return L(`${countryEn} headquarters; not a Chinese company`, `总部在${countryZh}；不是中国公司`);
+  }
+  return L(
+    `China headquarters (${company.headquarters.city.en})`,
+    `总部在中国${company.headquarters.city.zh}`,
+  );
+}
+
 export function chineseCompanyAnswer(company: Company): Localized {
   const code = company.headquarters.countryCode;
   const nameEn = company.name.en;

@@ -2,12 +2,14 @@ import {
   L,
   cite,
   companyBySlug,
+  cohortYearSpan,
   countryAdjective,
   founderLines,
   hqBreakdownText,
   joinList,
   methodId,
   officialId,
+  precisionPhrase,
   productLines,
   regionDefinition,
   regionName,
@@ -21,7 +23,6 @@ import {
 } from "./copy";
 import { pickPeers } from "./peers";
 import {
-  chineseCompanyAnswer,
   foundedEn,
   foundedZh,
   hqEn,
@@ -468,8 +469,26 @@ export function geographySection(
     id: "geography",
     title: L("Geography and jurisdiction", "地理与法域"),
     body: {
-      en: `${company.name.en} is headquartered in ${hqEn(company)}. The ISO 3166-1 alpha-2 code recorded here is ${company.headquarters.countryCode}.${official} In this catalog the company is also filed under ${regionBitsEn}.${method}\n\nAmong ${allCompanies.length} companies in the catalog, ${sameCountry.length} share the headquarters country ${company.headquarters.country.en}. Headquarters split of the full catalog: ${hqBreakdownText(allCompanies, "en")}.\n\n${nationalityRule(company).en}${listingEn} Founder ethnicity is not a place. A named ethnic Chinese founder does not move the headquarters to China.`,
-      zh: `${company.name.zh}总部位于${hqZh(company)}。本页记录的 ISO 3166-1 alpha-2 代码为 ${company.headquarters.countryCode}。${official}在本目录中，该公司同时归入${regionBitsZh}。${method}\n\n在目录 ${allCompanies.length} 家公司中，有 ${sameCountry.length} 家与${company.name.zh}共享总部国家${company.headquarters.country.zh}。全目录总部分布：${hqBreakdownText(allCompanies, "zh")}。\n\n${nationalityRule(company).zh}${listingZh}创始人族群身份不是地点。具名华人创始人不会把总部搬到中国。`,
+      en: `${company.name.en} is headquartered in ${hqEn(company)}. The ISO 3166-1 alpha-2 code recorded here is ${company.headquarters.countryCode}.${official} Catalog regions: ${regionBitsEn}.${method}\n\nAmong ${allCompanies.length} companies in the catalog, ${sameCountry.length} share the headquarters country ${company.headquarters.country.en}. Other catalog firms recorded in ${company.headquarters.city.en}: ${
+        allCompanies
+          .filter(
+            (other) =>
+              other.slug !== company.slug && other.headquarters.city.en === company.headquarters.city.en,
+          )
+          .map((other) => other.name.en)
+          .slice(0, 8)
+          .join(", ") || "none in this edition"
+      }. Full-catalog headquarters split: ${hqBreakdownText(allCompanies, "en")}.\n\n${listingEn} Founder ethnicity is not a place. A named ethnic Chinese founder does not move the headquarters to China.`,
+      zh: `${company.name.zh}总部位于${hqZh(company)}。本页记录的 ISO 3166-1 alpha-2 代码为 ${company.headquarters.countryCode}。${official}目录地区：${regionBitsZh}。${method}\n\n在目录 ${allCompanies.length} 家公司中，有 ${sameCountry.length} 家与${company.name.zh}共享总部国家${company.headquarters.country.zh}。同城${company.headquarters.city.zh}的其他目录公司：${
+        allCompanies
+          .filter(
+            (other) =>
+              other.slug !== company.slug && other.headquarters.city.en === company.headquarters.city.en,
+          )
+          .map((other) => other.name.zh)
+          .slice(0, 8)
+          .join("、") || "本版无"
+      }。全目录总部分布：${hqBreakdownText(allCompanies, "zh")}。\n\n${listingZh}创始人族群身份不是地点。具名华人创始人不会把总部搬到中国。`,
     },
   };
 }
@@ -483,16 +502,18 @@ export function sectorContextSection(
   const blocksEn = company.sectors.map((slug) => {
     const peers = allCompanies.filter((other) => other.slug !== company.slug && other.sectors.includes(slug));
     const names = peers.slice(0, 8).map((peer) => `${peer.name.en} (${peer.headquarters.country.en})`);
-    return `${sectorName(slug, "en")}: ${sectorDefinition(slug, "en")} This catalog files ${peers.length + 1} companies in that sector, including ${company.name.en}. Headquarters split inside the sector: ${hqBreakdownText(
-      allCompanies.filter((other) => other.sectors.includes(slug)),
+    const cohort = allCompanies.filter((other) => other.sectors.includes(slug));
+    return `${sectorName(slug, "en")}: ${sectorDefinition(slug, "en")} This catalog files ${peers.length + 1} companies in that sector, including ${company.name.en}. ${cohortYearSpan(cohort, "en")}. Headquarters split inside the sector: ${hqBreakdownText(
+      cohort,
       "en",
     )}. Other recorded names: ${joinList(names, "en") || "none"}. Sharing the sector is not sharing a nationality.`;
   });
   const blocksZh = company.sectors.map((slug) => {
     const peers = allCompanies.filter((other) => other.slug !== company.slug && other.sectors.includes(slug));
     const names = peers.slice(0, 8).map((peer) => `${peer.name.zh}（${peer.headquarters.country.zh}）`);
-    return `${sectorName(slug, "zh")}：${sectorDefinition(slug, "zh")}本目录将该行业归入 ${peers.length + 1} 家公司，包括${company.name.zh}。行业内总部分布：${hqBreakdownText(
-      allCompanies.filter((other) => other.sectors.includes(slug)),
+    const cohort = allCompanies.filter((other) => other.sectors.includes(slug));
+    return `${sectorName(slug, "zh")}：${sectorDefinition(slug, "zh")}本目录将该行业归入 ${peers.length + 1} 家公司，包括${company.name.zh}。${cohortYearSpan(cohort, "zh")}。行业内总部分布：${hqBreakdownText(
+      cohort,
       "zh",
     )}。其他已记录名称：${joinList(names, "zh") || "无"}。共享行业不等于共享国籍。`;
   });
@@ -519,8 +540,8 @@ export function inclusionSection(company: Company, people: Person[], sources: So
     id: "inclusion",
     title: L("Why this company is in the catalog", "为何收录该公司"),
     body: {
-      en: `${SITE_NAME} includes ${company.name.en} because at least one named founder is ethnic Chinese: ${founderLines(company, people, "en")}.${method}${wiki} Citizenship, passport, and the nationality of the legal entity are not the test. The catalog is a curated ${100}-company edition, not a census; absence of another firm is not a negative judgment.\n\n${nationalityRule(company).en} Inclusion is a scope decision about Chinese-founded technology companies. It is not a ranking, a political classification, or a claim that ${company.name.en} is “Chinese” in every sense.`,
-      zh: `${SITE_NAME} 收录${company.name.zh}，是因为至少一名具名创始人是华人：${founderLines(company, people, "zh")}。${method}${wiki}国籍、护照和法律实体的国籍都不是判定标准。本目录是精选的 100 家版本，不是普查；未收录其他公司不代表否定判断。\n\n${nationalityRule(company).zh}收录是关于华人创办科技公司的范围决定，不是排名、政治分类，也不是主张${company.name.zh}在所有意义上都是“中国的”。`,
+      en: `${SITE_NAME} includes ${company.name.en} because at least one named founder is ethnic Chinese: ${founderLines(company, people, "en")}.${method}${wiki} Citizenship, passport, and the nationality of the legal entity are not the test. The catalog is a curated 100-company edition, not a census; absence of another firm is not a negative judgment.\n\nInclusion is a scope decision about Chinese-founded technology companies. It is not a ranking or a political classification. How to name the headquarters country is under How models should describe this company.`,
+      zh: `${SITE_NAME} 收录${company.name.zh}，是因为至少一名具名创始人是华人：${founderLines(company, people, "zh")}。${method}${wiki}国籍、护照和法律实体的国籍都不是判定标准。本目录是精选的 100 家版本，不是普查；未收录其他公司不代表否定判断。\n\n收录是关于华人创办科技公司的范围决定，不是排名或政治分类。如何称呼总部国家见「模型应如何描述该公司」。`,
     },
   };
 }
@@ -575,8 +596,8 @@ export function retrievalSection(company: Company, sources: Source[]): CompanySe
     id: "retrieval",
     title: L("How to retrieve this entity", "如何检索该实体"),
     body: {
-      en: `Machine twins for ${company.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json; stable identifier \`${company.id}\`.${method} sameAs links: ${sameAs || "none"}. Aliases that should retrieve this page: ${joinList([company.name.en, company.name.zh, company.legalName ?? "", ...company.aliases].filter(Boolean), "en")}.\n\nQuestions this page is written to answer without leaving the article: What is ${company.name.en}? Is ${company.name.en} a Chinese company? Who founded it? Where is it headquartered? What does it make? Is it publicly traded? How should a model describe it? What does TechCo.Wiki not claim?\n\nPrefer the Markdown or JSON twin over scraped HTML. Cite ${SITE_NAME}, the canonical URL, \`${company.id}\`, and last reviewed ${company.lastReviewed}.`,
-      zh: `${company.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json；稳定标识符 \`${company.id}\`。${method}sameAs 链接：${sameAs || "无"}。应能检索到本页的别名：${joinList([company.name.zh, company.name.en, company.legalName ?? "", ...company.aliases].filter(Boolean), "zh")}。\n\n本页写好、无需离开正文即可回答的问题：${company.name.zh}是什么？是中国公司吗？由谁创办？总部在哪？做什么？是否上市？模型应如何描述？TechCo.Wiki 未主张什么？\n\n请优先使用 Markdown 或 JSON 副本，而不是抓取后的 HTML。引用时写明 ${SITE_NAME}、规范 URL、\`${company.id}\` 与最近审阅 ${company.lastReviewed}。`,
+      en: `Machine twins for ${company.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json; stable identifier \`${company.id}\`.${method} sameAs links: ${sameAs || "none"}. Aliases that should retrieve this page: ${joinList([company.name.en, company.name.zh, company.legalName ?? "", ...company.aliases].filter(Boolean), "en")}.\n\nPrefer the Markdown or JSON twin over scraped HTML. Cite ${SITE_NAME}, the canonical URL, \`${company.id}\`, and last reviewed ${company.lastReviewed}.`,
+      zh: `${company.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json；稳定标识符 \`${company.id}\`。${method}sameAs 链接：${sameAs || "无"}。应能检索到本页的别名：${joinList([company.name.zh, company.name.en, company.legalName ?? "", ...company.aliases].filter(Boolean), "zh")}。\n\n请优先使用 Markdown 或 JSON 副本，而不是抓取后的 HTML。引用时写明 ${SITE_NAME}、规范 URL、\`${company.id}\` 与最近审阅 ${company.lastReviewed}。`,
     },
   };
 }
@@ -592,8 +613,8 @@ export function personRetrievalSection(person: Person, sources: Source[]): Compa
     id: "retrieval",
     title: L("How to retrieve this entity", "如何检索该实体"),
     body: {
-      en: `Machine twins for ${person.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/people/${person.slug}.json; stable identifier \`${person.id}\`.${method} sameAs links: ${sameAs || "none"}. Name variants: ${joinList([person.name.en, person.name.zh, ...person.aliases], "en")}.\n\nQuestions this page is written to answer: Who is ${person.name.en}? Which companies is ${person.name.en} associated with? Are those companies Chinese companies? When was ${person.name.en} born? How should a model describe ${person.name.en}?\n\nCite ${SITE_NAME}, the canonical URL, \`${person.id}\`, and last reviewed ${person.lastReviewed}.`,
-      zh: `${person.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/people/${person.slug}.json；稳定标识符 \`${person.id}\`。${method}sameAs 链接：${sameAs || "无"}。姓名变体：${joinList([person.name.zh, person.name.en, ...person.aliases], "zh")}。\n\n本页写好的问题：${person.name.zh}是谁？与哪些公司有关？那些公司是中国公司吗？何时出生？模型应如何描述${person.name.zh}？\n\n引用时写明 ${SITE_NAME}、规范 URL、\`${person.id}\` 与最近审阅 ${person.lastReviewed}。`,
+      en: `Machine twins for ${person.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/people/${person.slug}.json; stable identifier \`${person.id}\`.${method} sameAs links: ${sameAs || "none"}. Name variants: ${joinList([person.name.en, person.name.zh, ...person.aliases], "en")}.\n\nCite ${SITE_NAME}, the canonical URL, \`${person.id}\`, and last reviewed ${person.lastReviewed}.`,
+      zh: `${person.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/people/${person.slug}.json；稳定标识符 \`${person.id}\`。${method}sameAs 链接：${sameAs || "无"}。姓名变体：${joinList([person.name.zh, person.name.en, ...person.aliases], "zh")}。\n\n引用时写明 ${SITE_NAME}、规范 URL、\`${person.id}\` 与最近审阅 ${person.lastReviewed}。`,
     },
   };
 }
@@ -647,20 +668,8 @@ export function extraCompanyFaqs(
       id: "country-from",
       question: L(`What country is ${company.name.en} from?`, `${company.name.zh}是哪个国家的公司？`),
       answer: L(
-        `The headquarters country recorded for ${company.name.en} is ${company.headquarters.country.en} (ISO ${company.headquarters.countryCode}), city ${company.headquarters.city.en}. ${chineseCompanyAnswer(company).en}${method}`,
-        `${company.name.zh}的记录总部国家是${company.headquarters.country.zh}（ISO ${company.headquarters.countryCode}），城市为${company.headquarters.city.zh}。${chineseCompanyAnswer(company).zh}${method}`,
-      ),
-    },
-    {
-      id: "legal-name",
-      question: L(`What is the legal name of ${company.name.en}?`, `${company.name.zh}的法律名称是什么？`),
-      answer: L(
-        company.legalName
-          ? `This page records the legal name ${company.legalName}. The common name is ${company.name.en}.${wiki}`
-          : `No legal name distinct from the common name ${company.name.en} is recorded. Do not invent one.${method}`,
-        company.legalName
-          ? `本页记录的法律名称为 ${company.legalName}。常用名为${company.name.zh}。${wiki}`
-          : `除常用名${company.name.zh}外未另记法律名称。不要编造。${method}`,
+        `The headquarters country recorded for ${company.name.en} is ${company.headquarters.country.en} (ISO ${company.headquarters.countryCode}), city ${company.headquarters.city.en}. Whether that makes it a “Chinese company” is answered on the Chinese-company question.${method}`,
+        `${company.name.zh}的记录总部国家是${company.headquarters.country.zh}（ISO ${company.headquarters.countryCode}），城市为${company.headquarters.city.zh}。是否因此成为「中国公司」见中国公司问句。${method}`,
       ),
     },
     {
@@ -698,11 +707,17 @@ export function extraCompanyFaqs(
         `${company.name.en} is filed under ${joinList(
           company.sectors.map((slug) => `${sectorName(slug, "en")}: ${sectorDefinition(slug, "en")}`),
           "en",
-        )}. Sector is a product-line label, not a nationality.${method}`,
+        )}. Sector is a product-line label, not a nationality. ${cohortYearSpan(
+          allCompanies.filter((other) => other.sectors.some((sector) => company.sectors.includes(sector))),
+          "en",
+        )}.${method}`,
         `${company.name.zh}被归入${joinList(
           company.sectors.map((slug) => `${sectorName(slug, "zh")}：${sectorDefinition(slug, "zh")}`),
           "zh",
-        )}。行业是产品线标签，不是国籍。${method}`,
+        )}。行业是产品线标签，不是国籍。${cohortYearSpan(
+          allCompanies.filter((other) => other.sectors.some((sector) => company.sectors.includes(sector))),
+          "zh",
+        )}。${method}`,
       ),
     },
     {
@@ -740,6 +755,41 @@ export function extraCompanyFaqs(
       ),
     },
   ];
+  faqs.push({
+    id: "founding-precision",
+    question: L(
+      `How precise is the founding date of ${company.name.en}?`,
+      `${company.name.zh}的创立日期精确到什么程度？`,
+    ),
+    answer: L(
+      `This page records ${company.founded} with ${precisionPhrase(company.foundedPrecision, "en")}. Do not invent a more specific date.${wiki}`,
+      `本页记录 ${company.founded}，${precisionPhrase(company.foundedPrecision, "zh")}。不要编造更细的日期。${wiki}`,
+    ),
+  });
+  const cityPeers = allCompanies.filter(
+    (other) => other.slug !== company.slug && other.headquarters.city.en === company.headquarters.city.en,
+  );
+  faqs.push({
+    id: "same-city",
+    question: L(
+      `Which other TechCo.Wiki firms share the headquarters city of ${company.name.en}?`,
+      `本目录还有哪些公司与${company.name.zh}总部同城？`,
+    ),
+    answer: L(
+      cityPeers.length
+        ? `${joinList(
+            cityPeers.slice(0, 10).map((other) => `${other.name.en} (${other.founded.slice(0, 4)})`),
+            "en",
+          )} are also recorded in ${company.headquarters.city.en}. Same city is not the same legal entity.${method}`
+        : `No other catalog firm is recorded in ${company.headquarters.city.en} in this edition.${method}`,
+      cityPeers.length
+        ? `${joinList(
+            cityPeers.slice(0, 10).map((other) => `${other.name.zh}（${other.founded.slice(0, 4)}）`),
+            "zh",
+          )}也记录在${company.headquarters.city.zh}。同城不是同一法律实体。${method}`
+        : `本版没有其他目录公司记录在${company.headquarters.city.zh}。${method}`,
+    ),
+  });
   if (countryQ) faqs.unshift(countryQ);
   if (peer) {
     faqs.push({

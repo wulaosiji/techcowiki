@@ -252,8 +252,8 @@ export const faqs: FaqItem[] = [
       zh: "信息框已有事实，为什么实体页还要写这么长？",
     },
     answer: {
-      en: "Generative engines often read the article body, Markdown twin, or JSON-LD description and skip the infobox. Each entity therefore opens with a citation-ready Independent answer brief, then restates headquarters, legal name, products, founders, and “how to describe this entity” in self-contained sections and FAQ answers. An attributed Wikipedia extract sits beside those catalog facts so the page is not only template restatement. Each heading answers one model question. The extra length is retrieval insurance, not marketing copy.",
-      zh: "生成式引擎常常只读正文、Markdown 副本或 JSON-LD 描述，而跳过信息框。因此每个实体先有一段可独立引用的简述，再在带出处的章节和问答里复述总部、法律名称、产品、创始人以及“应如何描述该实体”。旁边还有带归属的维基百科摘录，避免页面只是模板复述。每个标题对应一个模型问题。加长是为了检索，而不是营销文案。",
+      en: "Generative engines often read the article body, Markdown twin, or JSON-LD description and skip the infobox. Each entity therefore opens with a citation-ready Independent answer brief, then gives each later heading a distinct job—naming, extractable facts, products, geography, neighbor contrast—rather than pasting the same dossier under every title. An attributed Wikipedia extract sits beside those catalog facts so the page is not only template prose. FAQ answers stay independently quotable. The extra length is retrieval insurance, not marketing copy.",
+      zh: "生成式引擎常常只读正文、Markdown 副本或 JSON-LD 描述，而跳过信息框。因此每个实体先有一段可独立引用的简述，随后每个标题各司其职——命名、可抽取事实、产品、地理、邻居对照——而不是在每个标题下粘贴同一份档案。旁边还有带归属的维基百科摘录，避免页面只是模板套话。问答仍可单独引用。加长是为了检索，而不是营销文案。",
     },
   },
   {

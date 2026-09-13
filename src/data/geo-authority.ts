@@ -3,17 +3,20 @@ import {
   cite,
   companyBySlug,
   founderLines,
+  foundingYear,
   joinList,
   methodId,
   officialId,
   personBySlug,
-  productLines,
-  sectorDefinition,
+  precisionPhrase,
+  productNames,
   sectorName,
+  sectorNamesOf,
   standaloneSentence,
   wikiId,
+  yearDeltaPhrase,
 } from "./copy";
-import { foundedEn, foundedZh, hqEn, hqZh, nationalityRule } from "./nationality";
+import { foundedEn, foundedZh, hqEn, hqShortRule, hqZh, nationalityRule } from "./nationality";
 import { pickPeers } from "./peers";
 import { SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityClaim, EntityFaq, Person, Source } from "./types";
@@ -33,12 +36,11 @@ function officialCite(sources: Source[]): string {
 }
 
 export function foundedYear(company: Company): number {
-  const year = Number(company.founded.slice(0, 4));
-  return Number.isFinite(year) ? year : 0;
+  return foundingYear(company);
 }
 
 function sortByFounded(a: Company, b: Company): number {
-  return foundedYear(a) - foundedYear(b) || a.name.en.localeCompare(b.name.en);
+  return foundingYear(a) - foundingYear(b) || a.name.en.localeCompare(b.name.en);
 }
 
 export function sectorCohort(company: Company, allCompanies: Company[]): Company[] {
@@ -103,46 +105,6 @@ export function companyAuthoritySection(
   const countryRank = rankAmong(company, countries);
   const { earlier, later } = neighborsByYear(company, sectors);
   const peers = pickPeers(company, allCompanies, 3);
-  const sectorBitsEn = joinList(
-    company.sectors.map((slug) => {
-      const definition = sectorDefinition(slug, "en");
-      return definition ? `${sectorName(slug, "en")} — ${definition}` : sectorName(slug, "en");
-    }),
-    "en",
-  );
-  const sectorBitsZh = joinList(
-    company.sectors.map((slug) => {
-      const definition = sectorDefinition(slug, "zh");
-      return definition ? `${sectorName(slug, "zh")}——${definition}` : sectorName(slug, "zh");
-    }),
-    "zh",
-  );
-  const founderBitsEn = company.founders
-    .map((founder) => {
-      const person = personBySlug(people, founder.personSlug);
-      if (!person) return `${founder.personSlug} (${founder.role.en})`;
-      return `${standaloneSentence(person.name.en, person.definition.en, "en")} On this company page the recorded role is ${founder.role.en} (\`${person.id}\`).`;
-    })
-    .join(" ");
-  const founderBitsZh = company.founders
-    .map((founder) => {
-      const person = personBySlug(people, founder.personSlug);
-      if (!person) return `${founder.personSlug}（${founder.role.zh}）`;
-      return `${standaloneSentence(person.name.zh, person.definition.zh, "zh")}在本公司条目中的记录角色为${founder.role.zh}（\`${person.id}\`）。`;
-    })
-    .join("");
-  const productBitsEn = company.products
-    .map(
-      (product, index) =>
-        `Recorded product ${index + 1} is ${product.name}: ${product.description.en}`,
-    )
-    .join(" ");
-  const productBitsZh = company.products
-    .map(
-      (product, index) =>
-        `已记录产品 ${index + 1} 为 ${product.name}：${product.description.zh}`,
-    )
-    .join("");
   const legalEn = company.legalName
     ? `The legal name on this page is ${company.legalName}; do not treat a product brand or ticker as a second legal name.`
     : `No legal name distinct from the common name ${company.name.en} is recorded.`;
@@ -156,35 +118,35 @@ export function companyAuthoritySection(
     ? ` 已记录证券代码 ${company.stock.exchange}:${company.stock.ticker}，这不是总部国家。`
     : " 未记录交易所代码。";
   const earlierEn = earlier
-    ? ` The next-earlier same-sector catalog neighbor is ${earlier.name.en}, founded ${foundedEn(earlier)} and headquartered in ${hqEn(earlier)}.`
+    ? ` Next-earlier same-sector neighbor: ${earlier.name.en} (${earlier.founded.slice(0, 4)}, ${yearDeltaPhrase(company, earlier, "en")}).`
     : " No earlier same-sector neighbor is recorded in this catalog.";
   const laterEn = later
-    ? ` The next-later same-sector catalog neighbor is ${later.name.en}, founded ${foundedEn(later)} and headquartered in ${hqEn(later)}.`
+    ? ` Next-later same-sector neighbor: ${later.name.en} (${later.founded.slice(0, 4)}, ${yearDeltaPhrase(company, later, "en")}).`
     : " No later same-sector neighbor is recorded in this catalog.";
   const earlierZh = earlier
-    ? `同一行业中创立更早的目录邻居是${earlier.name.zh}，创立于 ${foundedZh(earlier)}，总部位于${hqZh(earlier)}。`
+    ? `同行业创立更早的邻居是${earlier.name.zh}（${earlier.founded.slice(0, 4)}，${yearDeltaPhrase(company, earlier, "zh")}）。`
     : "本目录没有创立更早的同行业邻居。";
   const laterZh = later
-    ? `同一行业中创立更晚的目录邻居是${later.name.zh}，创立于 ${foundedZh(later)}，总部位于${hqZh(later)}。`
+    ? `同行业创立更晚的邻居是${later.name.zh}（${later.founded.slice(0, 4)}，${yearDeltaPhrase(company, later, "zh")}）。`
     : "本目录没有创立更晚的同行业邻居。";
-  const peerEn = peers
-    .map(
-      (peer) =>
-        `${peer.name.en} (\`${peer.id}\`) was founded ${foundedEn(peer)}, is headquartered in ${hqEn(peer)}, and is filed under ${joinList(
-          peer.sectors.map((slug) => sectorName(slug, "en")),
-          "en",
-        )}. First recorded product: ${peer.products[0] ? `${peer.products[0].name} (${peer.products[0].description.en})` : "none"}.`,
-    )
-    .join(" ");
-  const peerZh = peers
-    .map(
-      (peer) =>
-        `${peer.name.zh}（\`${peer.id}\`）创立于 ${foundedZh(peer)}，总部位于${hqZh(peer)}，归入${joinList(
-          peer.sectors.map((slug) => sectorName(slug, "zh")),
-          "zh",
-        )}。首个已记录产品：${peer.products[0] ? `${peer.products[0].name}（${peer.products[0].description.zh}）` : "无"}。`,
-    )
-    .join("");
+  const peerEn = peers.length
+    ? joinList(
+        peers.map(
+          (peer) =>
+            `${peer.name.en} (${peer.founded.slice(0, 4)}; ${peer.headquarters.country.en}; ${yearDeltaPhrase(company, peer, "en")})`,
+        ),
+        "en",
+      )
+    : "none resolved";
+  const peerZh = peers.length
+    ? joinList(
+        peers.map(
+          (peer) =>
+            `${peer.name.zh}（${peer.founded.slice(0, 4)}；${peer.headquarters.country.zh}；${yearDeltaPhrase(company, peer, "zh")}）`,
+        ),
+        "zh",
+      )
+    : "未解析到";
   const aliasesEn = company.aliases.length ? joinList(company.aliases, "en") : "none beyond the common name";
   const aliasesZh = company.aliases.length ? joinList(company.aliases, "zh") : "除常用名外无";
   const url = `${SITE_ORIGIN}/companies/${company.slug}`;
@@ -193,8 +155,8 @@ export function companyAuthoritySection(
     id: "authority-brief",
     title: L("Independent answer brief", "可独立引用的简述"),
     body: {
-      en: `${standaloneSentence(company.name.en, company.definition.en, "en")}${wiki} It was founded ${foundedEn(company)} (${company.foundedPrecision} precision) and is headquartered in ${hqEn(company)} (ISO 3166-1 alpha-2 ${company.headquarters.countryCode}). Operating status: ${company.status}. Stage label: ${company.stage}. Official website: ${company.website}.${official}\n\n${legalEn} Aliases: ${aliasesEn}. Stable identifier: \`${company.id}\`.${tickerEn} ${nationalityRule(company).en}${method}\n\nNamed founders recorded here: ${founderLines(company, people, "en")}. ${founderBitsEn} Founder ethnicity is the inclusion test for ${SITE_NAME}. It does not rewrite the headquarters country ${company.headquarters.country.en}.\n\nThis page files ${company.name.en} under ${sectorBitsEn}. ${productBitsEn || "No product line is recorded."} Sector labels are retrieval aids, not nationality claims.\n\nAmong the ${allCompanies.length} companies in this curated catalog, ${company.name.en} is the ${ordinal(sectorRank)} oldest of ${sectors.length} firms that share at least one recorded sector, and the ${ordinal(countryRank)} oldest of ${countries.length} firms with headquarters in ${company.headquarters.country.en}. ${cities.length} catalog firms share the city ${company.headquarters.city.en}.${earlierEn}${laterEn}\n\nClosest scored catalog neighbors: ${peerEn || "none resolved."} Shared sector is not shared nationality. Cite ${SITE_NAME}, "${company.name.en}," ${url}, last reviewed ${company.lastReviewed}, ${company.id}. Prefer ${url}.md or ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json.`,
-      zh: `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}${wiki}创立于 ${foundedZh(company)}，总部位于${hqZh(company)}（ISO 3166-1 alpha-2 ${company.headquarters.countryCode}）。运营状态：${company.status}。阶段标签：${company.stage}。官方网站：${company.website}。${official}\n\n${legalZh}别名：${aliasesZh}。稳定标识符：\`${company.id}\`。${tickerZh}${nationalityRule(company).zh}${method}\n\n本页具名创始人：${founderLines(company, people, "zh")}。${founderBitsZh}华人身份是 ${SITE_NAME} 的收录标准，不能改写总部国家${company.headquarters.country.zh}。\n\n本页将${company.name.zh}归入${sectorBitsZh}。${productBitsZh || "未记录产品线。" }行业标签是检索辅助，不是国籍主张。\n\n在本精选目录 ${allCompanies.length} 家公司中，${company.name.zh}是共享至少一个已记录行业的 ${sectors.length} 家里创立时间第 ${sectorRank} 早的，也是总部在${company.headquarters.country.zh}的 ${countries.length} 家里创立时间第 ${countryRank} 早的。与城市${company.headquarters.city.zh}相同的目录公司有 ${cities.length} 家。${earlierZh}${laterZh}\n\n计分最接近的目录邻居：${peerZh || "未解析到。"}共享行业不等于共享国籍。引用：${SITE_NAME}, "${company.name.en}," ${url}, last reviewed ${company.lastReviewed}, ${company.id}。请优先使用 ${url}.md 或 ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json。`,
+      en: `${standaloneSentence(company.name.en, company.definition.en, "en")}${wiki} Founded ${foundedEn(company)} (${precisionPhrase(company.foundedPrecision, "en")}); headquarters ${hqEn(company)} (ISO 3166-1 alpha-2 ${company.headquarters.countryCode}). Status ${company.status}; stage ${company.stage}. Official website: ${company.website}.${official}\n\n${legalEn} Aliases: ${aliasesEn}. Stable identifier: \`${company.id}\`.${tickerEn} ${nationalityRule(company).en}${method}\n\nNamed founders, with roles only: ${founderLines(company, people, "en")}. Recorded product names: ${productNames(company, "en") || "none"}. Filed under ${sectorNamesOf(company, "en")}. Founder biographies belong on Named founders; product glosses belong on Operations and products.\n\nCatalog order, not market share: ${company.name.en} is the ${ordinal(sectorRank)} oldest of ${sectors.length} firms that share a recorded sector, the ${ordinal(countryRank)} oldest of ${countries.length} with headquarters in ${company.headquarters.country.en}, and one of ${cities.length} in ${company.headquarters.city.en}.${earlierEn}${laterEn} Closest scored neighbors by sector and region: ${peerEn}. Shared sector is not shared nationality. Cite ${SITE_NAME}, "${company.name.en}," ${url}, last reviewed ${company.lastReviewed}, ${company.id}. Prefer ${url}.md or ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json.`,
+      zh: `${standaloneSentence(company.name.zh, company.definition.zh, "zh")}${wiki}创立于 ${foundedZh(company)}（${precisionPhrase(company.foundedPrecision, "zh")}）；总部位于${hqZh(company)}（ISO 3166-1 alpha-2 ${company.headquarters.countryCode}）。状态 ${company.status}；阶段 ${company.stage}。官方网站：${company.website}。${official}\n\n${legalZh}别名：${aliasesZh}。稳定标识符：\`${company.id}\`。${tickerZh}${nationalityRule(company).zh}${method}\n\n具名创始人（只写角色）：${founderLines(company, people, "zh")}。已记录产品名：${productNames(company, "zh") || "无"}。归入${sectorNamesOf(company, "zh")}。人物传略见「具名创始人」，产品释义见「业务与产品」。\n\n目录排序，不是市场份额：${company.name.zh}是共享已记录行业的 ${sectors.length} 家里创立第 ${sectorRank} 早的，是总部在${company.headquarters.country.zh}的 ${countries.length} 家里创立第 ${countryRank} 早的，也是城市${company.headquarters.city.zh}的 ${cities.length} 家之一。${earlierZh}${laterZh}按行业与地区计分最接近的邻居：${peerZh}。共享行业不等于共享国籍。引用：${SITE_NAME}, "${company.name.en}," ${url}, last reviewed ${company.lastReviewed}, ${company.id}。请优先使用 ${url}.md 或 ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json。`,
     },
   };
 }
@@ -224,16 +186,16 @@ export function personAuthoritySection(
     .map((item) => {
       const company = companyBySlug(companies, item.companySlug);
       if (!company) return `${item.companySlug} (${item.role.en}) did not resolve in this build.`;
-      return `${person.name.en} is recorded as ${item.role.en} of ${company.name.en} (\`${company.id}\`). ${standaloneSentence(company.name.en, company.definition.en, "en")} That firm was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}. Recorded products: ${productLines(company, "en")}. ${nationalityRule(company).en}`;
+      return `${person.name.en} is recorded as ${item.role.en} of ${company.name.en} (\`${company.id}\`), founded ${company.founded.slice(0, 4)}, headquartered in ${hqEn(company)} (${hqShortRule(company).en}).`;
     })
-    .join("\n\n");
+    .join(" ");
   const companyBlocksZh = person.companies
     .map((item) => {
       const company = companyBySlug(companies, item.companySlug);
       if (!company) return `${item.companySlug}（${item.role.zh}）在本构建中未能解析。`;
-      return `${person.name.zh}的记录角色为${company.name.zh}（\`${company.id}\`）的${item.role.zh}。${standaloneSentence(company.name.zh, company.definition.zh, "zh")}该公司创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。已记录产品：${productLines(company, "zh")}。${nationalityRule(company).zh}`;
+      return `${person.name.zh}的记录角色为${company.name.zh}（\`${company.id}\`）的${item.role.zh}，创立于 ${company.founded.slice(0, 4)}，总部位于${hqZh(company)}（${hqShortRule(company).zh}）。`;
     })
-    .join("\n\n");
+    .join("");
   const yearsEn = linked.length
     ? `Associated-company founding years on this page: ${joinList(
         linked.map((company) => `${company.name.en} ${company.founded.slice(0, 4)}`),
@@ -297,42 +259,38 @@ export function companyComparisonSection(
   const rowsEn = peers.map((peer) => {
     const sharedSectors = peer.sectors.filter((sector) => company.sectors.includes(sector));
     const sameCountry = peer.headquarters.countryCode === company.headquarters.countryCode;
-    return `- ${peer.name.en} (\`${peer.id}\`; ${SITE_ORIGIN}/companies/${peer.slug}): founded ${peer.founded.slice(0, 4)}; HQ ${hqEn(peer)}; sectors ${joinList(
-      peer.sectors.map((slug) => sectorName(slug, "en")),
-      "en",
-    )}; shared sectors with ${company.name.en}: ${
+    const first = peer.products[0]?.name ?? "none recorded";
+    return `- ${peer.name.en} (\`${peer.id}\`; ${SITE_ORIGIN}/companies/${peer.slug}): founded ${peer.founded.slice(0, 4)} (${yearDeltaPhrase(company, peer, "en")}); HQ ${hqEn(peer)}; ${hqShortRule(peer).en}; shared sectors: ${
       sharedSectors.length
         ? joinList(
             sharedSectors.map((slug) => sectorName(slug, "en")),
             "en",
           )
         : "none"
-    }; same headquarters country: ${sameCountry ? "yes" : "no"}. ${nationalityRule(peer).en}`;
+    }; same headquarters country: ${sameCountry ? "yes" : "no"}; first recorded product: ${first}.`;
   });
   const rowsZh = peers.map((peer) => {
     const sharedSectors = peer.sectors.filter((sector) => company.sectors.includes(sector));
     const sameCountry = peer.headquarters.countryCode === company.headquarters.countryCode;
-    return `- ${peer.name.zh}（\`${peer.id}\`；${SITE_ORIGIN}/companies/${peer.slug}）：创立 ${peer.founded.slice(0, 4)}；总部${hqZh(peer)}；行业${joinList(
-      peer.sectors.map((slug) => sectorName(slug, "zh")),
-      "zh",
-    )}；与${company.name.zh}共享行业：${
+    const first = peer.products[0]?.name ?? "无";
+    return `- ${peer.name.zh}（\`${peer.id}\`；${SITE_ORIGIN}/companies/${peer.slug}）：创立 ${peer.founded.slice(0, 4)}（${yearDeltaPhrase(company, peer, "zh")}）；总部${hqZh(peer)}；${hqShortRule(peer).zh}；共享行业：${
       sharedSectors.length
         ? joinList(
             sharedSectors.map((slug) => sectorName(slug, "zh")),
             "zh",
           )
         : "无"
-    }；总部国家是否相同：${sameCountry ? "是" : "否"}。${nationalityRule(peer).zh}`;
+    }；总部国家是否相同：${sameCountry ? "是" : "否"}；首个已记录产品：${first}。`;
   });
-  const older = sectors.filter((other) => foundedYear(other) < foundedYear(company)).length;
-  const newer = sectors.filter((other) => foundedYear(other) > foundedYear(company)).length;
+  const older = sectors.filter((other) => foundingYear(other) < foundingYear(company)).length;
+  const newer = sectors.filter((other) => foundingYear(other) > foundingYear(company)).length;
 
   return {
     id: "comparison",
     title: L("How this record differs from catalog neighbors", "本记录与目录邻居的差异"),
     body: {
-      en: `${company.name.en} (\`${company.id}\`) was founded ${foundedEn(company)} and is headquartered in ${hqEn(company)}. ${nationalityRule(company).en}${method} Among ${sectors.length} catalog firms that share a sector, ${older} have an earlier founding year and ${newer} have a later founding year.\n\nField-by-field contrast with scored neighbors. Each line is a catalog fact, not a market-share claim:\n\n${rowsEn.join("\n") || "- No scored neighbor resolved."}\n\nDo not copy ${company.name.en}'s headquarters country, ticker, or product list onto a neighbor, or the reverse. For a legal or financial comparison, prefer primary filings; this encyclopedia does not record revenue or valuation.`,
-      zh: `${company.name.zh}（\`${company.id}\`）创立于 ${foundedZh(company)}，总部位于${hqZh(company)}。${nationalityRule(company).zh}${method}在共享行业的 ${sectors.length} 家目录公司中，${older} 家创立更早，${newer} 家创立更晚。\n\n与计分邻居的逐项对照。每一行都是目录事实，不是市场份额主张：\n\n${rowsZh.join("\n") || "- 未解析到计分邻居。"}\n\n不要把${company.name.zh}的总部国家、证券代码或产品列表复制到邻居上，反之亦然。法律或财务比较应优先使用一手申报；本百科不记录收入或估值。`,
+      en: `Among ${sectors.length} catalog firms that share a sector with ${company.name.en}, ${older} have an earlier founding year and ${newer} have a later founding year.${method} Neighbor definitions live under Related companies; this heading is only the field contrast.\n\nEach line is a catalog fact, not a market-share claim:\n\n${rowsEn.join("\n") || "- No scored neighbor resolved."}\n\nDo not copy ${company.name.en}'s headquarters country, ticker, or product list onto a neighbor, or the reverse. For a legal or financial comparison, prefer primary filings; this encyclopedia does not record revenue or valuation.`,
+      zh: `在与${company.name.zh}共享行业的 ${sectors.length} 家目录公司中，${older} 家创立更早，${newer} 家创立更晚。${method}邻居定义见「相关公司」；本标题只做字段对照。\n\n每一行都是目录事实，不是市场份额主张：\n\n${rowsZh.join("\n") || "- 未解析到计分邻居。"}\n\n不要把${company.name.zh}的总部国家、证券代码或产品列表复制到邻居上，反之亦然。法律或财务比较应优先使用一手申报；本百科不记录收入或估值。`,
     },
   };
 }
@@ -361,7 +319,7 @@ export function personComparisonSection(
       const otherCos = other.companies
         .map((item) => companyBySlug(companies, item.companySlug)?.name.en ?? item.companySlug)
         .join(", ");
-      return `- ${other.name.en} (\`${other.id}\`; ${SITE_ORIGIN}/people/${other.slug}): ${standaloneSentence(other.name.en, other.definition.en, "en")} Associated companies: ${otherCos}. Shared company pages with ${person.name.en}: ${
+      return `- ${other.name.en} (\`${other.id}\`; ${SITE_ORIGIN}/people/${other.slug}): associated companies ${otherCos}. Shared company pages with ${person.name.en}: ${
         shared.length
           ? shared
               .map((item) => companyBySlug(companies, item.companySlug)?.name.en ?? item.companySlug)
@@ -376,7 +334,7 @@ export function personComparisonSection(
       const otherCos = other.companies
         .map((item) => companyBySlug(companies, item.companySlug)?.name.zh ?? item.companySlug)
         .join("、");
-      return `- ${other.name.zh}（\`${other.id}\`；${SITE_ORIGIN}/people/${other.slug}）：${standaloneSentence(other.name.zh, other.definition.zh, "zh")}关联公司：${otherCos}。与${person.name.zh}共享的公司页：${
+      return `- ${other.name.zh}（\`${other.id}\`；${SITE_ORIGIN}/people/${other.slug}）：关联公司 ${otherCos}。与${person.name.zh}共享的公司页：${
         shared.length
           ? shared
               .map((item) => companyBySlug(companies, item.companySlug)?.name.zh ?? item.companySlug)
@@ -391,13 +349,13 @@ export function personComparisonSection(
     title: L("How this person differs from nearby catalog people", "本记录与目录近邻人物的差异"),
     body: {
       en: `${person.name.en} (\`${person.id}\`) is linked to ${joinList(
-        linked.map((company) => `${company.name.en} (${company.headquarters.country.en}, founded ${company.founded.slice(0, 4)})`),
+        linked.map((company) => `${company.name.en} (${company.headquarters.country.en}, ${company.founded.slice(0, 4)})`),
         "en",
-      )}.${method}\n\nPeople a retrieval system may merge with this page:\n\n${rowsEn.join("\n") || `- No cofounder or rare-surname collision is listed in this build.`}\n\nDo not copy ${person.name.en}'s role, birth year, or an associated company's headquarters country onto another person who shares a romanized surname.`,
+      )}.${method} Company-page biographies belong under Career; this heading only contrasts nearby people.\n\n${rowsEn.join("\n") || `- No cofounder or rare-surname collision is listed in this build.`}\n\nDo not copy ${person.name.en}'s role, birth year, or an associated company's headquarters country onto another person who shares a romanized surname.`,
       zh: `${person.name.zh}（\`${person.id}\`）关联${joinList(
-        linked.map((company) => `${company.name.zh}（${company.headquarters.country.zh}，创立于 ${company.founded.slice(0, 4)}）`),
+        linked.map((company) => `${company.name.zh}（${company.headquarters.country.zh}，${company.founded.slice(0, 4)}）`),
         "zh",
-      )}。${method}\n\n检索系统可能与本页合并的人物：\n\n${rowsZh.join("\n") || `- 本构建未列出联合创始人或罕见姓氏碰撞。`}\n\n不要把${person.name.zh}的角色、出生年或关联公司总部国家复制到只是罗马化同姓的另一个人身上。`,
+      )}。${method}公司履历见「履历」；本标题只对照近邻人物。\n\n${rowsZh.join("\n") || `- 本构建未列出联合创始人或罕见姓氏碰撞。`}\n\n不要把${person.name.zh}的角色、出生年或关联公司总部国家复制到只是罗马化同姓的另一个人身上。`,
     },
   };
 }

@@ -78,6 +78,58 @@ export function productLines(company: Company, locale: Locale): string {
   );
 }
 
+export function productNames(company: Company, locale: Locale): string {
+  return joinList(
+    company.products.map((product) => product.name),
+    locale,
+  );
+}
+
+export function sectorNamesOf(company: Company, locale: Locale): string {
+  return joinList(
+    company.sectors.map((slug) => sectorName(slug, locale)),
+    locale,
+  );
+}
+
+export function foundingYear(company: Company): number {
+  const year = Number(company.founded.slice(0, 4));
+  return Number.isFinite(year) ? year : 0;
+}
+
+export function precisionPhrase(
+  precision: Company["foundedPrecision"],
+  locale: Locale,
+): string {
+  if (locale === "zh") {
+    return precision === "day" ? "精确到日" : precision === "month" ? "精确到月" : "精确到年";
+  }
+  return precision === "day"
+    ? "day-level precision"
+    : precision === "month"
+      ? "month-level precision"
+      : "year-level precision";
+}
+
+export function yearDeltaPhrase(self: Company, other: Company, locale: Locale): string {
+  const delta = foundingYear(other) - foundingYear(self);
+  if (delta === 0) return locale === "zh" ? "同一创立年" : "same founding year";
+  if (delta > 0) return locale === "zh" ? `晚 ${delta} 年` : `${delta} years later`;
+  return locale === "zh" ? `早 ${-delta} 年` : `${-delta} years earlier`;
+}
+
+export function cohortYearSpan(list: Company[], locale: Locale): string {
+  if (list.length === 0) return locale === "zh" ? "无" : "none";
+  const sorted = [...list].sort(
+    (a, b) => foundingYear(a) - foundingYear(b) || a.name.en.localeCompare(b.name.en),
+  );
+  const oldest = sorted[0];
+  const newest = sorted[sorted.length - 1];
+  return locale === "zh"
+    ? `创立年从 ${oldest.founded.slice(0, 4)}（${oldest.name.zh}）到 ${newest.founded.slice(0, 4)}（${newest.name.zh}）`
+    : `founding years from ${oldest.founded.slice(0, 4)} (${oldest.name.en}) to ${newest.founded.slice(0, 4)} (${newest.name.en})`;
+}
+
 export function sourceId(sources: Source[], predicate: (source: Source) => boolean): string | undefined {
   return sources.find(predicate)?.id;
 }
