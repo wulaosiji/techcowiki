@@ -90,7 +90,7 @@ export function switchToLocale(target: Locale, path: string, search = ""): strin
   return appendSearch(localePath(target, stripLocalePrefix(path)), search);
 }
 
-/** Default toggle stays en ↔ zh so existing search-switch e2e still clicks 简体 first. */
+/** Default toggle stays en ↔ zh so existing search-switch e2e still clicks Simplified Chinese first. */
 export function switchLocale(locale: Locale, path: string, search = ""): string {
   const next = locale === "en" ? "zh" : "en";
   return switchToLocale(next, path, search);
