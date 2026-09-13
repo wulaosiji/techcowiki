@@ -1,4 +1,4 @@
-Contact: https://github.com/wulaosiji/techcowiki/issues
+Contact: https://github.com/aaron-he-zhu/techcowiki/issues
 Expires: 2027-09-12T00:00:00.000Z
 Preferred-Languages: en, zh
 Canonical: https://techco.wiki/.well-known/security.txt

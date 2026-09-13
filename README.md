@@ -4,7 +4,7 @@
 
 The open encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. **GEO (generative-engine optimization) comes first**: write a citable authority record for models, then serve human readers.
 
-English is the canonical text. Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. Site origin: <https://techco.wiki>
+English is the canonical text. Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. Site origin: <https://techco.wiki>. Source repository: <https://github.com/aaron-he-zhu/techcowiki>
 
 The repository defaults to English. Only README files and the public website stay multilingual (`en`, `zh-CN`, `zh-Hant`). Agent, harness, and CI docs are English.
 

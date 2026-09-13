@@ -104,6 +104,37 @@ describe("development harness contracts", () => {
     expect(company).toContain("t(entity.name, locale)");
   });
 
+  test("repository URL points at aaron-he-zhu/techcowiki", () => {
+    const site = read("src/data/site.ts");
+    expect(site).toContain('REPO_URL = "https://github.com/aaron-he-zhu/techcowiki"');
+    expect(site).not.toContain("wulaosiji");
+    expect(read("src/layouts/BaseLayout.astro")).toContain("href={REPO_URL}");
+    expect(read("src/lib/nav.ts")).toContain("href: REPO_URL");
+    expect(read("src/lib/llms.ts")).toContain("${REPO_URL}");
+    expect(read("src/lib/schema.ts")).toContain("sameAs: [REPO_URL]");
+    expect(read("public/.well-known/security.txt")).toContain(
+      "https://github.com/aaron-he-zhu/techcowiki/issues",
+    );
+    expect(read("public/humans.txt")).toContain(
+      "https://github.com/aaron-he-zhu/techcowiki",
+    );
+    expect(read("README.md")).toContain("https://github.com/aaron-he-zhu/techcowiki");
+    for (const path of [
+      "src/layouts/BaseLayout.astro",
+      "src/lib/nav.ts",
+      "src/lib/llms.ts",
+      "src/lib/schema.ts",
+      "public/.well-known/security.txt",
+      "public/humans.txt",
+      "README.md",
+      "README.zh-CN.md",
+      "README.zh-Hant.md",
+      "AGENTS.md",
+    ]) {
+      expect(read(path)).not.toContain("wulaosiji");
+    }
+  });
+
   test("OpenAPI is versioned under /api/v1", () => {
     const openapi = read("src/pages/api/v1/openapi.json.ts");
     expect(openapi).toContain("1.5.0");

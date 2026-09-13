@@ -6,7 +6,7 @@ export const LAST_REVIEWED = "2026-09-13";
 export const CONTENT_LICENSE = "CC BY-SA 4.0";
 export const CONTENT_LICENSE_URL =
   "https://creativecommons.org/licenses/by-sa/4.0/";
-export const REPO_URL = "https://github.com/wulaosiji/techcowiki";
+export const REPO_URL = "https://github.com/aaron-he-zhu/techcowiki";
 export const LOCALES: Locale[] = ["en", "zh", "zht"];
 export const DEFAULT_LOCALE: Locale = "en";
 

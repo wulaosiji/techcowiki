@@ -4,6 +4,7 @@ import {
   CONTENT_LICENSE,
   CONTENT_LICENSE_URL,
   LAST_REVIEWED,
+  REPO_URL,
   SITE_NAME,
   SITE_ORIGIN,
   mission,
@@ -83,7 +84,7 @@ export function organizationNode() {
     description: mission.en,
     foundingDate: "2026",
     license: CONTENT_LICENSE_URL,
-    sameAs: ["https://github.com/wulaosiji/techcowiki"],
+    sameAs: [REPO_URL],
     identifier: {
       "@type": "PropertyValue",
       propertyID: "techco",

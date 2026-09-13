@@ -4,7 +4,7 @@
 
 全球华人创办科技公司的开放百科。**GEO（生成式引擎优化）是第一优先级**：先写成生成式引擎愿意引用的权威记录，再兼顾人类浏览。
 
-英文是规范文本。简体中文（`/zh`）与繁体中文（`/zh-hant`）是完整平行版本。站点域名：<https://techco.wiki>
+英文是规范文本。简体中文（`/zh`）与繁体中文（`/zh-hant`）是完整平行版本。站点域名：<https://techco.wiki>。源仓库：<https://github.com/aaron-he-zhu/techcowiki>
 
 仓库默认英文。只有 README 与公开网站保持多语言（en、zh-CN、zh-Hant）。代理、Harness 与 CI 文档使用英文。
 

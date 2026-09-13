@@ -1,5 +1,5 @@
 import { allCityHubs, allCountryHubs, companies, people, products } from "../data/catalog";
-import { regions, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
+import { regions, REPO_URL, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
 import type { Locale } from "../data/types";
 import { companyMarkdown, homeMarkdown, personMarkdown, productMarkdown } from "./markdown";
 
@@ -120,7 +120,7 @@ ${cityLinks}
 - [Traditional Chinese home](${SITE_ORIGIN}/zh-hant/index.md)
 - [Traditional Chinese methodology](${SITE_ORIGIN}/zh-hant/methodology.md)
 - [License](${SITE_ORIGIN}/license.md)
-- [GitHub repository](https://github.com/wulaosiji/techcowiki)
+- [GitHub repository](${REPO_URL})
 `;
 }
 

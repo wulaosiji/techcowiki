@@ -2,7 +2,7 @@
 
 This is the development contract for the repository. People and agents should read this page before changing the repo, then write the patch.
 
-The project defaults to English. Only README files and the public website stay multilingual (`en`, `zh-CN`, `zh-Hant`). English is the canonical encyclopedia text; Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. The publisher wordmark is **TechCo.Wiki**. The hostname is always lowercase `techco.wiki`.
+The project defaults to English. Only README files and the public website stay multilingual (`en`, `zh-CN`, `zh-Hant`). English is the canonical encyclopedia text; Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. The publisher wordmark is **TechCo.Wiki**. The hostname is always lowercase `techco.wiki`. Source repository: https://github.com/aaron-he-zhu/techcowiki.
 
 ## What this project is
 
