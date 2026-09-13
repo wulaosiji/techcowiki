@@ -202,7 +202,7 @@ await check("wechat-product-name-localizes", async (page) => {
   const traditional = await page.$eval("h1", (el) => el.textContent ?? "");
   await page.goto(`${BASE}/zh/companies/tencent`, { waitUntil: "domcontentloaded" });
   const companyLabel = await page.evaluate(() => {
-    const link = document.querySelector('#products a[href="/zh/products/wechat"]');
+    const link = document.querySelector('h2#products + ul a[href="/zh/products/wechat"]');
     return link?.textContent?.trim() ?? "";
   });
   return {
