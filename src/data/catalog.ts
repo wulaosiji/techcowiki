@@ -198,6 +198,7 @@ export function personHaystack(person: Person): string {
 
 export function productHaystack(product: CatalogProduct): string {
   const company = getCompany(product.companySlug);
+  const chinese = product.faq?.find((item) => item.id === "chinese-product");
   return [
     product.slug,
     product.id,
@@ -207,9 +208,6 @@ export function productHaystack(product: CatalogProduct): string {
     product.definition.en,
     product.definition.zh,
     ...traditionalSearchVariants(product.definition.zh),
-    product.lead.en,
-    product.lead.zh,
-    ...traditionalSearchVariants(product.lead.zh),
     product.companySlug,
     company?.name.en ?? "",
     company?.name.zh ?? "",
@@ -219,7 +217,10 @@ export function productHaystack(product: CatalogProduct): string {
     company?.headquarters.country.zh ?? "",
     ...product.sectors,
     ...product.regions,
-    ...(product.faq ?? []).flatMap((item) => [item.question.en, item.question.zh, item.answer.en, item.answer.zh]),
+    chinese?.question.en ?? "",
+    chinese?.question.zh ?? "",
+    chinese?.answer.en ?? "",
+    chinese?.answer.zh ?? "",
   ].join(" ");
 }
 

@@ -4,7 +4,7 @@ import { citySlug, countrySlug } from "../data/places";
 import { sectors } from "../data/site";
 import type { CatalogProduct, Company, Locale, Person } from "../data/types";
 import { altName, localePath, t } from "../lib/i18n";
-import { stripCitations } from "../lib/citations";
+import { clipPlain, stripCitations } from "../lib/citations";
 
 interface Props {
   locale: Locale;
@@ -32,13 +32,11 @@ const sub = company
       ? t(publisher.name, locale)
       : altName(product.name, locale)
     : altName(person!.name, locale);
-const text = stripCitations(
-  company
-    ? t(company.definition, locale)
-    : product
-      ? t(product.definition, locale)
-      : t(person!.definition, locale),
-);
+const text = product
+  ? clipPlain(t(product.definition, locale), 160)
+  : stripCitations(
+      company ? t(company.definition, locale) : t(person!.definition, locale),
+    );
 const chipCompany = company ?? publisher;
 ---
 
