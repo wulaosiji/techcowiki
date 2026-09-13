@@ -92,7 +92,7 @@ describe("href classification", () => {
     expect(classifyHref("/llms.txt")).toMatchObject({ surface: "llms" });
     expect(classifyHref("/zh-hant/llms-full.txt")).toMatchObject({ surface: "llms" });
     expect(classifyHref("/feed.xml")).toMatchObject({ surface: "feed" });
-    expect(classifyHref("https://github.com/wulaosiji/techcowiki")).toMatchObject({
+    expect(classifyHref("https://github.com/aaron-he-zhu/techcowiki")).toMatchObject({
       kind: "machine",
       surface: "github",
       outbound: true,
