@@ -3,6 +3,7 @@ import {
   allCompanies,
   allCountryHubs,
   allPeople,
+  allProducts,
   companiesByRegion,
   companiesBySector,
   companiesInCity,
@@ -16,7 +17,7 @@ import { regions, sectors, SITE_ORIGIN } from "../data/site";
 import type { Company, Locale, Person, Region, Sector } from "../data/types";
 import { stripCiteMarks } from "./citations";
 import { pageUrl, pick, t } from "./i18n";
-import { companyMdLink, personMdLink } from "./links";
+import { companyMdLink, personMdLink, productMdLink } from "./links";
 
 function hqLine(company: Company, locale: Locale): string {
   const cityPath = `/cities/${citySlug(company.headquarters.city.en)}`;
@@ -42,7 +43,10 @@ function companyEntries(companies: Company[], locale: Locale): string[] {
           : `[${founder.personSlug}](${pageUrl(locale, `/people/${founder.personSlug}`)})`;
       })
       .join(", ")}`,
-    `- Products: ${company.products.map((product) => product.name).join("; ")}`,
+    `- Products: ${company.products.map((product) => {
+      const entity = allProducts().find((item) => item.companySlug === company.slug && item.name.en === product.name);
+      return entity ? productMdLink(entity, locale) : product.name;
+    }).join("; ")}`,
     `- Stable ID: \`${company.id}\``,
     `- Markdown: ${pageUrl(locale, `/companies/${company.slug}`)}.md`,
     `- JSON: ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`,
@@ -220,6 +224,7 @@ export function hubIndexMarkdown(
     "",
     `- [${pick(locale, "Companies", "公司")}](${pageUrl(locale, "/companies")})`,
     `- [${pick(locale, "People", "人物")}](${pageUrl(locale, "/people")})`,
+    `- [${pick(locale, "Products", "产品")}](${pageUrl(locale, "/products")})`,
     `- [${pick(locale, "Sectors", "行业")}](${pageUrl(locale, "/sectors")})`,
     `- [${pick(locale, "Regions", "地区")}](${pageUrl(locale, "/regions")})`,
     `- [${pick(locale, "Countries", "国家")}](${pageUrl(locale, "/countries")})`,
@@ -228,7 +233,39 @@ export function hubIndexMarkdown(
   ].join("\n");
 }
 
-export function catalogIndexMarkdown(kind: "companies" | "people", locale: Locale): string {
+export function catalogIndexMarkdown(kind: "companies" | "people" | "products", locale: Locale): string {
+  if (kind === "products") {
+    const products = allProducts();
+    return [
+      `# ${pick(locale, "Products", "产品")}`,
+      "",
+      pick(locale, "> Recorded product lines of companies in the TechCo.Wiki catalog. Product pages reprint the company gloss and inherit the publisher's headquarters nationality rule.", "> TechCo.Wiki 目录中已记录的公司产品线。产品页复述公司释义，并继承出品方总部的国籍规则。"),
+      "",
+      `Canonical: ${pageUrl(locale, "/products")}`,
+      pick(locale, `Products: ${products.length}.`, `产品数：${products.length}。`),
+      "",
+      ...products.flatMap((product) => {
+        const company = allCompanies().find((row) => row.slug === product.companySlug);
+        return [
+          `### ${productMdLink(product, locale)}`,
+          "",
+          stripCiteMarks(t(product.definition, locale)),
+          "",
+          `- Publisher: ${company ? companyMdLink(company, locale) : product.companySlug}`,
+          `- Stable ID: \`${product.id}\``,
+          `- Markdown: ${pageUrl(locale, `/products/${product.slug}`)}.md`,
+          `- JSON: ${SITE_ORIGIN}/api/v1/products/${product.slug}.json`,
+          "",
+        ];
+      }),
+      pick(locale, "## See also", "## 参见"),
+      "",
+      `- [${pick(locale, "Companies", "公司")}](${pageUrl(locale, "/companies")})`,
+      `- [${pick(locale, "People", "人物")}](${pageUrl(locale, "/people")})`,
+      `- [${pick(locale, "Methodology", "方法")}](${pageUrl(locale, "/methodology")})`,
+      "",
+    ].join("\n");
+  }
   if (kind === "people") {
     const people = allPeople();
     return [
@@ -257,6 +294,7 @@ export function catalogIndexMarkdown(kind: "companies" | "people", locale: Local
       pick(locale, "## See also", "## 参见"),
       "",
       `- [${pick(locale, "Companies", "公司")}](${pageUrl(locale, "/companies")})`,
+      `- [${pick(locale, "Products", "产品")}](${pageUrl(locale, "/products")})`,
       `- [${pick(locale, "Country hubs", "国家枢纽")}](${pageUrl(locale, "/countries")})`,
       `- [${pick(locale, "Methodology", "方法")}](${pageUrl(locale, "/methodology")})`,
       "",
@@ -275,6 +313,7 @@ export function catalogIndexMarkdown(kind: "companies" | "people", locale: Local
     pick(locale, "## See also", "## 参见"),
     "",
     `- [${pick(locale, "People", "人物")}](${pageUrl(locale, "/people")})`,
+    `- [${pick(locale, "Products", "产品")}](${pageUrl(locale, "/products")})`,
     `- [${pick(locale, "Sectors", "行业")}](${pageUrl(locale, "/sectors")})`,
     `- [${pick(locale, "Country hubs", "国家枢纽")}](${pageUrl(locale, "/countries")})`,
     `- [${pick(locale, "Methodology", "方法")}](${pageUrl(locale, "/methodology")})`,

@@ -61,12 +61,13 @@ npm run e2e:pages                 # Local Pages runtime: browser + real localize
 
 ## Search and API contract
 
-Search keeps all 200 entity cards; the catalog stays readable without JavaScript. The browser filters on every whitespace-separated keyword, case-insensitively, after folding full-width characters. Sector and region filters use complete slugs. Unknown filter values behave as unset. Language switching keeps the query and filters. Search haystacks drop duplicate tokens and Markdown destinations; the original bilingual source text is unchanged.
+Search keeps company, person, and product cards; the catalog stays readable without JavaScript. The browser filters on every whitespace-separated keyword, case-insensitively, after folding full-width characters. Sector and region filters use complete slugs. Unknown filter values behave as unset. Language switching keeps the query and filters. Search haystacks drop duplicate tokens and Markdown destinations; the original bilingual source text is unchanged.
 
-API documentation version **1.4.0** still uses `/api/v1/` paths:
+API documentation version **1.5.0** still uses `/api/v1/` paths:
 
 - Localized strings and citation `sourceIds` include `en`, `zh` (zh-Hans), and `zht` (zh-Hant). IDs resolve against the entity `sources` array.
 - Graph `works-at` remains `associated-with`, now with `{en, zh, zht} role`. Callers must not treat a historical association as current employment.
+- First-class product records live at `/api/v1/products.json` and `/api/v1/products/{slug}.json`. Graph `offers` links a company to its recorded product lines. Product pages do not invent funding, valuation, SKU prices, or tickers.
 - JSON-LD uses headquarters `location` and does not infer `foundingLocation` from HQ. People use role-bearing `affiliation`.
 
 See [docs/review-2026-09-13.md](./docs/review-2026-09-13.md) for the earlier review notes.

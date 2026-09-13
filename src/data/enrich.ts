@@ -731,6 +731,7 @@ export function enrichCompany(
   company: Company,
   people: Person[],
   allCompanies: Company[] = [],
+  productStubs: { slug: string; name: string; companySlug: string }[] = [],
 ): Company {
   const withWiki = applyWikiSameAs(company, "company");
   const pool = allCompanies.length > 0 ? allCompanies : [withWiki];
@@ -765,7 +766,7 @@ export function enrichCompany(
     retrievalSection(withWiki, sources),
   ]);
   const exclude = { companySlugs: [withWiki.slug] };
-  const linker = createCatalogLinker(pool, people, exclude);
+  const linker = createCatalogLinker(pool, people, exclude, productStubs);
   const claims = [
     ...companyClaims(withWiki, people, sources),
     ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
@@ -1185,6 +1186,7 @@ export function enrichPerson(
   person: Person,
   companies: Company[],
   allPeople: Person[] = [],
+  productStubs: { slug: string; name: string; companySlug: string }[] = [],
 ): Person {
   const sanitized = dropCrossWikiSameAs(person);
   const withWiki = applyWikiSameAs(sanitized, "person");
@@ -1217,7 +1219,7 @@ export function enrichPerson(
   ];
   const sections = mergeSections(withWiki.sections ?? [], generated);
   const exclude = { personSlugs: [withWiki.slug] };
-  const linker = createCatalogLinker(companies, pool, exclude);
+  const linker = createCatalogLinker(companies, pool, exclude, productStubs);
   const claims = [
     ...personClaims(withWiki, companies, sources),
     ...encyclopediaClaims(personWikiSubject(withWiki), sources),

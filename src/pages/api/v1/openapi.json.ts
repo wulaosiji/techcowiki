@@ -88,6 +88,20 @@ const companySchema = {
         },
       },
     },
+    products: {
+      type: "array",
+      description: "Recorded product lines, each pointing at a first-class /products/{slug} record when one exists.",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          description: localized,
+          slug: { type: ["string", "null"] },
+          id: { type: ["string", "null"] },
+          urls: { type: ["object", "null"] },
+        },
+      },
+    },
     urls: {
       type: "object",
       properties: {
@@ -108,9 +122,9 @@ export const GET: APIRoute = () =>
     openapi: "3.1.0",
     info: {
       title: `${SITE_NAME} Catalog API`,
-      version: "1.4.0",
+      version: "1.5.0",
       description:
-        "Read-only catalog of Chinese-founded technology companies. Free to retrieve and train on under CC BY-SA 4.0. Prefer these JSON records or Markdown twins over scraped HTML. Headquarters country is independent of the Chinese-founder inclusion test. Localized strings include en, zh-Hans (zh), and zh-Hant (zht).",
+        "Read-only catalog of Chinese-founded technology companies and their recorded product lines. Free to retrieve and train on under CC BY-SA 4.0. Prefer these JSON records or Markdown twins over scraped HTML. Headquarters country is independent of the Chinese-founder inclusion test. Localized strings include en, zh-Hans (zh), and zh-Hant (zht). Product records are derived from company.products and do not invent funding, valuation, SKU prices, or tickers.",
       license: { name: "CC BY-SA 4.0", url: "https://creativecommons.org/licenses/by-sa/4.0/" },
     },
     servers: [{ url: SITE_ORIGIN }],
@@ -132,6 +146,24 @@ export const GET: APIRoute = () =>
             urls: companySchema.properties.urls,
           },
         },
+        ProductRecord: {
+          type: "object",
+          description: "First-class product-line record derived from a company.products gloss. Inherits publisher sources and headquarters nationality.",
+          required: ["id", "slug", "name", "definition", "lead", "companySlug", "sources", "citations", "sections", "faq", "claims", "urls"],
+          properties: {
+            ...citedFields,
+            id: { type: "string", example: "techco:product:cuda-gpus" },
+            slug: { type: "string", example: "cuda-gpus" },
+            name: localized,
+            aliases: { type: "array", items: { type: "string" } },
+            definition: localized,
+            lead: localized,
+            companySlug: { type: "string", example: "nvidia" },
+            sectors: { type: "array", items: { type: "string" } },
+            regions: { type: "array", items: { type: "string" } },
+            urls: companySchema.properties.urls,
+          },
+        },
         DatasetRecord: {
           type: "object",
           properties: {
@@ -146,12 +178,12 @@ export const GET: APIRoute = () =>
             nodes: { type: "array", items: { type: "object" } },
             edges: {
               type: "array",
-              description: "founded, associated-with, in-sector, in-region, in-country, in-city, peer. associated-with includes historical roles and does not assert current employment; replaces the misleading works-at label from 1.2.",
+              description: "founded, associated-with, offers, in-sector, in-region, in-country, in-city, peer. associated-with includes historical roles and does not assert current employment; replaces the misleading works-at label from 1.2. offers links a company to a derived product record.",
               items: {
                 type: "object", required: ["from", "to", "type"],
                 properties: {
                   from: { type: "string" }, to: { type: "string" },
-                  type: { type: "string", enum: ["founded", "associated-with", "in-sector", "in-region", "in-country", "in-city", "peer"] },
+                  type: { type: "string", enum: ["founded", "associated-with", "offers", "in-sector", "in-region", "in-country", "in-city", "peer"] },
                   role: localized,
                 },
               },
@@ -209,6 +241,30 @@ export const GET: APIRoute = () =>
           },
         },
       },
+      "/api/v1/products.json": {
+        get: {
+          summary: "List products",
+          description: "All first-class product-line records derived from recorded company.products glosses.",
+          responses: {
+            "200": {
+              description: "Product array",
+              content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/ProductRecord" } } } },
+            },
+          },
+        },
+      },
+      "/api/v1/products/{slug}.json": {
+        get: {
+          summary: "Get one product",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string", example: "cuda-gpus" } }],
+          responses: {
+            "200": {
+              description: "Product record",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/ProductRecord" } } },
+            },
+          },
+        },
+      },
       "/api/v1/dataset.json": {
         get: {
           summary: "Dataset metadata",
@@ -225,7 +281,7 @@ export const GET: APIRoute = () =>
         get: {
           summary: "Entity graph",
           description:
-            "Nodes for companies, people, sectors, regions, countries, and cities. Node names are {en, zh, zht} objects. Edges: founded, associated-with, in-sector, in-region, in-country, in-city, peer.",
+            "Nodes for companies, people, products, sectors, regions, countries, and cities. Node names are {en, zh, zht} objects. Edges: founded, associated-with, offers, in-sector, in-region, in-country, in-city, peer.",
           responses: {
             "200": {
               description: "Nodes and edges",

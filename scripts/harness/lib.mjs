@@ -37,6 +37,8 @@ export const contracts = {
     check("home machine /zh/llms-full.txt", htmlHas(html, "/zh/llms-full.txt"));
     check("home machine /zh-hant/llms-full.txt", htmlHas(html, "/zh-hant/llms-full.txt"));
     check("home machine graph.json", htmlHas(html, "graph.json"));
+    check("home machine products.json", htmlHas(html, "/api/v1/products.json"));
+    check("home machine /products.md", htmlHas(html, "/products.md"));
     check("home clickable llms is same-origin", htmlHas(html, '<a href="/llms.txt">') || htmlHas(html, '<a class="btn" href="/llms.txt">'));
     check(
       "home does not click-out llms to SITE_ORIGIN",

@@ -62,11 +62,13 @@
 
 ## 信息架构（不要私自改 URL）
 
-- `/companies/{slug}` `/people/{slug}` 实体
+- `/companies/{slug}` `/people/{slug}` `/products/{slug}` 实体
 - `/sectors` `/regions` `/countries` `/cities` 枢纽
+- Product records are derived from recorded `company.products` lines. Count is not fixed at 100. IDs use `techco:product:{slug}`.
 - `/zh/...` 简体中文平行版 + hreflang
 - `/zh-hant/...` 繁体中文平行版 + hreflang（`htmlLang=zh-Hant`）。URL 必须先剥 `/zh-hant` 再剥 `/zh`
 - `/search` 是静态 HTML：`?q=` / `?sector=` / `?region=` 只在浏览器筛选，爬虫仍看到全目录
+- Search HTML keeps company, person, and product cards. Do not assume the visible set is exactly 200.
 - 搜索页语言切换的静态 href 没有 query；`BaseLayout` 页尾脚本必须补 `location.search`（含 `/zh-hant/search`）
 - 英文页语言切换第一个链接仍是简体，保证现有 e2e 点第一个 `.lang-switch` 进入 `/zh/search`
 - 中文 404 构建产物是 `dist/zh/404/index.html` 与 `dist/zh-hant/404/index.html`，不是 `dist/zh/404.html`
@@ -119,3 +121,11 @@ HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host
 - `npm run e2e:pages` 验证本地 Pages runtime，不能据此声称已部署。托管检查不得将错误页的 200 状态视为 404 通过。
 - 总部不等于创立地点；历史公司关联不等于当前任职。机器字段和人类正文必须保持相同证据范围。
 - 搜索和内链优化不得改写条目事实；JSON 纯文本必须保留逐字段引用 ID。
+
+## Language policy
+
+Repo default language is English. Only README files and the public website stay multilingual. New AGENTS.md, harness, and comments must be English. Site product pages may still carry zh and zh-Hant copy.
+
+## Products
+
+`/products/{slug}` is a first-class catalog entity next to companies and people. Pages reprint the recorded company gloss and inherit the publisher headquarters nationality rule. Do not invent funding, valuation, SKU prices, or tickers on product pages. Machine twins: HTML, Markdown, JSON-LD, `/api/v1/products.json`, and `/api/v1/products/{slug}.json`. Graph edge `offers` links a company to its derived product records.

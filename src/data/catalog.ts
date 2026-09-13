@@ -16,18 +16,35 @@ import {
 } from "./places";
 import { listingTickers } from "./copy";
 import { traditionalSearchVariants } from "../lib/traditional";
+import { createCatalogLinker } from "../lib/autolink";
+import { buildCatalogProducts } from "./enrich-products";
+import { indexCompanyProducts } from "./product-index";
 import { regions, sectors } from "./site";
-import type { Company, Person, Region, Sector } from "./types";
+import type { CatalogProduct, Company, Person, Region, Sector } from "./types";
 
 const rawCompanies: Company[] = [...seedCompanies, ...extendedCompanies].map(normalizeCompany);
 const rawPeople: Person[] = [...seedPeople, ...extendedPeople];
+const productStubs = indexCompanyProducts(rawCompanies);
 
 export const companies: Company[] = rawCompanies.map((company) =>
-  enrichCompany(company, rawPeople, rawCompanies),
+  enrichCompany(company, rawPeople, rawCompanies, productStubs),
 );
 export const people: Person[] = rawPeople.map((person) =>
-  enrichPerson(person, companies, rawPeople),
+  enrichPerson(person, companies, rawPeople, productStubs),
 );
+
+const rawProducts: CatalogProduct[] = buildCatalogProducts(companies, productStubs);
+export const products: CatalogProduct[] = rawProducts.map((product) => {
+  const linker = createCatalogLinker(companies, people, { productSlugs: [product.slug] }, productStubs);
+  return {
+    ...product,
+    definition: linker.localized(product.definition),
+    lead: linker.localized(product.lead),
+    sections: product.sections.map((section) => ({ ...section, body: linker.localized(section.body) })),
+    faq: (product.faq ?? []).map((item) => ({ ...item, answer: linker.localized(item.answer) })),
+    claims: (product.claims ?? []).map((item) => ({ ...item, value: linker.localized(item.value) })),
+  };
+});
 
 export function allCompanies(): Company[] {
   return companies;
@@ -43,6 +60,22 @@ export function getCompany(slug: string): Company | undefined {
 
 export function getPerson(slug: string): Person | undefined {
   return people.find((person) => person.slug === slug);
+}
+
+export function allProducts(): CatalogProduct[] {
+  return products;
+}
+
+export function getProduct(slug: string): CatalogProduct | undefined {
+  return products.find((product) => product.slug === slug);
+}
+
+export function productsForCompany(companySlug: string): CatalogProduct[] {
+  return products.filter((product) => product.companySlug === companySlug);
+}
+
+export function productForLine(companySlug: string, name: string): CatalogProduct | undefined {
+  return products.find((product) => product.companySlug === companySlug && product.name.en === name);
 }
 
 export function getSector(slug: string): Sector | undefined {
@@ -163,12 +196,44 @@ export function personHaystack(person: Person): string {
   ].join(" ");
 }
 
-export function searchEntities(query: string): { companies: Company[]; people: Person[] } {
+export function productHaystack(product: CatalogProduct): string {
+  const company = getCompany(product.companySlug);
+  return [
+    product.slug,
+    product.id,
+    product.name.en,
+    product.name.zh,
+    ...product.aliases,
+    product.definition.en,
+    product.definition.zh,
+    ...traditionalSearchVariants(product.definition.zh),
+    product.lead.en,
+    product.lead.zh,
+    ...traditionalSearchVariants(product.lead.zh),
+    product.companySlug,
+    company?.name.en ?? "",
+    company?.name.zh ?? "",
+    ...(company ? traditionalSearchVariants(company.name.zh) : []),
+    company?.headquarters.city.en ?? "",
+    company?.headquarters.country.en ?? "",
+    company?.headquarters.country.zh ?? "",
+    ...product.sectors,
+    ...product.regions,
+    ...(product.faq ?? []).flatMap((item) => [item.question.en, item.question.zh, item.answer.en, item.answer.zh]),
+  ].join(" ");
+}
+
+export function searchEntities(query: string): {
+  companies: Company[];
+  people: Person[];
+  products: CatalogProduct[];
+} {
   const needle = query.trim().toLowerCase();
-  if (!needle) return { companies, people };
+  if (!needle) return { companies, people, products };
   return {
     companies: companies.filter((company) => companyHaystack(company).toLowerCase().includes(needle)),
     people: people.filter((person) => personHaystack(person).toLowerCase().includes(needle)),
+    products: products.filter((product) => productHaystack(product).toLowerCase().includes(needle)),
   };
 }
 
@@ -197,12 +262,13 @@ export function catalogStats() {
   return {
     companies: companies.length,
     people: people.length,
+    products: products.length,
     sectors: sectors.length,
     regions: regions.length,
     countries: countryHubs(companies).length,
     cities: cityHubs(companies).length,
     sources: new Set(
-      [...companies, ...people].flatMap((entity) => entity.sources.map((source) => source.url)),
+      [...companies, ...people, ...products].flatMap((entity) => entity.sources.map((source) => source.url)),
     ).size,
   };
 }
@@ -250,6 +316,21 @@ export function relatedPeople(person: Person, limit = 6): Person[] {
 
 export function peopleForCompanyList(list: Company[]): Person[] {
   return peopleForCompanies(people, list);
+}
+
+export function relatedProducts(product: CatalogProduct, limit = 6): CatalogProduct[] {
+  const scored = products
+    .filter((other) => other.slug !== product.slug)
+    .map((other) => ({
+      other,
+      score:
+        (other.companySlug === product.companySlug ? 4 : 0) +
+        other.sectors.filter((sector) => product.sectors.includes(sector)).length * 2 +
+        other.regions.filter((region) => product.regions.includes(region)).length,
+    }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || a.other.name.en.localeCompare(b.other.name.en));
+  return scored.slice(0, limit).map((entry) => entry.other);
 }
 
 export type { CityHub, CountryHub };

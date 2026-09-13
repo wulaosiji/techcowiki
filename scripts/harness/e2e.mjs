@@ -95,6 +95,7 @@ await check("home-branding-and-machine-box", async (page) => {
       title: document.title,
       hasRegions: nav.some((t) => /regions|地区/i.test(t)),
       hasCities: nav.some((t) => /cities|城市/i.test(t)),
+      hasProducts: nav.some((t) => /products|产品|產品/i.test(t)),
       hasZhLlms: html.includes("/zh/llms-full.txt"),
       hasGraph: html.includes("graph.json"),
       hasSearchMd: html.includes("/search.md"),
@@ -102,7 +103,7 @@ await check("home-branding-and-machine-box", async (page) => {
   });
   await page.screenshot({ path: `${SCREEN_DIR}/home.png` });
   return {
-    ok: data.title.includes("TechCo.Wiki") && data.hasRegions && data.hasCities && data.hasZhLlms && data.hasGraph && data.hasSearchMd,
+    ok: data.title.includes("TechCo.Wiki") && data.hasRegions && data.hasCities && data.hasProducts && data.hasZhLlms && data.hasGraph && data.hasSearchMd,
     ...data,
   };
 });
@@ -166,6 +167,25 @@ await check("header-search-tsm-then-zh-keeps-query", async (page) => {
     afterZh,
     searchPage,
     zhPage,
+  };
+});
+
+await check("cuda-gpus-product-page", async (page) => {
+  await page.goto(`${BASE}/products/cuda-gpus`, { waitUntil: "domcontentloaded" });
+  const data = await page.evaluate(() => {
+    const text = document.body.innerText;
+    const hrefs = [...document.querySelectorAll("a")].map((a) => a.getAttribute("href") || "");
+    return {
+      heading: document.querySelector("h1")?.textContent ?? "",
+      nvidia: hrefs.some((h) => h.includes("/companies/nvidia")),
+      md: hrefs.includes("/products/cuda-gpus.md"),
+      json: hrefs.includes("/api/v1/products/cuda-gpus.json"),
+      chineseProduct: /Do not describe CUDA GPUs as a Chinese product/i.test(text),
+    };
+  });
+  return {
+    ok: /CUDA GPUs/i.test(data.heading) && data.nvidia && data.md && data.json && data.chineseProduct,
+    ...data,
   };
 });
 
@@ -247,7 +267,11 @@ await check("search-whitespace-exact-filters-and-empty-state", async (page) => {
   const empty = await page.evaluate(() => !document.querySelector("#empty").hidden && document.querySelectorAll(".entity:not([hidden])").length === 0);
   await page.goto(`${BASE}/search?sector=semi&region=america`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.querySelector("#result-count")?.textContent);
-  const invalid = await page.evaluate(() => document.querySelectorAll(".entity:not([hidden])").length === 200 && document.querySelector("#sector").value === "");
+  const invalid = await page.evaluate(() => {
+    const visible = document.querySelectorAll(".entity:not([hidden])").length;
+    const total = document.querySelectorAll(".entity").length;
+    return visible === total && total >= 200 && document.querySelector("#sector").value === "";
+  });
   return { ok: matched.tsmc && matched.exact && empty && invalid && switched.pathname.startsWith("/zh/search") && switched.searchParams.get("sector") === "semiconductors" && switched.searchParams.get("region") === "greater-china", matched, empty, invalid };
 });
 
@@ -277,7 +301,7 @@ await check("machine-links-are-clickable-on-preview", async (page) => {
 await check("mobile-layout-and-control-labels", async (page) => {
   await page.setViewport({ width: 320, height: 740 });
   const failures = [];
-  for (const path of ["/", "/companies", "/companies/nvidia", "/people/jensen-huang", "/search?q=TSM", "/zh/search", "/zh/countries/tw", "/zh-hant/search"]) {
+  for (const path of ["/", "/companies", "/companies/nvidia", "/products/cuda-gpus", "/people/jensen-huang", "/search?q=TSM", "/zh/search", "/zh/countries/tw", "/zh-hant/search"]) {
     await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
     const issues = await page.evaluate(() => ({
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
@@ -292,7 +316,12 @@ await check("mobile-layout-and-control-labels", async (page) => {
 await check("catalog-remains-readable-without-javascript", async (page) => {
   await page.setJavaScriptEnabled(false);
   await page.goto(`${BASE}/search?q=TSM`, { waitUntil: "domcontentloaded" });
-  return { ok: await page.$$eval(".entity:not([hidden])", (nodes) => nodes.length === 200) };
+  return {
+    ok: await page.$$eval(".entity:not([hidden])", (nodes) => {
+      const total = document.querySelectorAll(".entity").length;
+      return nodes.length === total && total >= 200;
+    }),
+  };
 });
 
 await browser.close();

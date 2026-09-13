@@ -1,0 +1,12 @@
+---
+import ProductPage from "../../../views/ProductPage.astro";
+import { allProducts, getProduct } from "../../../data/catalog";
+
+export function getStaticPaths() {
+  return allProducts().map((product) => ({ params: { slug: product.slug } }));
+}
+
+const product = getProduct(Astro.params.slug!);
+if (!product) throw new Error("Missing product");
+---
+<ProductPage locale="zht" product={product} />

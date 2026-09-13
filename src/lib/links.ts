@@ -1,4 +1,4 @@
-import type { Company, Locale, Localized, Person } from "../data/types";
+import type { CatalogProduct, Company, Locale, Localized, Person } from "../data/types";
 import { localePath, t } from "./i18n";
 
 export function mdLink(label: string, href: string): string {
@@ -11,6 +11,10 @@ export function companyHref(slug: string, locale: Locale): string {
 
 export function personHref(slug: string, locale: Locale): string {
   return localePath(locale, `/people/${slug}`);
+}
+
+export function productHref(slug: string, locale: Locale): string {
+  return localePath(locale, `/products/${slug}`);
 }
 
 export function sectorHref(slug: string, locale: Locale): string {
@@ -39,6 +43,10 @@ export function companyMdLink(company: Pick<Company, "slug" | "name">, locale: L
 
 export function personMdLink(person: Pick<Person, "slug" | "name">, locale: Locale): string {
   return mdLink(t(person.name, locale), personHref(person.slug, locale));
+}
+
+export function productMdLink(product: Pick<CatalogProduct, "slug" | "name">, locale: Locale): string {
+  return mdLink(t(product.name, locale), productHref(product.slug, locale));
 }
 
 export function namedLink(name: Localized, hrefFor: (locale: Locale) => string): Localized {

@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import SeeAlso from "../components/SeeAlso.astro";
-import { allCompanies, allPeople } from "../data/catalog";
+import { allCompanies, allPeople, allProducts } from "../data/catalog";
 import type { EditorialDoc } from "../data/pages";
 import type { Locale } from "../data/types";
 import { headingId, localePath, pick, t, tList } from "../lib/i18n";
@@ -20,6 +20,11 @@ interface Props {
 const { locale, doc } = Astro.props;
 const companies = allCompanies();
 const people = allPeople();
+const products = allProducts().map((product) => ({
+  slug: product.slug,
+  name: product.name.en,
+  companySlug: product.companySlug,
+}));
 ---
 
 <BaseLayout
@@ -44,7 +49,7 @@ const people = allPeople();
         <section id={headingId(block.title.en)}>
           <h2>{t(block.title, locale)}</h2>
           {tList(block.body, locale).map((paragraph) => (
-            <p set:html={renderCitedHtml(linkCatalogCopy(paragraph, locale, companies, people), [])} />
+            <p set:html={renderCitedHtml(linkCatalogCopy(paragraph, locale, companies, people, {}, products), [])} />
           ))}
         </section>
       ))}

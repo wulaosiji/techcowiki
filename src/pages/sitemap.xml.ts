@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { allCityHubs, allCompanies, allCountryHubs, allPeople } from "../data/catalog";
+import { allCityHubs, allCompanies, allCountryHubs, allPeople, allProducts } from "../data/catalog";
 import { editorialDocs } from "../data/pages";
 import { LAST_REVIEWED, regions, sectors, SITE_ORIGIN } from "../data/site";
 import { LOCALES, localeMeta, markdownUrl, pageUrl } from "../lib/i18n";
@@ -18,6 +18,7 @@ export const GET: APIRoute = () => {
     "/",
     "/companies",
     "/people",
+    "/products",
     "/sectors",
     "/regions",
     "/countries",
@@ -29,6 +30,7 @@ export const GET: APIRoute = () => {
   const entityPaths = [
     ...allCompanies().map((company) => `/companies/${company.slug}`),
     ...allPeople().map((person) => `/people/${person.slug}`),
+    ...allProducts().map((product) => `/products/${product.slug}`),
     ...sectors.map((sector) => `/sectors/${sector.slug}`),
     ...regions.map((region) => `/regions/${region.slug}`),
     ...allCountryHubs().map((hub) => `/countries/${hub.slug}`),
@@ -47,8 +49,10 @@ export const GET: APIRoute = () => {
     `${SITE_ORIGIN}/api/v1/graph.json`,
     `${SITE_ORIGIN}/api/v1/companies.json`,
     `${SITE_ORIGIN}/api/v1/people.json`,
+    `${SITE_ORIGIN}/api/v1/products.json`,
     ...allCompanies().map((company) => `${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`),
     ...allPeople().map((person) => `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`),
+    ...allProducts().map((product) => `${SITE_ORIGIN}/api/v1/products/${product.slug}.json`),
   ];
   const alternates = (path: string) => [
     ...LOCALES.map((locale) => ({ lang: localeMeta[locale].hreflang, href: pageUrl(locale, path) })),

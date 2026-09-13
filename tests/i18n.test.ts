@@ -53,14 +53,28 @@ describe("locale and machine contracts", () => {
     expect(text).toContain("https://techco.wiki/zh/llms-full.txt");
     expect(text).toContain("https://techco.wiki/zh-hant/llms-full.txt");
     expect(text).toContain("https://techco.wiki/search.md");
+    expect(text).toContain("https://techco.wiki/products");
+    expect(text).toContain("https://techco.wiki/api/v1/products.json");
+    expect(text).toContain("https://techco.wiki/api/v1/products/cuda-gpus.json");
   });
 
-  test("OpenAPI 1.2 documents bilingual markdown and secondary listings", async () => {
+  test("OpenAPI 1.5 documents products and bilingual markdown", async () => {
     const spec = (await (await openapiGet({} as never)).json()) as {
       info: { version: string };
-      components: { schemas: { CompanyRecord: { properties: { urls: { properties: Record<string, unknown> } } } } };
+      paths: Record<string, unknown>;
+      components: {
+        schemas: {
+          CompanyRecord: { properties: { urls: { properties: Record<string, unknown> } } };
+          ProductRecord?: { properties: { companySlug?: unknown } };
+          Graph: { properties: { edges: { items: { properties: { type: { enum: string[] } } } } } };
+        };
+      };
     };
-    expect(spec.info.version).toBe("1.4.0");
+    expect(spec.info.version).toBe("1.5.0");
+    expect(spec.paths["/api/v1/products.json"]).toBeTruthy();
+    expect(spec.paths["/api/v1/products/{slug}.json"]).toBeTruthy();
+    expect(spec.components.schemas.ProductRecord?.properties.companySlug).toBeTruthy();
+    expect(spec.components.schemas.Graph.properties.edges.items.properties.type.enum).toContain("offers");
     expect(spec.components.schemas.CompanyRecord.properties.urls.properties.markdownZh).toBeTruthy();
     expect(spec.components.schemas.CompanyRecord.properties.urls.properties.markdownZht).toBeTruthy();
   });
@@ -68,9 +82,17 @@ describe("locale and machine contracts", () => {
   test("graph nodes expose English, Simplified, and Traditional names", async () => {
     const graph = (await (await graphGet({} as never)).json()) as {
       nodes: { type: string; name: { en?: string; zh?: string; zht?: string } }[];
+      edges: { type: string; from: string; to: string }[];
     };
     const nvidia = graph.nodes.find((node) => node.type === "company" && node.name.en === "NVIDIA");
     expect(nvidia?.name.zh).toBeTruthy();
     expect(nvidia?.name.zht).toBe("英偉達");
+    const cuda = graph.nodes.find((node) => node.type === "product" && node.name.en === "CUDA GPUs");
+    expect(cuda).toBeTruthy();
+    expect(
+      graph.edges.some(
+        (edge) => edge.type === "offers" && edge.from === "techco:company:nvidia" && edge.to === "techco:product:cuda-gpus",
+      ),
+    ).toBe(true);
   });
 });
