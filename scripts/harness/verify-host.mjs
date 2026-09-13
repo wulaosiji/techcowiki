@@ -2,11 +2,13 @@
 import { BROWSER_UA, check, contracts } from "./lib.mjs";
 
 const BASE = (process.env.HARNESS_BASE || "http://127.0.0.1:4321").replace(/\/$/, "");
-const CHECK_ZH_SPLAT = process.env.HARNESS_ZH_SPLAT === "1" || /pages\.dev$/.test(new URL(BASE).hostname);
+const local = ["localhost", "127.0.0.1", "[::1]"].includes(new URL(BASE).hostname);
+const CHECK_ZH_SPLAT = process.env.HARNESS_ZH_SPLAT === "1" || !local;
 
 async function get(path, { redirect = "follow" } = {}) {
   const res = await fetch(`${BASE}${path}`, {
     redirect,
+    signal: AbortSignal.timeout(15000),
     headers: { "user-agent": BROWSER_UA, accept: "text/html,application/json;q=0.9,*/*;q=0.8" },
   });
   const text = await res.text();
@@ -18,35 +20,39 @@ check(`host reachable ${BASE} (${home.status})`, home.status === 200, home.text.
 contracts.home(home.text);
 
 const nvidia = await get("/companies/nvidia");
+check("nvidia 200", nvidia.status === 200);
 contracts.nvidia(nvidia.text);
 
 const tsmc = await get("/companies/tsmc");
+check("tsmc 200", tsmc.status === 200);
 contracts.tsmc(tsmc.text);
 
 const zhNvidia = await get("/zh/companies/nvidia");
+check("zh nvidia 200", zhNvidia.status === 200);
 contracts.zhNvidia(zhNvidia.text);
 
 const search = await get("/search?q=TSM");
+check("search 200", search.status === 200);
 contracts.search(search.text);
 check("search lists TSMC for TSM", /\/companies\/tsmc/.test(search.text));
 
 const openapi = await get("/api/v1/openapi.json");
 check("openapi 200", openapi.status === 200);
-check("openapi is not at /openapi.json only", true);
+check("openapi content type", /application\/json/.test(openapi.res.headers.get("content-type") ?? ""));
+check("openapi document", JSON.parse(openapi.text).openapi === "3.1.0");
+
+const enMissing = await get("/this-page-does-not-exist");
+check("en missing URL is 404", enMissing.status === 404);
+contracts.en404(enMissing.text);
 
 if (CHECK_ZH_SPLAT) {
-  const missing = await get("/zh/this-page-does-not-exist", { redirect: "manual" });
-  const body =
-    missing.status >= 300 && missing.status < 400
-      ? (await get("/zh/this-page-does-not-exist")).text
-      : missing.text;
-  check("zh missing URL is 404", missing.status === 404 || missing.status === 200);
-  contracts.zh404(body);
-  if (missing.status !== 404) {
-    console.warn("WARN zh splat did not return 404; Astro preview cannot run _worker.js. Deployed Pages must.");
-  } else {
-    check("zh splat HTTP 404", missing.status === 404);
-  }
+  const missing = await get("/zh/this-page-does-not-exist");
+  check("zh missing URL is 404", missing.status === 404);
+  contracts.zh404(missing.text);
+  const head = await fetch(`${BASE}/zh/this-page-does-not-exist`, {
+    method: "HEAD", signal: AbortSignal.timeout(15000), headers: { "user-agent": BROWSER_UA },
+  });
+  check("zh missing HEAD is 404 without a body", head.status === 404 && head.body === null);
 } else {
   const zh404 = await get("/zh/404");
   contracts.zh404(zh404.text);

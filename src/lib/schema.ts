@@ -115,11 +115,11 @@ export function companyGraph(company: Company, locale: Locale) {
           value: company.id,
         },
         sameAs: Object.values(company.sameAs).filter(Boolean),
-        numberOfEmployees: company.employees?.value,
+        numberOfEmployees: company.employees ? { "@type": "QuantitativeValue", value: company.employees.value } : undefined,
         knowsAbout: company.sectors.map(
           (slug) => sectors.find((sector) => sector.slug === slug)?.name[locale] ?? slug,
         ),
-        foundingLocation: {
+        location: {
           "@type": "Place",
           name: `${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`,
           url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
@@ -229,14 +229,19 @@ export function personGraph(person: Person, locale: Locale) {
           name: claim.label[locale],
           value: stripCitations(claim.value[locale]),
         })),
-        worksFor: person.companies.map((item) => {
+        // The catalog records historical associations as well as current roles.
+        // A founder relationship alone does not establish present employment.
+        affiliation: person.companies.map((item) => {
           const company = getCompany(item.companySlug);
           return {
-            "@type": "Organization",
-            name: company ? company.name[locale] : item.companySlug,
-            url: pageUrl(locale, `/companies/${item.companySlug}`),
-            identifier: company?.id,
-            jobTitle: item.role[locale],
+            "@type": "Role",
+            roleName: item.role[locale],
+            affiliation: {
+              "@type": "Organization",
+              name: company ? company.name[locale] : item.companySlug,
+              url: pageUrl(locale, `/companies/${item.companySlug}`),
+              identifier: company?.id,
+            },
           };
         }),
       },

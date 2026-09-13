@@ -123,13 +123,13 @@ describe("catalog integrity", () => {
     const nvidia = getCompany("nvidia");
     const tsmc = getCompany("tsmc");
     const yahoo = getCompany("yahoo");
-    expect(nvidia?.sections.find((section) => section.id === "model-notes")?.body.en).toMatch(
+    expect(nvidia?.sections?.find((section) => section.id === "model-notes")?.body.en).toMatch(
       /Do not describe NVIDIA as a Chinese company/,
     );
-    expect(tsmc?.sections.find((section) => section.id === "model-notes")?.body.en).toMatch(
+    expect(tsmc?.sections?.find((section) => section.id === "model-notes")?.body.en).toMatch(
       /Do not describe TSMC as a mainland Chinese company/,
     );
-    expect(yahoo?.sections.find((section) => section.id === "model-notes")?.body.en).toMatch(
+    expect(yahoo?.sections?.find((section) => section.id === "model-notes")?.body.en).toMatch(
       /Do not describe Yahoo as a Chinese company/,
     );
     expect(nvidia?.faq?.find((item) => item.id === "chinese-company")?.answer.en).toMatch(
@@ -138,12 +138,12 @@ describe("catalog integrity", () => {
     expect(tsmc?.faq?.find((item) => item.id === "chinese-company")?.answer.en).toMatch(
       /Taiwan-headquartered/,
     );
-    const nvidiaEncyclopedia = nvidia?.sections.find((section) => section.id === "encyclopedia-context")?.body.en;
+    const nvidiaEncyclopedia = nvidia?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en;
     expect(nvidiaEncyclopedia).toMatch(/Santa Clara/);
     expect(nvidiaEncyclopedia).toMatch(/third-party Wikipedia extract/);
     expect(nvidia?.faq?.some((item) => item.id === "wikipedia-describe")).toBe(true);
     expect(nvidia?.faq?.some((item) => item.id.startsWith("product-"))).toBe(true);
-    expect(getPerson("jensen-huang")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
+    expect(getPerson("jensen-huang")?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
       /Nvidia/,
     );
   });
@@ -168,16 +168,16 @@ describe("catalog integrity", () => {
         expect(mentioned, `${person.slug} extract does not mention the person`).toBe(true);
       }
     }
-    const jensen = getPerson("jensen-huang")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en;
+    const jensen = getPerson("jensen-huang")?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en;
     expect(jensen).toMatch(/Nvidia/);
     expect(jensen).not.toMatch(/Uzbekistan|punishment/i);
-    expect(getPerson("liang-rubo")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
+    expect(getPerson("liang-rubo")?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
       /The article “ByteDance”/,
     );
-    expect(getCompany("bytedance")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
+    expect(getCompany("bytedance")?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en).toMatch(
       /ByteDance/,
     );
-    expect(getCompany("bytedance")?.sections.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
+    expect(getCompany("bytedance")?.sections?.find((section) => section.id === "encyclopedia-context")?.body.en).not.toMatch(
       /chess player/,
     );
   });
@@ -197,7 +197,7 @@ describe("catalog integrity", () => {
   });
 
   test("TSMC geography does not treat China as a headquarters synonym", () => {
-    const geo = getCompany("tsmc")?.sections.find((section) => section.id === "geography")?.body.en ?? "";
+    const geo = getCompany("tsmc")?.sections?.find((section) => section.id === "geography")?.body.en ?? "";
     expect(geo).toContain("macro-region label");
     expect(geo).not.toMatch(/Greater China \([^)]*\[China\]\(\/countries\/cn\)/);
     expect(geo).toMatch(/does not move the headquarters to (\[China\]\(\/countries\/cn\)|China)/);

@@ -15,11 +15,26 @@ import { catalogIndexMarkdown } from "../src/lib/hub-markdown";
 import { citySlug, countrySlug } from "../src/data/places";
 import { editorialDocs, getEditorial } from "../src/data/pages";
 import { faqs } from "../src/data/site";
-import { linkCatalogCopy } from "../src/lib/autolink";
+import { createCatalogLinker, linkCatalogCopy } from "../src/lib/autolink";
 import { companyMarkdown, personMarkdown } from "../src/lib/markdown";
 import { GET as sitemapGet } from "../src/pages/sitemap.xml";
 
 describe("internal linking", () => {
+  test("existing canonical Markdown links and code stay intact", () => {
+    const text = "[NVIDIA source](https://techco.wiki/companies/nvidia) `https://techco.wiki/people/jensen-huang.md`";
+    expect(linkCatalogCopy(text, "en", allCompanies(), allPeople())).toBe(text);
+  });
+
+  test("a reused dictionary does not leak exclusions or matching state", () => {
+    const linker = createCatalogLinker(allCompanies(), allPeople(), { companySlugs: ["nvidia"] });
+    const text = { en: "NVIDIA and TSMC in Santa Clara.", zh: "英伟达与台积电在圣克拉拉。" };
+    const first = linker.localized(text);
+    expect(first.en).not.toContain("/companies/nvidia");
+    expect(first.en).toContain("/companies/tsmc");
+    expect(linker.localized(text)).toEqual(first);
+    expect(linkCatalogCopy("NVIDIA", "en", allCompanies(), allPeople())).toBe("[NVIDIA](/companies/nvidia)");
+  });
+
   test("NVIDIA prose links the founder and Santa Clara hubs", () => {
     const nvidia = getCompany("nvidia");
     expect(nvidia).toBeTruthy();

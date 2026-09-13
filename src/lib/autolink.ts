@@ -23,6 +23,8 @@ interface Term {
   href: string;
   latin: boolean;
   exactCase: boolean;
+  pattern: RegExp;
+  folded: string;
 }
 
 /** Common English words that are also catalog names; only match the stored case. */
@@ -106,11 +108,16 @@ function addTerm(target: Term[], seen: Set<string>, term: string, href: string, 
   seen.add(label);
   seen.add(key);
   const latin = isLatin(trimmed);
+  const matchCase = exactCase || (latin && EXACT_CASE_LATIN.has(trimmed.toLowerCase()));
   target.push({
     term: trimmed,
     href,
     latin,
-    exactCase: exactCase || (latin && EXACT_CASE_LATIN.has(trimmed.toLowerCase())),
+    exactCase: matchCase,
+    folded: trimmed.toLowerCase(),
+    pattern: latin
+      ? new RegExp(`(^|[^A-Za-z0-9-])(${escapeRegExp(trimmed)})(?![A-Za-z0-9-])`, matchCase ? "" : "i")
+      : new RegExp(escapeRegExp(trimmed)),
   });
 }
 
@@ -242,12 +249,17 @@ function convertCatalogUrls(
   companies: Company[],
   people: Person[],
 ): string {
-  return text.replace(CATALOG_URL, (match, _zh: string, path: string, hash = "") => {
+  // Existing links and inline code are opaque; replacing inside their URLs would
+  // create nested Markdown links and corrupt the destination.
+  return text.split(/(`[^`]+`|\[[^\]]+\]\([^)]+\))/g).map((part, index) => {
+    if (index % 2) return part;
+    return part.replace(CATALOG_URL, (match, _zh: string, path: string, hash = "") => {
     return mdLink(
       labelForPath(path, locale, companies, people) ?? match,
       `${localePath(locale, path)}${hash}`,
     );
-  });
+    });
+  }).join("");
 }
 
 function labelForPath(
@@ -316,24 +328,22 @@ function stash(tokens: string[], value: string): string {
 function linkTerms(text: string, terms: Term[]): string {
   const protectedText = protect(text);
   let body = protectedText.text;
+  let folded = body.toLowerCase();
   const tokens = protectedText.tokens;
   for (const term of terms) {
-    const hasExact = body.includes(term.term);
-    const hasInsensitive =
-      !term.exactCase && term.latin && body.toLowerCase().includes(term.term.toLowerCase());
-    if (!hasExact && !hasInsensitive) continue;
-    const pattern = !term.latin
-      ? new RegExp(escapeRegExp(term.term))
-      : new RegExp(
-          `(^|[^A-Za-z0-9-])(${escapeRegExp(term.term)})(?![A-Za-z0-9-])`,
-          term.exactCase ? "" : "i",
-        );
-    const next = body.replace(pattern, (match, prefix: string, captured?: string) => {
+    const matches = !term.exactCase && term.latin
+      ? folded.includes(term.folded)
+      : body.includes(term.term);
+    if (!matches) continue;
+    const next = body.replace(term.pattern, (match, prefix: string, captured?: string) => {
       const label = term.latin ? (captured ?? match) : match;
       const link = mdLink(label, term.href);
       return term.latin ? `${prefix}${stash(tokens, link)}` : stash(tokens, link);
     });
-    if (next !== body) body = next;
+    if (next !== body) {
+      body = next;
+      folded = body.toLowerCase();
+    }
   }
   return restore(body, tokens);
 }
@@ -346,9 +356,24 @@ export function linkCatalogCopy(
   people: Person[],
   exclude: AutolinkExclude = {},
 ): string {
-  if (!text) return text;
-  const withUrls = convertCatalogUrls(text, locale, companies, people).replace(PAGE_PREFIX, "$1");
-  return linkTerms(withUrls, termsForLocale(locale, companies, people, exclude));
+  return createCatalogLinker(companies, people, exclude).text(text, locale);
+}
+
+/** Reuse one locale dictionary across all fields of an entity. No global cache. */
+export function createCatalogLinker(companies: Company[], people: Person[], exclude: AutolinkExclude = {}) {
+  const dictionaries: Partial<Record<Locale, Term[]>> = {};
+  function text(value: string, locale: Locale): string {
+    if (!value) return value;
+    const terms = dictionaries[locale] ??= termsForLocale(locale, companies, people, exclude);
+    const withUrls = convertCatalogUrls(value, locale, companies, people).replace(PAGE_PREFIX, "$1");
+    return linkTerms(withUrls, terms);
+  }
+  return {
+    text,
+    localized(value: { en: string; zh: string }) {
+      return { en: text(value.en, "en"), zh: text(value.zh, "zh") };
+    },
+  };
 }
 
 export function linkLocalized(

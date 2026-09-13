@@ -56,11 +56,12 @@ export const GET: APIRoute = () => {
       type: "founded",
     })),
   );
-  const worksAt = allPeople().flatMap((person) =>
+  const associations = allPeople().flatMap((person) =>
     person.companies.map((item) => ({
       from: person.id,
       to: `techco:company:${item.companySlug}`,
-      type: "works-at",
+      type: "associated-with",
+      role: item.role,
     })),
   );
   const memberships = allCompanies().flatMap((company) => [
@@ -92,5 +93,5 @@ export const GET: APIRoute = () => {
       type: "peer",
     })),
   );
-  return jsonResponse({ nodes, edges: [...founded, ...worksAt, ...memberships, ...peers] });
+  return jsonResponse({ nodes, edges: [...founded, ...associations, ...memberships, ...peers] });
 };

@@ -1,4 +1,5 @@
 ---
+import { compactSearchText } from "../lib/search";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import EntityCard from "../components/EntityCard.astro";
@@ -41,22 +42,23 @@ const people = allPeople();
     </div>
     <p class="meta">
       {locale === "zh"
-        ? "完整目录写在本页 HTML 中。查询参数只用于筛选显示，不会隐藏给爬虫的内容。"
-        : "The full catalog is in this HTML. Query parameters only hide cards in the browser; crawlers still see every entity."}
+        ? "按名称、别名、产品、创始人、总部或证券代码搜索。可用空格组合关键词，并按行业和地区缩小范围。"
+        : "Search by name, alias, product, founder, headquarters, or ticker. Combine keywords with spaces and narrow results by sector and region."}
     </p>
     <form class="search-form" method="get" role="search">
       <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
-      <select name="sector" id="sector">
+      <select name="sector" id="sector" aria-label={t(ui.filterSector, locale)}>
         <option value="">{t(ui.filterSector, locale)}</option>
         {sectors.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
       </select>
-      <select name="region" id="region">
+      <select name="region" id="region" aria-label={t(ui.filterRegion, locale)}>
         <option value="">{t(ui.filterRegion, locale)}</option>
         {regions.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
       </select>
       <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
     </form>
-    <p class="empty-state" id="empty">{t(ui.noResults, locale)}</p>
+    <p class="meta" id="result-count" role="status" data-locale={locale}></p>
+    <p class="empty-state" id="empty" hidden>{t(ui.noResults, locale)}</p>
     <section class="result-group" data-results>
     <h2>{t(ui.navCompanies, locale)}</h2>
     <div class="grid" id="company-grid">
@@ -64,7 +66,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="company"
-          data-haystack={companyHaystack(company)}
+          data-haystack={compactSearchText(companyHaystack(company))}
           data-sector={company.sectors.join(" ")}
           data-region={company.regions.join(" ")}
         >
@@ -80,7 +82,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="person"
-          data-haystack={personHaystack(person)}
+          data-haystack={compactSearchText(personHaystack(person))}
           data-sector={personSectors(person).join(" ")}
           data-region={personRegions(person).join(" ")}
         >
@@ -90,38 +92,32 @@ const people = allPeople();
     </div>
     </section>
   </div>
-  <script is:inline>
-    (function () {
-      var params = new URLSearchParams(window.location.search);
-      var q = (params.get("q") || "").toLowerCase();
-      var sector = params.get("sector") || "";
-      var region = params.get("region") || "";
-      var qInput = document.getElementById("q");
-      var sectorInput = document.getElementById("sector");
-      var regionInput = document.getElementById("region");
-      if (qInput) qInput.value = params.get("q") || "";
-      if (sectorInput) sectorInput.value = sector;
-      if (regionInput) regionInput.value = region;
-      document.querySelectorAll(".entity").forEach(function (node) {
-        var hay = (node.getAttribute("data-haystack") || "").toLowerCase();
-        var sectors = node.getAttribute("data-sector") || "";
-        var regions = node.getAttribute("data-region") || "";
-        var ok = !q || hay.indexOf(q) !== -1;
-        if (sector) ok = ok && sectors.indexOf(sector) !== -1;
-        if (region) ok = ok && regions.indexOf(region) !== -1;
-        node.hidden = !ok;
-      });
-      var visible = Array.prototype.some.call(document.querySelectorAll(".entity"), function (node) {
-        return !node.hidden;
-      });
-      var empty = document.getElementById("empty");
-      if (empty) empty.style.display = visible ? "none" : "block";
-      document.querySelectorAll("[data-results]").forEach(function (group) {
-        var any = Array.prototype.some.call(group.querySelectorAll(".entity"), function (node) {
-          return !node.hidden;
-        });
-        group.hidden = !any;
-      });
-    })();
+  <script>
+    import { matchesSearch } from "../lib/search";
+
+    const params = new URLSearchParams(window.location.search);
+    const qInput = document.querySelector<HTMLInputElement>("#q")!;
+    const sectorInput = document.querySelector<HTMLSelectElement>("#sector")!;
+    const regionInput = document.querySelector<HTMLSelectElement>("#region")!;
+    qInput.value = params.get("q") ?? "";
+    sectorInput.value = params.get("sector") ?? "";
+    regionInput.value = params.get("region") ?? "";
+    // Unknown URL filters resolve to the empty selection, just like the form.
+    const filters = { query: qInput.value, sector: sectorInput.value, region: regionInput.value };
+    const entities = [...document.querySelectorAll<HTMLElement>(".entity")];
+    for (const node of entities) {
+      node.hidden = !matchesSearch({
+        text: node.dataset.haystack ?? "",
+        sectors: (node.dataset.sector ?? "").split(" "),
+        regions: (node.dataset.region ?? "").split(" "),
+      }, filters);
+    }
+    const count = entities.filter((node) => !node.hidden).length;
+    document.querySelector<HTMLElement>("#empty")!.hidden = count > 0;
+    const status = document.querySelector<HTMLElement>("#result-count")!;
+    status.textContent = status.dataset.locale === "zh" ? `找到 ${count} 个结果` : `${count} results`;
+    for (const group of document.querySelectorAll<HTMLElement>("[data-results]")) {
+      group.hidden = ![...group.querySelectorAll<HTMLElement>(".entity")].some((node) => !node.hidden);
+    }
   </script>
 </BaseLayout>

@@ -39,15 +39,33 @@ Crunchbase 一类产品把事实放在登录墙后，模型很难稳定引用。
 
 代理与贡献者先读根目录 [AGENTS.md](./AGENTS.md)（项目 Harness）。不要只跑 `npm test` 就宣布 UI / 内链 / 404 / 部署完成。
 
+要求 Node.js 22.12+（可用 `nvm use`）；依赖版本由 lockfile 固定。
+
 ```bash
-npm install
+npm ci
+npm run typecheck                 # Astro / TypeScript 类型检查
 npm test                          # 第 1 层：函数与源码契约
 npm run build && npm run harness  # 第 2 层：dist/ HTML 合同
-npm run preview                   # http://127.0.0.1:4321
-npm run e2e                       # 第 3 层：浏览器点击（无 Chrome 则跳过）
+npm run preview                   # 手动预览：http://127.0.0.1:4321
+npm run e2e                       # 自动启动临时预览并运行 Chrome，结束后关闭
+npm run e2e:pages                 # 本地 Pages runtime：浏览器 + 真实中文 404
 ```
 
+`npm run check` 顺序运行类型、单测、构建和全站产物检查；CI 另外执行两种浏览器验收。`npm run e2e` 会自动探测 macOS / Linux 的 Chrome，找不到时应通过 `CHROME_PATH` 指定路径；缺少浏览器会报错，不会跳过。已有预览可用 `E2E_BASE=http://127.0.0.1:4321 npm run e2e`。
+
 `dist/` 是静态站点。`public/_headers` 写好 CORS 与 `rel=describedby`。中文缺失 URL 的 404 由 `public/_worker.js` 处理——Astro preview 不会执行它。
+
+## 检索与 API 契约
+
+搜索保留完整的 200 个实体卡片，无 JavaScript 时仍可阅读。浏览器按所有空白分隔的关键词筛选，忽略大小写并归一化全角字符；行业和地区使用完整 slug。未知筛选值按未选择处理，语言切换保留查询和筛选条件。检索文本去除重复词和 Markdown 目标地址，原始双语正文不受影响。
+
+API 文档版本 **1.3.0** 继续使用 `/api/v1/` 路径：
+
+- `citations.definition` / `citations.lead` 按 `en` / `zh` 保留引用 ID；`sections`、`faq`、`claims` 的 `sourceIds` 同样按语言记录，ID 对应实体的 `sources` 数组。
+- 图谱中的 `works-at` 更正为 `associated-with`，并增加双语 `role`。已有调用者须更新对该边类型的判断；历史创始、任职关联不证明当前雇佣关系。
+- JSON-LD 使用总部 `location`，不从总部推断 `foundingLocation`；人物使用带角色的 `affiliation`。
+
+详细审查与验证记录见 [docs/review-2026-09-13.md](./docs/review-2026-09-13.md)。
 
 ## Cloudflare 开发 demo
 

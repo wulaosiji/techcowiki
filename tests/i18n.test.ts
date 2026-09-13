@@ -44,7 +44,7 @@ describe("locale and machine contracts", () => {
       info: { version: string };
       components: { schemas: { CompanyRecord: { properties: { urls: { properties: Record<string, unknown> } } } } };
     };
-    expect(spec.info.version).toBe("1.2.0");
+    expect(spec.info.version).toBe("1.3.0");
     expect(spec.components.schemas.CompanyRecord.properties.urls.properties.markdownZh).toBeTruthy();
   });
 

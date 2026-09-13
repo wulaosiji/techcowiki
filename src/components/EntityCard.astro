@@ -21,7 +21,7 @@ const text = stripCitations((company ?? person!).definition[locale]);
 ---
 
 <article class="card">
-  <a class="card-main" href={href}>
+  <a class="card-main" href={href} data-astro-prefetch="hover">
     <div class="name">{name}</div>
     <div class="sub">{sub}</div>
     <p>{text}</p>

@@ -11,20 +11,29 @@
     "build": "astro build",
     "preview": "astro preview --host 127.0.0.1 --port 4321",
     "test": "vitest run",
-    "check": "astro check && vitest run && npm run build && npm run harness",
-    "harness": "node scripts/harness/verify-dist.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run harness",
+    "harness": "node scripts/harness/verify-dist.mjs && node scripts/harness/verify-site.mjs",
     "harness:host": "node scripts/harness/verify-host.mjs",
-    "e2e": "node scripts/harness/e2e.mjs",
+    "e2e": "node scripts/harness/run-e2e.mjs",
     "pages:upload": "node scripts/harness/pages-upload.mjs",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name=techcowiki --commit-dirty=true"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name=techcowiki --commit-dirty=true",
+    "typecheck": "astro check",
+    "preview:pages": "wrangler pages dev dist --ip 127.0.0.1 --port 8788",
+    "e2e:pages": "node scripts/harness/run-e2e.mjs --pages"
   },
   "dependencies": {
-    "astro": "^5.13.7"
+    "astro": "7.3.2"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.20.2",
+    "parse5": "^8.0.1",
+    "puppeteer-core": "^25.10.0",
     "typescript": "^5.9.2",
-    "vitest": "^3.2.4",
+    "vitest": "^4.1.11",
     "wrangler": "^4.34.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

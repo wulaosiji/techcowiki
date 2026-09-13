@@ -74,7 +74,7 @@ import {
 import { pickPeers } from "./peers";
 import { LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityFaq, Localized, Person, Source } from "./types";
-import { linkLocalized } from "../lib/autolink";
+import { createCatalogLinker } from "../lib/autolink";
 
 export { nationalityRule, pickPeers };
 
@@ -765,6 +765,7 @@ export function enrichCompany(
     retrievalSection(withWiki, sources),
   ]);
   const exclude = { companySlugs: [withWiki.slug] };
+  const linker = createCatalogLinker(pool, people, exclude);
   const claims = [
     ...companyClaims(withWiki, people, sources),
     ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
@@ -772,8 +773,8 @@ export function enrichCompany(
   ];
   return {
     ...withWiki,
-    definition: linkLocalized(withWiki.definition, pool, people, exclude),
-    lead: linkLocalized(thickenCompanyLead(withWiki, sources, pool), pool, people, exclude),
+    definition: linker.localized(withWiki.definition),
+    lead: linker.localized(thickenCompanyLead(withWiki, sources, pool)),
     sameAs: {
       ...withWiki.sameAs,
       official: withWiki.sameAs.official ?? withWiki.website,
@@ -781,15 +782,15 @@ export function enrichCompany(
     sources,
     sections: sections.map((section) => ({
       ...section,
-      body: linkLocalized(section.body, pool, people, exclude),
+      body: linker.localized(section.body),
     })),
     faq: faq.map((item) => ({
       ...item,
-      answer: linkLocalized(item.answer, pool, people, exclude),
+      answer: linker.localized(item.answer),
     })),
     claims: claims.map((item) => ({
       ...item,
-      value: linkLocalized(item.value, pool, people, exclude),
+      value: linker.localized(item.value),
     })),
   };
 }
@@ -1216,6 +1217,7 @@ export function enrichPerson(
   ];
   const sections = mergeSections(withWiki.sections ?? [], generated);
   const exclude = { personSlugs: [withWiki.slug] };
+  const linker = createCatalogLinker(companies, pool, exclude);
   const claims = [
     ...personClaims(withWiki, companies, sources),
     ...encyclopediaClaims(personWikiSubject(withWiki), sources),
@@ -1223,20 +1225,20 @@ export function enrichPerson(
   ];
   return {
     ...withWiki,
-    definition: linkLocalized(withWiki.definition, companies, pool, exclude),
-    lead: linkLocalized(thickenPersonLead(withWiki, sources, companies), companies, pool, exclude),
+    definition: linker.localized(withWiki.definition),
+    lead: linker.localized(thickenPersonLead(withWiki, sources, companies)),
     sources,
     sections: sections.map((section) => ({
       ...section,
-      body: linkLocalized(section.body, companies, pool, exclude),
+      body: linker.localized(section.body),
     })),
     faq: faq.map((item) => ({
       ...item,
-      answer: linkLocalized(item.answer, companies, pool, exclude),
+      answer: linker.localized(item.answer),
     })),
     claims: claims.map((item) => ({
       ...item,
-      value: linkLocalized(item.value, companies, pool, exclude),
+      value: linker.localized(item.value),
     })),
   };
 }

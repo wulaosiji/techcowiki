@@ -8,6 +8,27 @@ import { catalogStats } from "../src/data/catalog";
 import { matchWikiRecord } from "../src/data/wiki-match";
 
 describe("GEO surfaces", () => {
+  test("schema does not infer founding location or current employment", () => {
+    const company = allCompanies().find((item) => item.slug === "nvidia")!;
+    const node = companyGraph(company, "en")["@graph"][1];
+    expect(node).not.toHaveProperty("foundingLocation");
+    expect(node).toHaveProperty("location.address.addressCountry", "US");
+    const person = allPeople().find((item) => item.slug === "morris-chang")!;
+    const personNode = personGraph(person, "en")["@graph"][1];
+    expect(personNode).not.toHaveProperty("worksFor");
+    expect(personNode).toHaveProperty("affiliation.0.roleName", person.companies[0].role.en);
+  });
+
+  test("plain JSON preserves per-language citation provenance", () => {
+    const entity = allCompanies()[0];
+    const record = companyRecord(entity);
+    expect(record.lead.en).not.toMatch(/\[s\d+\]/);
+    expect(record.citations.lead.en.length).toBeGreaterThan(0);
+    expect(record.claims[0].sourceIds.en.length).toBeGreaterThan(0);
+    expect(record.sections[0].sourceIds.zh.length).toBeGreaterThan(0);
+    expect(datasetRecord(catalogStats()).endpoints.regionsMarkdown).toBe("https://techco.wiki/regions.md");
+  });
+
   test("llms.txt lists every company and person markdown twin", () => {
     const text = llmsTxt();
     expect(text.startsWith("# TechCo.Wiki")).toBe(true);
@@ -69,8 +90,8 @@ describe("GEO surfaces", () => {
     JSON.stringify(personLd);
     const founder = (companyLd["@graph"] as { founder?: { name: string }[] }[])[1];
     expect(founder.founder?.[0]?.name).not.toMatch(/^[a-z0-9-]+$/);
-    const personNode = (personLd["@graph"] as { worksFor?: unknown[] }[])[1];
-    expect(personNode.worksFor?.length).toBeGreaterThan(0);
+    const personNode = (personLd["@graph"] as { affiliation?: unknown[] }[])[1];
+    expect(personNode.affiliation?.length).toBeGreaterThan(0);
     const companyFaq = (companyLd["@graph"] as { "@type"?: string; mainEntity?: unknown[] }[]).find(
       (node) => node["@type"] === "FAQPage",
     );

@@ -14,7 +14,7 @@ export const GET: APIRoute = () => {
       (company) => `  <item>
     <title>${escapeHtml(company.name.en)}</title>
     <link>${SITE_ORIGIN}/companies/${company.slug}</link>
-    <guid>${company.id}</guid>
+    <guid isPermaLink="false">${company.id}</guid>
     <pubDate>${rfc822(company.lastReviewed)}</pubDate>
     <description>${escapeHtml(stripCitations(company.definition.en))}</description>
   </item>`,
@@ -23,7 +23,7 @@ export const GET: APIRoute = () => {
       (person) => `  <item>
     <title>${escapeHtml(person.name.en)}</title>
     <link>${SITE_ORIGIN}/people/${person.slug}</link>
-    <guid>${person.id}</guid>
+    <guid isPermaLink="false">${person.id}</guid>
     <pubDate>${rfc822(person.lastReviewed)}</pubDate>
     <description>${escapeHtml(stripCitations(person.definition.en))}</description>
   </item>`,

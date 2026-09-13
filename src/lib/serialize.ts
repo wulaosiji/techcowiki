@@ -1,7 +1,14 @@
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "../data/site";
 import type { Company, EntityClaim, EntityFaq, Person } from "../data/types";
 import { pageUrl } from "./i18n";
-import { stripCitations } from "./citations";
+import { stripCitations, usedSourceIds } from "./citations";
+
+function sourceIds(value: { en: string; zh: string }) {
+  return {
+    en: [...new Set(usedSourceIds(value.en))],
+    zh: [...new Set(usedSourceIds(value.zh))],
+  };
+}
 
 function faqRecord(faq: EntityFaq[] | undefined) {
   return (faq ?? []).map((item) => ({
@@ -11,6 +18,7 @@ function faqRecord(faq: EntityFaq[] | undefined) {
       en: stripCitations(item.answer.en),
       zh: stripCitations(item.answer.zh),
     },
+    sourceIds: sourceIds(item.answer),
   }));
 }
 
@@ -22,6 +30,7 @@ function claimsRecord(claims: EntityClaim[] | undefined) {
       en: stripCitations(item.value.en),
       zh: stripCitations(item.value.zh),
     },
+    sourceIds: sourceIds(item.value),
   }));
 }
 
@@ -64,6 +73,7 @@ export function companyRecord(company: Company) {
       json: `${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`,
     },
     sources: company.sources,
+    citations: { definition: sourceIds(company.definition), lead: sourceIds(company.lead) },
     faq: faqRecord(company.faq),
     claims: claimsRecord(company.claims),
     sections: company.sections.map((section) => ({
@@ -73,6 +83,7 @@ export function companyRecord(company: Company) {
         en: stripCitations(section.body.en),
         zh: stripCitations(section.body.zh),
       },
+      sourceIds: sourceIds(section.body),
     })),
   };
 }
@@ -107,6 +118,7 @@ export function personRecord(person: Person) {
       json: `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     },
     sources: person.sources,
+    citations: { definition: sourceIds(person.definition), lead: sourceIds(person.lead) },
     faq: faqRecord(person.faq),
     claims: claimsRecord(person.claims),
     sections: (person.sections ?? []).map((section) => ({
@@ -116,6 +128,7 @@ export function personRecord(person: Person) {
         en: stripCitations(section.body.en),
         zh: stripCitations(section.body.zh),
       },
+      sourceIds: sourceIds(section.body),
     })),
   };
 }
@@ -152,6 +165,7 @@ export function datasetRecord(stats: {
       companiesMarkdownZh: `${SITE_ORIGIN}/zh/companies.md`,
       peopleMarkdownZh: `${SITE_ORIGIN}/zh/people.md`,
       sectorsMarkdown: `${SITE_ORIGIN}/sectors.md`,
+      regionsMarkdown: `${SITE_ORIGIN}/regions.md`,
       countriesMarkdown: `${SITE_ORIGIN}/countries.md`,
       citiesMarkdown: `${SITE_ORIGIN}/cities.md`,
     },

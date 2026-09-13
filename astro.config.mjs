@@ -5,11 +5,11 @@ export default defineConfig({
   trailingSlash: "never",
   compressHTML: true,
   prefetch: {
-    prefetchAll: true,
+    prefetchAll: false,
     defaultStrategy: "hover",
   },
   build: {
-    inlineStylesheets: "always",
+    inlineStylesheets: "never",
   },
   vite: {
     resolve: {

@@ -1,4 +1,5 @@
-import { writeFileSync } from "node:fs";
+import { renameSync, writeFileSync } from "node:fs";
+import { fetchJson as fetchSourceJson } from "./lib/fetch-json.ts";
 import { companies as seedCompanies } from "../src/data/companies.ts";
 import { extendedCompanies } from "../src/data/extended-companies.ts";
 import { people as seedPeople } from "../src/data/people.ts";
@@ -46,35 +47,10 @@ async function sleep(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchJson(url: string, attempts = 6): Promise<unknown> {
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": UA,
-          "Api-User-Agent": UA,
-          Accept: "application/json",
-        },
-      });
-      if (response.status === 404) return null;
-      if (response.status === 429 || response.status >= 500) {
-        await sleep(400 * attempt * attempt);
-        continue;
-      }
-      if (!response.ok) {
-        console.warn(`skip ${response.status} ${url}`);
-        return null;
-      }
-      return await response.json();
-    } catch (error) {
-      await sleep(300 * attempt);
-      if (attempt === attempts) {
-        console.warn(`skip ${url}: ${error}`);
-        return null;
-      }
-    }
-  }
-  return null;
+async function fetchJson(url: string): Promise<unknown> {
+  return fetchSourceJson(url, {
+    headers: { "User-Agent": UA, "Api-User-Agent": UA, Accept: "application/json" },
+  });
 }
 
 async function summary(lang: "en" | "zh", title: string): Promise<WikiGloss | undefined> {
@@ -150,8 +126,8 @@ async function loadWikidata() {
           sitelinks?: Record<string, { title: string }>;
         }
       >;
-    };
-    for (const [id, entity] of Object.entries(data.entities ?? {})) {
+    } | null;
+    for (const [id, entity] of Object.entries(data?.entities ?? {})) {
       const descriptions = entity.descriptions ?? {};
       wikidata.set(id, {
         en: descriptions.en?.value,
@@ -242,5 +218,8 @@ export function wikiExtract(kind: "company" | "person", slug: string): WikiExtra
 }
 `;
 
-writeFileSync(new URL("../src/data/wiki-extracts.ts", import.meta.url), file);
+const output = new URL("../src/data/wiki-extracts.ts", import.meta.url);
+const temporary = new URL("../src/data/wiki-extracts.ts.tmp", import.meta.url);
+writeFileSync(temporary, file);
+renameSync(temporary, output);
 console.log("Wrote src/data/wiki-extracts.ts");

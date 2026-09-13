@@ -16,9 +16,10 @@ Read `AGENTS.md` before changing this repo. GEO is first: one citable record in 
 
 ## Acceptance (in order)
 
-1. `npm test` — functions and source contracts (`tests/harness.test.ts` is file-based; do not import `catalog` for new harness asserts).
+1. `npm run typecheck` and `npm test` — functions and source contracts (`tests/harness.test.ts` is file-based; do not import `catalog` for new harness asserts).
 2. `npm run build && npm run harness` — built HTML in `dist/`.
-3. `npm run preview` then `npm run e2e` — click/type; screenshots are not enough. Language switch on `/search?q=TSM` must keep `?q=TSM`.
+3. `npm run e2e` (starts and stops its own preview) — click/type; screenshots are not enough. Language switch on `/search?q=TSM` must keep `?q=TSM`.
+   `npm run e2e:pages` also exercises the local Pages runtime and true localized 404s. Missing Chrome must fail.
 4. After deploy: `HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host`.
 
 `switchLocale()` being correct does not mean the static HTML has the query. Astro preview does not run `_worker.js`. Cloudflare `_redirects` cannot rewrite 404s; locale 404s are `public/_worker.js`.

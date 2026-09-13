@@ -2,12 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "cursor/**", "codex/**"]
   pull_request:
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,6 +18,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm run harness
+      - run: npm run check
+      - run: npm run e2e
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+      - run: npm run e2e:pages
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          WRANGLER_SEND_METRICS: "false"

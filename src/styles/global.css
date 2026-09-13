@@ -19,6 +19,8 @@
 
 * { box-sizing: border-box; }
 
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -37,6 +39,7 @@ body {
   font-family: var(--sans);
   font-size: 1.02rem;
   line-height: 1.65;
+  overflow-wrap: anywhere;
 }
 
 a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
@@ -221,7 +224,7 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(16.5rem, 100%), 1fr));
   gap: 0.85rem;
 }
 
@@ -391,6 +394,7 @@ input[type="search"], select, button, .btn {
 }
 
 input[type="search"] { min-width: min(24rem, 100%); }
+.search-form > *, .filters > * { max-width: 100%; }
 
 button, .btn {
   cursor: pointer;
@@ -472,7 +476,6 @@ article section > p,
 .toc a:hover { color: var(--accent); }
 
 .empty-state {
-  display: none;
   margin: 1rem 0;
   color: var(--muted);
 }

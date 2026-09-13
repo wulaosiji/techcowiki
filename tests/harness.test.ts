@@ -47,7 +47,7 @@ describe("development harness contracts", () => {
 
   test("OpenAPI is versioned under /api/v1", () => {
     const openapi = read("src/pages/api/v1/openapi.json.ts");
-    expect(openapi).toContain("1.2.0");
+    expect(openapi).toContain("1.3.0");
     expect(read("src/views/HomePage.astro")).toContain("/api/v1/openapi.json");
   });
 });

@@ -15,7 +15,7 @@ import {
   headquartersBreakdown,
   peopleForCompanyList,
 } from "../data/catalog";
-import { citySlug, countrySlug, regionForCountry } from "../data/places";
+import { countrySlug, regionForCountry } from "../data/places";
 import { regions, sectors, SITE_ORIGIN, ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath, pageUrl, t } from "../lib/i18n";
@@ -199,8 +199,8 @@ const jsonLd = {
     )}
     {kind !== "people" && (
       <form class="filters" method="get" action={localePath(locale, "/search")}>
-        <input type="search" name="q" placeholder={t(ui.search, locale)} />
-        <select name="sector">
+        <input type="search" name="q" aria-label={t(ui.search, locale)} placeholder={t(ui.search, locale)} />
+        <select name="sector" aria-label={t(ui.filterSector, locale)}>
           <option value="">{t(ui.filterSector, locale)}</option>
           {sectors.map((item) => (
             <option value={item.slug} selected={kind === "sector" && item.slug === slug}>
@@ -208,7 +208,7 @@ const jsonLd = {
             </option>
           ))}
         </select>
-        <select name="region">
+        <select name="region" aria-label={t(ui.filterRegion, locale)}>
           <option value="">{t(ui.filterRegion, locale)}</option>
           {regions.map((item) => (
             <option value={item.slug} selected={kind === "region" && item.slug === slug}>
