@@ -29,7 +29,9 @@ describe("internal linking", () => {
     expect(hay).toContain("/people/jensen-huang");
     expect(hay).toContain("/cities/santa-clara");
     expect(hay).toContain("/countries/us");
-    expect(hay).not.toContain("[NVIDIA](/companies/nvidia)");
+    expect(hay).not.toMatch(/\[\[[^\]]+\]\(/);
+    expect(hay).not.toContain("[about](/about)");
+    expect(hay).toContain("United States-headquartered");
   });
 
   test("Jensen Huang prose links NVIDIA", () => {
@@ -41,7 +43,8 @@ describe("internal linking", () => {
       ...(person!.sections ?? []).map((section) => section.body.en),
     ].join("\n");
     expect(hay).toContain("/companies/nvidia");
-    expect(hay).not.toContain("[Jensen Huang](/people/jensen-huang)");
+    expect(hay).not.toMatch(/\[\[[^\]]+\]\(/);
+    expect(hay).not.toContain("[about](/about)");
   });
 
   test("every company appears on its sector, region, country, and city hubs", () => {

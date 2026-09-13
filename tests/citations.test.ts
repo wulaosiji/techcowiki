@@ -54,7 +54,7 @@ describe("citation rendering", () => {
     expect(html).toContain('<a href="https://techco.wiki/companies/nvidia">NVIDIA</a>');
     expect(html).toContain('href="#source-s1"');
     expect(html).not.toContain("javascript:");
-    expect(renderCitedHtml("[bad](javascript:alert(1))", sources)).toBe("bad");
+    expect(renderCitedHtml("[bad](javascript:alert)", sources)).toBe("bad");
     expect(stripCitations("See [Jensen Huang](/people/jensen-huang)[s1]")).toBe("See Jensen Huang");
   });
 

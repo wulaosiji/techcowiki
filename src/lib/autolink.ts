@@ -1,5 +1,4 @@
 import { citySlug, countrySlug } from "../data/places";
-import { editorialDocs } from "../data/pages";
 import { regions, sectors, SITE_ORIGIN } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
 import { localePath } from "./i18n";
@@ -27,7 +26,17 @@ interface Term {
 }
 
 /** Common English words that are also catalog names; only match the stored case. */
-const EXACT_CASE_LATIN = new Set(["nothing", "grab", "sea", "notion", "acer"]);
+const EXACT_CASE_LATIN = new Set([
+  "nothing",
+  "grab",
+  "sea",
+  "notion",
+  "acer",
+  "scale",
+  "horizon",
+  "moonshot",
+  "fireworks",
+]);
 
 const CATALOG_URL =
   /https:\/\/techco\.wiki(\/zh)?(\/(?:companies|people|sectors|regions|countries|cities)\/[a-z0-9-]+)(?:\.md)?(#[\w-]+)?/gi;
@@ -124,11 +133,6 @@ function termsForLocale(
     addTerm(terms, seen, "收录标准", docHref("inclusion", locale));
     addTerm(terms, seen, "给模型", docHref("for-models", locale));
   }
-  for (const doc of editorialDocs) {
-    if (doc.title[locale].length >= 4) {
-      addTerm(terms, seen, doc.title[locale], docHref(doc.slug, locale));
-    }
-  }
 
   return terms.sort((a, b) => b.term.length - a.term.length);
 }
@@ -193,9 +197,15 @@ function restore(text: string, tokens: string[]): string {
   return text.replace(/\u0000T(\d+)\u0000/g, (_match, index: string) => tokens[Number(index)] ?? "");
 }
 
+function stash(tokens: string[], value: string): string {
+  tokens.push(value);
+  return `\u0000T${tokens.length - 1}\u0000`;
+}
+
 function linkTerms(text: string, terms: Term[]): string {
   const protectedText = protect(text);
   let body = protectedText.text;
+  const tokens = protectedText.tokens;
   for (const term of terms) {
     const hasExact = body.includes(term.term);
     const hasInsensitive =
@@ -204,17 +214,17 @@ function linkTerms(text: string, terms: Term[]): string {
     const pattern = !term.latin
       ? new RegExp(escapeRegExp(term.term))
       : new RegExp(
-          `(^|[^A-Za-z0-9])(${escapeRegExp(term.term)})(?![A-Za-z0-9])`,
+          `(^|[^A-Za-z0-9-])(${escapeRegExp(term.term)})(?![A-Za-z0-9-])`,
           term.exactCase ? "" : "i",
         );
     const next = body.replace(pattern, (match, prefix: string, captured?: string) => {
       const label = term.latin ? (captured ?? match) : match;
-      if (term.latin) return `${prefix}${mdLink(label, term.href)}`;
-      return mdLink(label, term.href);
+      const link = mdLink(label, term.href);
+      return term.latin ? `${prefix}${stash(tokens, link)}` : stash(tokens, link);
     });
     if (next !== body) body = next;
   }
-  return restore(body, protectedText.tokens);
+  return restore(body, tokens);
 }
 
 /** Turn catalog mentions and techco.wiki entity URLs into markdown links. */
