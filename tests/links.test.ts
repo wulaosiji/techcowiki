@@ -225,8 +225,8 @@ describe("internal linking", () => {
     expect(linkCatalogCopy("NVIDIA designs accelerators.", "en", companies, people, {}, stubs)).toContain(
       "[NVIDIA](/companies/nvidia)",
     );
-    expect(linkCatalogCopy("Yahoo Mail is a recorded line.", "en", companies, people, {}, stubs)).toContain(
-      "[Yahoo Mail](/products/yahoo-mail)",
+    expect(linkCatalogCopy("WeChat is a recorded Tencent line.", "en", companies, people, {}, stubs)).toContain(
+      "[WeChat](/products/wechat)",
     );
   });
 

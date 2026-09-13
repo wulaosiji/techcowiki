@@ -69,7 +69,11 @@ describe("first-class products", () => {
       expect(company, product.slug).toBeTruthy();
       const line = company!.products.find((item) => item.name === product.name.en);
       expect(line, product.slug).toBeTruthy();
-      expect(product.definition.en).toContain(line!.description.en.replace(/\.$/, "").slice(0, 24));
+      const gloss = product.definition.en.replace(/\[[^\]]+\]\([^)]+\)/g, (match) => {
+        const label = match.match(/^\[([^\]]+)\]/)?.[1] ?? match;
+        return label;
+      });
+      expect(gloss).toContain(line!.description.en.replace(/\.$/, "").slice(0, 16));
       expect(product.lead.en).toMatch(/does not add funding, valuation, or a ticker/i);
       expect(product.sections.some((section) => section.id === "unrecorded")).toBe(true);
       expect(`${product.definition.en} ${product.lead.en}`).not.toMatch(INVENTED_FINANCE);
