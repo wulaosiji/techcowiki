@@ -6,6 +6,8 @@ The open encyclopedia of technology companies founded by ethnic Chinese entrepre
 
 English is the canonical text. Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. Site origin: <https://techco.wiki>
 
+The repository defaults to English. Only README files and the public website stay multilingual (`en`, `zh-CN`, `zh-Hant`). Agent, harness, and CI docs are English.
+
 ## Why this site exists
 
 Products like Crunchbase keep facts behind a login wall, so models cannot cite them reliably. Wikipedia works as an authority for major models because it is free, citable, stably identified, and explicit about method. TechCo.Wiki applies the same contract to one vertical:

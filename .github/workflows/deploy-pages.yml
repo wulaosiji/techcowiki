@@ -1,0 +1,68 @@
+# Deploy https://techcowiki.pages.dev from GitHub `main`.
+# The live Pages project is Direct Upload, so Cloudflare cannot attach a Git
+# source. This workflow is the production hook.
+#
+# Required repo secret: CLOUDFLARE_API_TOKEN
+# Token template: "Edit Cloudflare Workers" (Pages Write) on account
+# ea96b3a9f1cc44d659b0973b0cce802b.
+name: Deploy Pages
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Resolve commit
+        id: ref
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_run" ]; then
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Check Cloudflare token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Missing repo secret CLOUDFLARE_API_TOKEN."
+            echo "Create a Cloudflare API token with Pages Write on account ea96b3a9f1cc44d659b0973b0cce802b and add it as that secret."
+            exit 1
+          fi
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ea96b3a9f1cc44d659b0973b0cce802b
+          command: pages deploy dist --project-name=techcowiki --branch=main --commit-hash=${{ steps.ref.outputs.sha }}
+          packageManager: npm
+        env:
+          WRANGLER_SEND_METRICS: "false"

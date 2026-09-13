@@ -7,6 +7,8 @@ alwaysApply: true
 
 Read `AGENTS.md` before changing this repo. GEO is first: one citable record in HTML, Markdown, JSON-LD, and `/api/v1`.
 
+The repository defaults to English. Only README files and the public website stay multilingual (`en`, `zh-CN`, `zh-Hant`). Agent, harness, Cursor-rule, and CI-facing docs stay English.
+
 ## Hard stops
 
 - Do not invent funding, valuation, headcount, or tickers that are not already on the record.
