@@ -13,6 +13,11 @@ import {
   t,
 } from "../lib/i18n";
 import type { Locale } from "../data/types";
+import {
+  ANALYTICS_CONFIG_ELEMENT_ID,
+  analyticsPageConfig,
+  publicLocale,
+} from "../lib/analytics";
 import { scriptJson } from "../lib/json";
 
 interface Props {
@@ -42,10 +47,19 @@ const nav = [
 ];
 const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
 const switches = localeSwitchLinks(locale, path, Astro.url.search);
+const analytics = analyticsPageConfig(locale, path);
 ---
 
 <!doctype html>
-<html lang={htmlLang(locale)}>
+<html
+  lang={htmlLang(locale)}
+  data-site-locale={analytics.publicLocale}
+  data-locale-code={locale}
+  data-page-type={analytics.pageType}
+  data-entity-type={analytics.entityType}
+  data-entity-id={analytics.entityId}
+  data-entity-slug={analytics.entitySlug}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -90,22 +104,28 @@ const switches = localeSwitchLinks(locale, path, Astro.url.search);
     <header class="masthead">
       <div class="masthead-inner">
         <div class="masthead-top">
-          <a class="brand" href={localePath(locale, "/")}>
+          <a class="brand" data-nav="brand" href={localePath(locale, "/")}>
             <span class="brand-mark">TechCo<span>.Wiki</span></span>
             <span class="brand-tag">{t(tagline, locale)}</span>
           </a>
-          <form class="nav-search" method="get" action={localePath(locale, "/search")} role="search">
+          <form class="nav-search" method="get" action={localePath(locale, "/search")} role="search" data-search-scope="header">
             <input type="search" name="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
           </form>
         </div>
-        <nav class="nav" aria-label={pick(locale, "Primary", "主导航")}>
+        <nav class="nav" data-nav="primary" aria-label={pick(locale, "Primary", "主导航")}>
           {nav.map((item) => (
             <a href={item.href} aria-current={path.startsWith(item.match) ? "page" : undefined}>
               {item.label}
             </a>
           ))}
           {switches.map((item) => (
-            <a class="lang-switch" href={item.href} hreflang={item.hreflang} lang={item.hreflang}>
+            <a
+              class="lang-switch"
+              href={item.href}
+              hreflang={item.hreflang}
+              lang={item.hreflang}
+              data-to-locale={publicLocale(item.locale)}
+            >
               {item.label}
             </a>
           ))}
@@ -122,7 +142,7 @@ const switches = localeSwitchLinks(locale, path, Astro.url.search);
           {" · "}
           {t(tagline, locale)}
         </div>
-        <nav class="footer-nav" aria-label={pick(locale, "Catalog", "目录")}>
+        <nav class="footer-nav" data-nav="footer-catalog" aria-label={pick(locale, "Catalog", "目录")}>
           <a href={localePath(locale, "/companies")}>{t(ui.navCompanies, locale)}</a>
           <a href={localePath(locale, "/people")}>{t(ui.navPeople, locale)}</a>
           <a href={localePath(locale, "/sectors")}>{t(ui.navSectors, locale)}</a>
@@ -131,7 +151,7 @@ const switches = localeSwitchLinks(locale, path, Astro.url.search);
           <a href={localePath(locale, "/cities")}>{t(ui.navCities, locale)}</a>
           <a href={localePath(locale, "/search")}>{t(ui.navSearch, locale)}</a>
         </nav>
-        <nav class="footer-nav" aria-label={pick(locale, "Docs", "文档")}>
+        <nav class="footer-nav" data-nav="footer-docs" aria-label={pick(locale, "Docs", "文档")}>
           <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
           <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
           <a href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
@@ -169,6 +189,11 @@ const switches = localeSwitchLinks(locale, path, Astro.url.search);
         var header = document.querySelector('.nav-search input[name="q"]');
         if (header && query && !header.value) header.value = query;
       })();
+    </script>
+    <script is:inline type="application/json" id={ANALYTICS_CONFIG_ELEMENT_ID} set:html={scriptJson(analytics)} />
+    <script>
+      import { bootSiteAnalytics } from "../lib/analytics-client";
+      bootSiteAnalytics();
     </script>
   </body>
 </html>

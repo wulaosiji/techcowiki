@@ -43,4 +43,9 @@ contracts.zh404(read(file("zh/404/index.html")));
 contracts.zht404(read(file("zh-hant/404/index.html")));
 contracts.en404(read(file("404.html")));
 
+const cuda = read(file("products/cuda-gpus/index.html"));
+check("product page has GA4 entity id", cuda.includes("techco:product:cuda-gpus"));
+check("product page type is entity", cuda.includes('data-page-type="entity"'));
+check("product page locale is en", cuda.includes('data-site-locale="en"'));
+
 console.log("\ndist harness passed");

@@ -38,10 +38,20 @@ const text = product
       company ? t(company.definition, locale) : t(person!.definition, locale),
     );
 const chipCompany = company ?? publisher;
+const entityType = company ? "company" : product ? "product" : "person";
+const entityId = company?.id ?? product?.id ?? person!.id;
+const entitySlug = company?.slug ?? product?.slug ?? person!.slug;
 ---
 
 <article class="card">
-  <a class="card-main" href={href} data-astro-prefetch="hover">
+  <a
+    class="card-main"
+    href={href}
+    data-astro-prefetch="hover"
+    data-entity-type={entityType}
+    data-entity-id={entityId}
+    data-entity-slug={entitySlug}
+  >
     <div class="name">{name}</div>
     <div class="sub">{sub}</div>
     <p>{text}</p>
