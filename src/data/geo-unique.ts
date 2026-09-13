@@ -10,6 +10,7 @@ import {
   wikiZhId,
 } from "./copy";
 import { hqEn, hqShortRule, hqZh } from "./nationality";
+import { localizedProductName } from "./product-names";
 import { SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityClaim, EntityFaq, Localized, Person, Source } from "./types";
 import { matchWikiRecord, type WikiSubject } from "./wiki-match";
@@ -296,11 +297,11 @@ export function uniqueCompanyFaqs(
     id: productFaqId(product.name, index),
     question: L(
       `What is ${product.name}?`,
-      `${product.name}是什么？`,
+      `${localizedProductName(product.name).zh}是什么？`,
     ),
     answer: L(
       `${product.name} is a recorded product of ${company.name.en}. Catalog gloss: ${product.description.en} This is a product-line label, not a complete SKU list.${official}`,
-      `${product.name}是${company.name.zh}的已记录产品。目录释义：${product.description.zh}这是产品线标签，不是完整 SKU 清单。${official}`,
+      `${localizedProductName(product.name).zh}是${company.name.zh}的已记录产品。目录释义：${product.description.zh}这是产品线标签，不是完整 SKU 清单。${official}`,
     ),
   }));
   if (record?.en?.extract) {

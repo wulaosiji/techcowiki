@@ -1,3 +1,4 @@
+import { localizedProductName } from "../data/product-names";
 import { citySlug, countrySlug } from "../data/places";
 import { regions, sectors, SITE_ORIGIN } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
@@ -23,6 +24,7 @@ export interface AutolinkExclude {
 export interface AutolinkProduct {
   slug: string;
   name: string;
+  nameZh?: string;
   companySlug?: string;
 }
 
@@ -215,6 +217,13 @@ function termsForLocale(
     for (const name of productTerms(product.name)) {
       addTerm(terms, seen, name, href);
     }
+    const nameZh = product.nameZh ?? localizedProductName(product.name).zh;
+    if (nameZh && nameZh !== product.name) {
+      addTerm(terms, seen, nameZh, href);
+      if (locale === "zht") {
+        for (const variant of traditionalSearchVariants(nameZh)) addTerm(terms, seen, variant, href);
+      }
+    }
   }
   if (products.length === 0) {
     for (const company of companies) {
@@ -224,6 +233,8 @@ function termsForLocale(
         for (const name of productTerms(product.name)) {
           addTerm(terms, seen, name, href);
         }
+        const nameZh = localizedProductName(product.name).zh;
+        if (nameZh !== product.name) addTerm(terms, seen, nameZh, href);
       }
     }
   }

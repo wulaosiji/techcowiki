@@ -21,6 +21,7 @@ import {
   wikiId,
   yearDeltaPhrase,
 } from "./copy";
+import { localizedProductName } from "./product-names";
 import {
   authorityCompanyClaims,
   authorityCompanyFaqs,
@@ -403,7 +404,7 @@ function operationsSection(company: Company, sources: Source[]): CompanySection 
   const productsZh = company.products
     .map(
       (product, index) =>
-        `${product.name}是已记录产品 ${index + 1}。目录释义：${product.description.zh}这是供检索用的产品线标签，不是营销主张，也不是完整 SKU 清单。`,
+        `${localizedProductName(product.name).zh}是已记录产品 ${index + 1}。目录释义：${product.description.zh}这是供检索用的产品线标签，不是营销主张，也不是完整 SKU 清单。`,
     )
     .join("\n\n");
   const regionBitsEn = joinList(

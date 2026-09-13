@@ -94,6 +94,16 @@ describe("development harness contracts", () => {
     expect(read("public/_headers")).toContain("https://www.googletagmanager.com");
   });
 
+  test("product display names are localized from a source map", () => {
+    const names = read("src/data/product-names.ts");
+    const products = read("src/data/enrich-products.ts");
+    const company = read("src/views/CompanyPage.astro");
+    expect(names).toContain('"WeChat": "微信"');
+    expect(names).toContain("localizedProductName");
+    expect(products).toContain("stub.nameZh");
+    expect(company).toContain("t(entity.name, locale)");
+  });
+
   test("OpenAPI is versioned under /api/v1", () => {
     const openapi = read("src/pages/api/v1/openapi.json.ts");
     expect(openapi).toContain("1.5.0");

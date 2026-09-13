@@ -144,7 +144,7 @@ const toc = [
             return (
               <li>
                 {entity ? (
-                  <a href={localePath(locale, `/products/${entity.slug}`)}><strong>{product.name}</strong></a>
+                  <a href={localePath(locale, `/products/${entity.slug}`)}><strong>{t(entity.name, locale)}</strong></a>
                 ) : (
                   <strong set:html={renderCitedHtml(linkCatalogCopy(product.name, locale, allCompanies(), people, { companySlugs: [company.slug] }), [])} />
                 )}

@@ -22,6 +22,7 @@ import {
   wikiId,
   yearsInText,
 } from "./copy";
+import { localizedProductName } from "./product-names";
 import { pickPeers } from "./peers";
 import {
   foundedEn,
@@ -372,7 +373,13 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
   const method = methodCite(sources);
   const productYears = company.products.flatMap((product) => {
     const years = yearsInText(`${product.name} ${product.description.en} ${product.description.zh}`);
-    return years.map((year) => ({ year, name: product.name, en: product.description.en, zh: product.description.zh }));
+    return years.map((year) => ({
+      year,
+      name: product.name,
+      nameZh: localizedProductName(product.name).zh,
+      en: product.description.en,
+      zh: product.description.zh,
+    }));
   });
   const eventsEn = [
     `${company.founded}: ${company.name.en} was founded ${foundedEn(company)} (${company.foundedPrecision} precision) and is recorded as headquartered in ${hqEn(company)}.${wiki}`,
@@ -392,7 +399,7 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
     `${company.founded}：${company.name.zh}创立于 ${foundedZh(company)}，记录总部为${hqZh(company)}。${wiki}`,
     ...productYears.map(
       (item) =>
-        `${item.year}：已记录产品 ${item.name} 在本页的释义为“${item.zh}”。年份取自该目录释义，不是另据申报文件。`,
+        `${item.year}：已记录产品 ${item.nameZh} 在本页的释义为“${item.zh}”。年份取自该目录释义，不是另据申报文件。`,
     ),
     company.employees
       ? `${company.employees.asOf}：记录员工数 ${company.employees.value.toLocaleString("zh-CN")}。应视为历史数字。`

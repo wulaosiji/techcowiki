@@ -15,6 +15,7 @@ import {
   type CountryHub,
 } from "./places";
 import { listingTickers } from "./copy";
+import { localizedProductName } from "./product-names";
 import { traditionalSearchVariants } from "../lib/traditional";
 import { createCatalogLinker } from "../lib/autolink";
 import { buildCatalogProducts } from "./enrich-products";
@@ -135,7 +136,10 @@ export function companyHaystack(company: Company): string {
     company.stock?.adr ? `${company.stock.adr.exchange} ${company.stock.adr.ticker}` : "",
     ...(company.stock?.secondary ?? []).map((item) => `${item.exchange} ${item.ticker}`),
     ...listingTickers(company),
-    ...company.products.map((product) => `${product.name} ${product.description.en} ${product.description.zh}`),
+    ...company.products.map((product) => {
+      const localized = localizedProductName(product.name);
+      return `${product.name} ${localized.zh} ${product.description.en} ${product.description.zh}`;
+    }),
     ...company.founders.map((founder) => founder.personSlug),
     ...(company.faq ?? []).flatMap((item) => [
       item.question.en,
@@ -204,6 +208,7 @@ export function productHaystack(product: CatalogProduct): string {
     product.id,
     product.name.en,
     product.name.zh,
+    ...traditionalSearchVariants(product.name.zh),
     ...product.aliases,
     product.definition.en,
     product.definition.zh,

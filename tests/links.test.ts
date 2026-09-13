@@ -217,6 +217,7 @@ describe("internal linking", () => {
     const stubs = allProducts().map((product) => ({
       slug: product.slug,
       name: product.name.en,
+      nameZh: product.name.zh,
       companySlug: product.companySlug,
     }));
     expect(linkCatalogCopy("CUDA GPUs ship from NVIDIA.", "en", companies, people, {}, stubs)).toContain(
@@ -227,6 +228,9 @@ describe("internal linking", () => {
     );
     expect(linkCatalogCopy("WeChat is a recorded Tencent line.", "en", companies, people, {}, stubs)).toContain(
       "[WeChat](/products/wechat)",
+    );
+    expect(linkCatalogCopy("微信是腾讯的已记录产品线。", "zh", companies, people, {}, stubs)).toContain(
+      "[微信](/zh/products/wechat)",
     );
   });
 
