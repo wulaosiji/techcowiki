@@ -48,6 +48,17 @@ describe("development harness contracts", () => {
     expect(redirects).not.toMatch(/\/zh\/\* \/zh\/404 404/);
   });
 
+  test("project docs default to English", () => {
+    const agents = read("AGENTS.md");
+    const review = read("docs/review-2026-09-13.md");
+    const rule = read(".cursor/rules/techcowiki-harness.mdc");
+    expect(agents).toContain("The project defaults to English");
+    expect(agents).not.toMatch(/这是本仓库的开发契约/);
+    expect(review).toContain("Full-project technical review");
+    expect(review).not.toMatch(/全项目技术审查/);
+    expect(rule).toContain("The repository defaults to English");
+  });
+
   test("OpenAPI is versioned under /api/v1", () => {
     const openapi = read("src/pages/api/v1/openapi.json.ts");
     expect(openapi).toContain("1.4.0");
