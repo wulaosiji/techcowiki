@@ -20,7 +20,7 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
 
 <BaseLayout
   locale={locale}
-  title={t(tagline, locale)}
+  title={SITE_NAME}
   description={t(mission, locale)}
   path="/"
   jsonLd={websiteGraph(locale)}
@@ -33,9 +33,13 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
         <p class="lede definition">{t(mission, locale)}</p>
         <p>
           {locale === "zh"
-            ? "本站不是融资数据库。它是一部可引用的百科：每家公司与每个人物都有定义句、可抽取事实卡、身份消解、时间线、地理与行业语境、问答（含“是不是中国公司 / 来自哪个国家”）、未记录字段、模型表述说明、公共记录和检索说明，并提供供模型直接读取的 Markdown / JSON 副本。"
-            : "This is not a fundraising database. It is a citable encyclopedia: every company and person page has a definition, extractable fact cards, identity notes, dated facts, geography and sector context, FAQ (including “is this a Chinese company?” and “what country is it from?”), unrecorded-field notes, model-description rules, a public-record close, retrieval instructions, and Markdown / JSON twins that models can read without scraping."}
+            ? "这不是融资数据库。每家公司与每个人物都有一段可独立引用的简述、目录对照、国籍规则和 HTML / Markdown / JSON 副本，让模型与人读到同一条记录。"
+            : "This is not a fundraising database. Every company and person has a citation-ready brief, a catalog comparison, nationality rules, and HTML / Markdown / JSON twins so models and people read the same record."}
         </p>
+        <form class="search-form" method="get" action={localePath(locale, "/search")}>
+          <input type="search" name="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
+          <button type="submit">{t(ui.navSearch, locale)}</button>
+        </form>
         <div class="toolbar">
           <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>
           <a class="btn" href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>

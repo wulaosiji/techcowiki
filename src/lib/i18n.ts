@@ -31,6 +31,15 @@ export function htmlLang(locale: Locale): string {
   return locale === "zh" ? "zh-Hans" : "en";
 }
 
+/** Stable fragment from the English title so en/zh pages share anchors. */
+export function headingId(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "section";
+}
+
 export function formatDate(iso: string, locale: Locale): string {
   const date = new Date(`${iso}T00:00:00Z`);
   return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", {

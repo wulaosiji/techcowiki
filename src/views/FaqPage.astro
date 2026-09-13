@@ -21,7 +21,7 @@ const { locale } = Astro.props;
   <div class="wrap">
     <h1>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h1>
     {faqs.map((item) => (
-      <section>
+      <section class="faq-item" id={item.id}>
         <h2>{item.question[locale]}</h2>
         <p>{item.answer[locale]}</p>
       </section>

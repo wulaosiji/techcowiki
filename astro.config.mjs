@@ -4,6 +4,10 @@ export default defineConfig({
   site: "https://techco.wiki",
   trailingSlash: "never",
   compressHTML: true,
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "hover",
+  },
   build: {
     inlineStylesheets: "always",
   },

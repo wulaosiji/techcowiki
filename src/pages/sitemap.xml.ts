@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { allCompanies, allPeople } from "../data/catalog";
 import { editorialDocs } from "../data/pages";
-import { regions, sectors, SITE_ORIGIN } from "../data/site";
+import { LAST_REVIEWED, regions, sectors, SITE_ORIGIN } from "../data/site";
 import { pageUrl } from "../lib/i18n";
 import { textResponse } from "../lib/http";
 import type { Locale } from "../data/types";
@@ -12,7 +12,7 @@ function url(loc: string, lastmod: string) {
 
 export const GET: APIRoute = () => {
   const locales: Locale[] = ["en", "zh"];
-  const last = "2026-09-12";
+  const last = LAST_REVIEWED;
   const staticPaths = ["/", "/companies", "/people", "/search", "/faq", ...editorialDocs.map((doc) => `/${doc.slug}`)];
   const entityPaths = [
     ...allCompanies().map((company) => `/companies/${company.slug}`),

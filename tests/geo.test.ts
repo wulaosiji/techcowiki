@@ -53,7 +53,12 @@ describe("GEO surfaces", () => {
   });
 
   test("JSON-LD graphs are serializable", () => {
-    JSON.stringify(websiteGraph("en"));
+    const site = websiteGraph("en");
+    JSON.stringify(site);
+    const website = (site["@graph"] as { "@type"?: string; potentialAction?: { "@type"?: string } }[]).find(
+      (node) => node["@type"] === "WebSite",
+    );
+    expect(website?.potentialAction?.["@type"]).toBe("SearchAction");
     const companyLd = companyGraph(allCompanies()[0], "zh");
     const personLd = personGraph(allPeople()[0], "en");
     JSON.stringify(companyLd);
@@ -66,6 +71,12 @@ describe("GEO surfaces", () => {
       (node) => node["@type"] === "FAQPage",
     );
     expect(companyFaq?.mainEntity?.length).toBeGreaterThanOrEqual(8);
+    const page = (companyLd["@graph"] as { speakable?: { cssSelector?: string[] } }[]).find(
+      (node) => node.speakable,
+    );
+    expect(page?.speakable?.cssSelector).toEqual(
+      expect.arrayContaining(["#authority-brief", "#comparison", ".definition"]),
+    );
   });
 
   test("JSON records expose both locales and machine URLs", () => {

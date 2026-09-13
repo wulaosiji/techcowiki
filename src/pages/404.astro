@@ -5,12 +5,28 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <BaseLayout
   locale="en"
   title="Not found"
-  description="This TechCo.wiki page does not exist."
+  description="This TechCo.wiki page does not exist. / 本页不在 TechCo.wiki 记录中。"
   path="/404"
 >
   <div class="wrap">
-    <h1>Not found</h1>
+    <p class="kicker">404</p>
+    <h1>Not found / 未找到</h1>
     <p>This entity or page is not in the TechCo.wiki record.</p>
-    <p><a href="/">Home</a> · <a href="/companies">Companies</a> · <a href="/llms.txt">llms.txt</a></p>
+    <p>该实体或页面不在 TechCo.wiki 记录中。缺席不是否定判断。</p>
+    <form class="search-form" method="get" action="/search" role="search">
+      <input type="search" name="q" placeholder="Search companies and people" aria-label="Search" />
+      <button type="submit">Search / 搜索</button>
+    </form>
+    <p>
+      <a href="/">Home</a>
+      {" · "}
+      <a href="/zh">首页</a>
+      {" · "}
+      <a href="/companies">Companies</a>
+      {" · "}
+      <a href="/search">Search</a>
+      {" · "}
+      <a href="/llms.txt">llms.txt</a>
+    </p>
   </div>
 </BaseLayout>

@@ -10,9 +10,9 @@
   --chip: #ebe4d4;
   --ok: #2f5d3a;
   --warn: #8a5a12;
-  --serif: "Source Serif 4", "Noto Serif SC", "Songti SC", Georgia, serif;
+  --serif: "Source Serif 4", "Noto Sans SC", "Songti SC", Georgia, serif;
   --sans: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mono: ui-monospace, "IBM Plex Mono", SFMono-Regular, Menlo, monospace;
   --max: 72rem;
   --infobox: 19.5rem;
 }
@@ -20,6 +20,15 @@
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 body {
   margin: 0;
@@ -60,12 +69,30 @@ a:hover { color: var(--link-hover); }
 
 .masthead-inner {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  padding: 0.7rem 0 0.55rem;
+}
+
+.masthead-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 4rem;
   flex-wrap: wrap;
-  padding: 0.55rem 0;
+}
+
+.nav-search {
+  flex: 1 1 14rem;
+  max-width: 22rem;
+  margin: 0;
+}
+
+.nav-search input[type="search"] {
+  width: 100%;
+  min-width: 0;
+  padding: 0.38rem 0.7rem;
 }
 
 .brand {
@@ -141,6 +168,34 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
   margin: 0 0 0.45rem;
 }
 
+.entity-id {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  margin: 0 0 0.45rem;
+}
+
+:lang(zh-Hans) h1,
+:lang(zh-Hans) h2,
+:lang(zh-Hans) h3,
+:lang(zh-Hans) .card .name {
+  font-family: "Noto Sans SC", var(--sans);
+  letter-spacing: 0;
+}
+
+:lang(zh-Hans) .lede,
+:lang(zh-Hans) .lead,
+:lang(zh-Hans) .definition {
+  font-family: "Noto Sans SC", var(--serif);
+}
+
+:lang(zh-Hans) .brand-tag,
+:lang(zh-Hans) .kicker {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
 .lede, .lead, .definition {
   font-family: var(--serif);
   font-size: 1.2rem;
@@ -174,7 +229,14 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
 .card:hover { border-color: var(--accent); }
 .card .name { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.2rem; }
 .card .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 0.45rem; }
-.card p { margin: 0; font-size: 0.95rem; }
+.card p {
+  margin: 0;
+  font-size: 0.95rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.6rem 0; }
 .chip {
@@ -316,6 +378,53 @@ button:hover, .btn:hover { border-color: var(--accent); }
 .prose p { margin: 0 0 0.9rem; }
 .prose ul { padding-left: 1.2rem; }
 
+article section > p,
+.prose-list {
+  max-width: 46rem;
+}
+
+.prose-list {
+  margin: 0 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.prose-list li + li { margin-top: 0.45rem; }
+
+.toc {
+  margin: 0 0 1.4rem;
+  padding: 0.85rem 1rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.toc h2 {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+}
+
+.toc ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc a {
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+
+.toc a:hover { color: var(--accent); }
+
+.empty-state {
+  display: none;
+  margin: 1rem 0;
+  color: var(--muted);
+}
+
 footer {
   border-top: 1px solid var(--rule);
   padding: 1.4rem 0 2rem;
@@ -334,9 +443,6 @@ footer {
   .hero, .article-layout, .stat-row, .claims div { grid-template-columns: 1fr; }
   .infobox { position: static; }
   .brand-tag { display: none; }
-  .masthead-inner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  .nav-search { max-width: none; flex-basis: 100%; }
   .nav { width: 100%; }
 }

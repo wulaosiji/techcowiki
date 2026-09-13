@@ -28,8 +28,8 @@ const people = allPeople();
         ? "完整目录写在本页 HTML 中。查询参数只用于筛选显示，不会隐藏给爬虫的内容。"
         : "The full catalog is in this HTML. Query parameters only hide cards in the browser; crawlers still see every entity."}
     </p>
-    <form class="search-form" method="get">
-      <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} />
+    <form class="search-form" method="get" role="search">
+      <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
       <select name="sector" id="sector">
         <option value="">{t(ui.filterSector, locale)}</option>
         {sectors.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
@@ -40,13 +40,15 @@ const people = allPeople();
       </select>
       <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
     </form>
+    <p class="empty-state" id="empty">{t(ui.noResults, locale)}</p>
+    <section class="result-group" data-results>
     <h2>{t(ui.navCompanies, locale)}</h2>
     <div class="grid" id="company-grid">
       {companies.map((company) => (
         <div
           class="entity"
           data-kind="company"
-          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.legalName ?? ""} ${company.definition.en} ${company.products.map((product) => product.name).join(" ")} ${company.founders.map((founder) => founder.personSlug).join(" ")}`}
+          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.legalName ?? ""} ${company.definition.en} ${company.definition.zh} ${company.products.map((product) => product.name).join(" ")} ${company.founders.map((founder) => founder.personSlug).join(" ")}`}
           data-sector={company.sectors.join(" ")}
           data-region={company.regions.join(" ")}
         >
@@ -54,13 +56,15 @@ const people = allPeople();
         </div>
       ))}
     </div>
+    </section>
+    <section class="result-group" data-results>
     <h2>{t(ui.navPeople, locale)}</h2>
     <div class="grid" id="people-grid">
       {people.map((person) => (
         <div
           class="entity"
           data-kind="person"
-          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.definition.en} ${person.companies.map((item) => item.companySlug).join(" ")}`}
+          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.definition.en} ${person.definition.zh} ${person.companies.map((item) => item.companySlug).join(" ")}`}
           data-sector=""
           data-region=""
         >
@@ -68,6 +72,7 @@ const people = allPeople();
         </div>
       ))}
     </div>
+    </section>
   </div>
   <script is:inline>
     (function () {
@@ -90,6 +95,17 @@ const people = allPeople();
         if (kind === "company" && sector) ok = ok && sectors.indexOf(sector) !== -1;
         if (kind === "company" && region) ok = ok && regions.indexOf(region) !== -1;
         node.hidden = !ok;
+      });
+      var visible = Array.prototype.some.call(document.querySelectorAll(".entity"), function (node) {
+        return !node.hidden;
+      });
+      var empty = document.getElementById("empty");
+      if (empty) empty.style.display = visible ? "none" : "block";
+      document.querySelectorAll("[data-results]").forEach(function (group) {
+        var any = Array.prototype.some.call(group.querySelectorAll(".entity"), function (node) {
+          return !node.hidden;
+        });
+        group.hidden = !any;
       });
     })();
   </script>

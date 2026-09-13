@@ -1,12 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import CitedBody from "../components/CitedBody.astro";
+import OnThisPage from "../components/OnThisPage.astro";
 import { getCompany } from "../data/catalog";
-import { confidenceLabel, ui } from "../data/site";
+import { confidenceLabel, SITE_NAME, SITE_ORIGIN, ui } from "../data/site";
 import type { Locale, Person } from "../data/types";
-import { renderCitedHtml, splitParagraphs, stripCitations } from "../lib/citations";
+import { clipPlain, renderCitedHtml, splitParagraphs } from "../lib/citations";
 import { formatDate, localePath, pageUrl, t } from "../lib/i18n";
 import { personGraph } from "../lib/schema";
-import { SITE_NAME, SITE_ORIGIN } from "../data/site";
 
 interface Props {
   locale: Locale;
@@ -15,12 +16,23 @@ interface Props {
 
 const { locale, person } = Astro.props;
 const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${person.slug}`)}, last reviewed ${person.lastReviewed}, ${person.id}.`;
+const toc = [
+  (person.claims ?? []).length > 0
+    ? { id: "recorded-facts", title: t(ui.claims, locale) }
+    : undefined,
+  ...(person.sections ?? [])
+    .filter((section) => section.id !== "faq")
+    .map((section) => ({ id: section.id, title: t(section.title, locale) })),
+  (person.faq ?? []).length > 0 ? { id: "faq", title: t(ui.faq, locale) } : undefined,
+  { id: "associated-companies", title: t(ui.navCompanies, locale) },
+  { id: "sources", title: t(ui.sources, locale) },
+].filter((item): item is { id: string; title: string } => Boolean(item));
 ---
 
 <BaseLayout
   locale={locale}
   title={person.name[locale]}
-  description={stripCitations(person.lead[locale]).slice(0, 240)}
+  description={clipPlain(person.definition[locale], 220)}
   path={`/people/${person.slug}`}
   jsonLd={personGraph(person, locale)}
   lastModified={person.lastReviewed}
@@ -35,7 +47,7 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
     </nav>
     <div class="article-layout">
       <article>
-        <p class="kicker">{person.id}</p>
+        <p class="entity-id">{person.id}</p>
         <h1>{person.name[locale]}</h1>
         <p class="aliases">{person.name[locale === "zh" ? "en" : "zh"]}</p>
         <p class="definition" set:html={renderCitedHtml(person.definition[locale], person.sources)} />
@@ -51,9 +63,10 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
           <a href={`${SITE_ORIGIN}/people/${person.slug}.md`}>{t(ui.markdown, locale)}</a>
           <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
+        <OnThisPage locale={locale} items={toc} />
         {(person.claims ?? []).length > 0 && (
           <section id="recorded-facts">
-            <h2>{locale === "zh" ? "可抽取事实" : "Extractable facts"}</h2>
+            <h2>{t(ui.claims, locale)}</h2>
             <dl class="claims">
               {person.claims!.map((item) => (
                 <div>
@@ -70,26 +83,22 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
             .map((section) => (
               <section id={section.id}>
                 <h2>{t(section.title, locale)}</h2>
-                {splitParagraphs(section.body[locale]).map((paragraph) => (
-                  <p set:html={renderCitedHtml(paragraph, person.sources)} />
-                ))}
+                <CitedBody text={section.body[locale]} sources={person.sources} />
               </section>
             ))
         }
         {(person.faq ?? []).length > 0 && (
           <section id="faq">
-            <h2>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h2>
+            <h2>{t(ui.faq, locale)}</h2>
             {person.faq!.map((item) => (
               <div class="faq-item" id={`faq-${item.id}`}>
                 <h3>{item.question[locale]}</h3>
-                {splitParagraphs(item.answer[locale]).map((paragraph) => (
-                  <p set:html={renderCitedHtml(paragraph, person.sources)} />
-                ))}
+                <CitedBody text={item.answer[locale]} sources={person.sources} />
               </div>
             ))}
           </section>
         )}
-        <h2>{t(ui.navCompanies, locale)}</h2>
+        <h2 id="associated-companies">{t(ui.navCompanies, locale)}</h2>
         <ul>
           {person.companies.map((item) => {
             const company = getCompany(item.companySlug);
@@ -109,12 +118,13 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
             );
           })}
         </ul>
-        <h2>{t(ui.sources, locale)}</h2>
+        <h2 id="sources">{t(ui.sources, locale)}</h2>
         <ol class="sources">
           {person.sources.map((source) => (
             <li id={`source-${source.id}`}>
               <a href={source.url} rel="nofollow noopener">{source.title}</a>
-              {`. ${source.publisher}. Accessed ${source.accessed}.`}
+              {`. ${source.publisher}. `}
+              {t(ui.accessed, locale)} {source.accessed}.
             </li>
           ))}
         </ol>
@@ -128,18 +138,18 @@ const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${pe
         <dl>
           {person.birthYear && (
             <div>
-              <dt>{locale === "zh" ? "出生年" : "Born"}</dt>
+              <dt>{t(ui.born, locale)}</dt>
               <dd>{person.birthYear}</dd>
             </div>
           )}
           {person.birthPlace && (
             <div>
-              <dt>{locale === "zh" ? "出生地" : "Birthplace"}</dt>
+              <dt>{t(ui.birthplace, locale)}</dt>
               <dd>{person.birthPlace[locale]}</dd>
             </div>
           )}
           <div>
-            <dt>{locale === "zh" ? "角色" : "Roles"}</dt>
+            <dt>{t(ui.roles, locale)}</dt>
             <dd>{person.roles.map((role) => t(role, locale)).join(locale === "zh" ? "、" : ", ")}</dd>
           </div>
           <div>

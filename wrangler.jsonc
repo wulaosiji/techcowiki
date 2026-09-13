@@ -2,6 +2,5 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "techcowiki",
   "account_id": "ea96b3a9f1cc44d659b0973b0cce802b",
-  "compatibility_date": "2026-09-12",
-  "pages_build_output_dir": "./dist"
+  "compatibility_date": "2026-09-12"
 }

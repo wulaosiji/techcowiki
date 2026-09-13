@@ -11,11 +11,10 @@ import {
 } from "../data/site";
 import type { Company, EntityFaq, FaqItem, Locale, Person } from "../data/types";
 import { pageUrl } from "./i18n";
-import { stripCitations } from "./citations";
+import { clipPlain, stripCitations } from "./citations";
 
 function richDescription(text: string, limit = 480): string {
-  const clean = stripCitations(text);
-  return clean.length > limit ? `${clean.slice(0, limit - 1).trimEnd()}…` : clean;
+  return clipPlain(text, limit);
 }
 
 function entityFaqGraph(url: string, faq: EntityFaq[] | undefined, locale: Locale) {
@@ -49,6 +48,14 @@ export function websiteGraph(locale: Locale) {
         inLanguage: locale === "zh" ? "zh-Hans" : "en",
         publisher: { "@id": `${SITE_ORIGIN}/#org` },
         license: CONTENT_LICENSE_URL,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${pageUrl(locale, "/search")}?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
       {
         "@type": "Dataset",
@@ -98,7 +105,7 @@ export function companyGraph(company: Company, locale: Locale) {
           (value, index, list) => list.indexOf(value) === index && value !== company.name[locale],
         ),
         legalName: company.legalName,
-        description: richDescription(company.lead[locale]),
+        description: richDescription(company.definition[locale], 320),
         url: company.website,
         foundingDate: company.founded,
         identifier: {
@@ -188,7 +195,7 @@ export function personGraph(person: Person, locale: Locale) {
         "@id": `${url}#person`,
         name: person.name[locale],
         alternateName: person.aliases,
-        description: richDescription(person.lead[locale]),
+        description: richDescription(person.definition[locale], 320),
         jobTitle: person.roles.map((role) => role[locale]),
         identifier: {
           "@type": "PropertyValue",
@@ -276,7 +283,16 @@ function webPageNode(input: {
     hasPart: input.parts,
     speakable: {
       "@type": "SpeakableSpecification",
-      cssSelector: [".lead", ".definition", "article section", ".faq-item", ".claims", "#recorded-facts"],
+      cssSelector: [
+        ".lead",
+        ".definition",
+        "#authority-brief",
+        "#comparison",
+        "article section",
+        ".faq-item",
+        ".claims",
+        "#recorded-facts",
+      ],
     },
     copyrightNotice: CONTENT_LICENSE,
   };

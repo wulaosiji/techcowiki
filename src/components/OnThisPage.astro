@@ -1,0 +1,27 @@
+---
+import { ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { t } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  items: { id: string; title: string }[];
+}
+
+const { locale, items } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <nav class="toc" aria-label={t(ui.onThisPage, locale)}>
+      <h2>{t(ui.onThisPage, locale)}</h2>
+      <ol>
+        {items.map((item) => (
+          <li>
+            <a href={`#${item.id}`}>{item.title}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

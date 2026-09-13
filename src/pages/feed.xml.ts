@@ -1,18 +1,22 @@
 import type { APIRoute } from "astro";
 import { allCompanies } from "../data/catalog";
 import { SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
-import { stripCitations } from "../lib/citations";
+import { escapeHtml, stripCitations } from "../lib/citations";
 import { textResponse } from "../lib/http";
+
+function rfc822(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toUTCString();
+}
 
 export const GET: APIRoute = () => {
   const items = allCompanies()
     .map(
       (company) => `  <item>
-    <title>${company.name.en}</title>
+    <title>${escapeHtml(company.name.en)}</title>
     <link>${SITE_ORIGIN}/companies/${company.slug}</link>
     <guid>${company.id}</guid>
-    <pubDate>${company.lastReviewed}</pubDate>
-    <description>${stripCitations(company.definition.en)}</description>
+    <pubDate>${rfc822(company.lastReviewed)}</pubDate>
+    <description>${escapeHtml(stripCitations(company.definition.en))}</description>
   </item>`,
     )
     .join("\n");

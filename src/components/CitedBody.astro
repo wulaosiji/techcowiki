@@ -1,0 +1,13 @@
+---
+import type { Source } from "../data/types";
+import { renderCitedBlocks } from "../lib/citations";
+
+interface Props {
+  text: string;
+  sources: Source[];
+}
+
+const { text, sources } = Astro.props;
+---
+
+<Fragment set:html={renderCitedBlocks(text, sources)} />

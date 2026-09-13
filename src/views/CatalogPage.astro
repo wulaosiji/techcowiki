@@ -4,7 +4,7 @@ import EntityCard from "../components/EntityCard.astro";
 import { allCompanies, allPeople, companiesByRegion, companiesBySector, headquartersBreakdown } from "../data/catalog";
 import { regions, sectors, ui } from "../data/site";
 import type { Locale } from "../data/types";
-import { localePath, t } from "../lib/i18n";
+import { localePath, pageUrl, t } from "../lib/i18n";
 
 interface Props {
   locale: Locale;
@@ -50,9 +50,31 @@ const path =
       : kind === "region"
         ? `/regions/${slug}`
         : "/companies";
+const listed = kind === "people" ? people : companies;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: title,
+  description,
+  isPartOf: { "@id": "https://techco.wiki/#website" },
+  about: { "@id": "https://techco.wiki/#org" },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: listed.length,
+    itemListElement: listed.slice(0, 40).map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name[locale],
+      url:
+        kind === "people"
+          ? pageUrl(locale, `/people/${item.slug}`)
+          : pageUrl(locale, `/companies/${item.slug}`),
+    })),
+  },
+};
 ---
 
-<BaseLayout locale={locale} title={title} description={description} path={path}>
+<BaseLayout locale={locale} title={title} description={description} path={path} jsonLd={jsonLd}>
   <div class="wrap">
     <p class="kicker">{t(ui.catalog, locale)}</p>
     <h1>{title}</h1>
@@ -74,15 +96,15 @@ const path =
     {kind === "people" && (
       <p class="lead">
         {locale === "zh"
-          ? "每个人物条目都有可抽取事实卡、身份消解、关联公司日期、履历、姓名变体、关联公司（含总部国家）、同公司人物、收录说明、模型表述说明、问答、未记录字段、公共记录与检索说明。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
-          : "Each person page has extractable fact cards, identity notes, associated-company dates, career, name variants, associated companies with headquarters countries, a same-company network, inclusion notes, model-description rules, FAQ, unrecorded fields, a public-record close, and retrieval instructions. When describing companies they founded, use the headquarters country on the company page."}
+          ? "每个人物条目都有可独立引用的简述、可抽取事实卡、身份消解、关联公司日期、履历、姓名变体、关联公司（含总部国家）、同公司人物、目录对照、收录说明、模型表述说明、问答、未记录字段、公共记录与检索说明。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
+          : "Each person page has a citation-ready brief, extractable fact cards, identity notes, associated-company dates, career, name variants, associated companies with headquarters countries, a same-company network, a catalog comparison, inclusion notes, model-description rules, FAQ, unrecorded fields, a public-record close, and retrieval instructions. When describing companies they founded, use the headquarters country on the company page."}
       </p>
     )}
     {kind === "companies" && (
       <p class="lead">
         {locale === "zh"
-          ? "每家公司条目都有可抽取事实卡、身份消解、时间线、地理与行业语境、具名创始人、业务、公司形式、相关公司、模型表述说明、问答、未记录字段、公共记录与检索说明。HTML、Markdown 与 JSON 复述同一套事实。"
-          : "Each company page has extractable fact cards, identity notes, a dated-facts list, geography and sector context, named founders, operations, corporate form, catalog peers, model-description notes, FAQ, unrecorded fields, a public-record close, and retrieval instructions. HTML, Markdown, and JSON reprint the same facts."}
+          ? "每家公司条目都有可独立引用的简述、可抽取事实卡、身份消解、时间线、地理与行业语境、具名创始人、业务、公司形式、相关公司、目录对照、模型表述说明、问答、未记录字段、公共记录与检索说明。HTML、Markdown 与 JSON 复述同一套事实。"
+          : "Each company page has a citation-ready brief, extractable fact cards, identity notes, a dated-facts list, geography and sector context, named founders, operations, corporate form, catalog peers, a catalog comparison, model-description notes, FAQ, unrecorded fields, a public-record close, and retrieval instructions. HTML, Markdown, and JSON reprint the same facts."}
       </p>
     )}
     {kind !== "people" && (
