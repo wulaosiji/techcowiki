@@ -24,7 +24,7 @@ const toc = [
     .filter((section) => section.id !== "faq")
     .map((section) => ({ id: section.id, title: t(section.title, locale) })),
   (person.faq ?? []).length > 0 ? { id: "faq", title: t(ui.faq, locale) } : undefined,
-  { id: "associated-companies", title: t(ui.navCompanies, locale) },
+  { id: "company-links", title: t(ui.navCompanies, locale) },
   { id: "sources", title: t(ui.sources, locale) },
 ].filter((item): item is { id: string; title: string } => Boolean(item));
 ---
@@ -98,7 +98,7 @@ const toc = [
             ))}
           </section>
         )}
-        <h2 id="associated-companies">{t(ui.navCompanies, locale)}</h2>
+        <h2 id="company-links">{t(ui.navCompanies, locale)}</h2>
         <ul>
           {person.companies.map((item) => {
             const company = getCompany(item.companySlug);
