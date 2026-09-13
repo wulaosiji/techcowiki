@@ -12,11 +12,17 @@ export function localePath(locale: Locale, path = "/"): string {
   return `/zh${clean}`.replace(/\/$/, "");
 }
 
+/** Append a query string only when the href does not already have one. */
+export function appendSearch(href: string, search = ""): string {
+  if (!href || !search || search === "?") return href;
+  const query = search.startsWith("?") ? search : `?${search}`;
+  return href.includes("?") ? href : `${href}${query}`;
+}
+
 export function switchLocale(locale: Locale, path: string, search = ""): string {
   const next = locale === "en" ? "zh" : "en";
   const stripped = path.replace(/^\/zh(?=\/|$)/, "") || "/";
-  const query = !search || search === "?" ? "" : search.startsWith("?") ? search : `?${search}`;
-  return `${localePath(next, stripped)}${query}`;
+  return appendSearch(localePath(next, stripped), search);
 }
 
 export function pageUrl(locale: Locale, path = "/"): string {

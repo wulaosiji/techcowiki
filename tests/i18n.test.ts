@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { GET as sitemapGet } from "../src/pages/sitemap.xml";
 import { GET as openapiGet } from "../src/pages/api/v1/openapi.json";
 import { GET as graphGet } from "../src/pages/api/v1/graph.json";
-import { switchLocale } from "../src/lib/i18n";
+import { appendSearch, switchLocale } from "../src/lib/i18n";
 import { llmsFullTxt } from "../src/lib/llms";
 
 describe("locale and machine contracts", () => {
@@ -12,6 +12,9 @@ describe("locale and machine contracts", () => {
     );
     expect(switchLocale("zh", "/search", "?q=台积电")).toBe("/search?q=台积电");
     expect(switchLocale("en", "/companies/nvidia")).toBe("/zh/companies/nvidia");
+    expect(appendSearch("/zh/search", "?q=TSM")).toBe("/zh/search?q=TSM");
+    expect(appendSearch("/zh/search?q=TSM", "?q=TSM")).toBe("/zh/search?q=TSM");
+    expect(appendSearch("/zh/search", "")).toBe("/zh/search");
   });
 
   test("Chinese llms-full dump is a complete parallel text", () => {

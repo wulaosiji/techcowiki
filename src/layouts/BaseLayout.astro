@@ -132,5 +132,28 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
         <div>CC BY-SA 4.0 · {locale === "zh" ? "代码 MIT" : "Code MIT"} · {SITE_ORIGIN}</div>
       </div>
     </footer>
+    <script is:inline>
+      (function () {
+        var search = location.search;
+        if (search && search !== "?") {
+          document.querySelectorAll("a.lang-switch").forEach(function (node) {
+            var href = node.getAttribute("href");
+            if (!href || href.indexOf("?") !== -1) return;
+            node.setAttribute("href", href + search);
+          });
+          document.querySelectorAll('link[rel="alternate"]').forEach(function (node) {
+            var href = node.getAttribute("href");
+            if (!href || href.indexOf("?") !== -1) return;
+            try {
+              var path = new URL(href, location.origin).pathname.replace(/\/$/, "");
+              if (path === "/search" || path === "/zh/search") node.setAttribute("href", href + search);
+            } catch (error) {}
+          });
+        }
+        var query = new URLSearchParams(search).get("q");
+        var header = document.querySelector('.nav-search input[name="q"]');
+        if (header && query && !header.value) header.value = query;
+      })();
+    </script>
   </body>
 </html>

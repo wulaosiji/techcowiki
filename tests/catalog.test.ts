@@ -214,6 +214,8 @@ describe("catalog integrity", () => {
   test("search haystack includes FAQ answers and secondary tickers", () => {
     expect(companyHaystack(getCompany("nvidia")!).toLowerCase()).toContain("chinese company");
     expect(companyHaystack(getCompany("alibaba")!)).toContain("9988");
+    expect(companyHaystack(getCompany("tsmc")!)).toContain("TSM");
+    expect(companyHaystack(getCompany("pdd-holdings")!)).toContain("Temu");
     expect(getCompany("alibaba")?.stock?.secondary?.some((item) => item.ticker === "9988")).toBe(true);
     expect(getCompany("pony-ai")?.definition.en).toMatch(/Fremont-headquartered/);
   });

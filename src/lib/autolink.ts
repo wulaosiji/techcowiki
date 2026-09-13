@@ -293,6 +293,10 @@ function protect(text: string): { text: string; tokens: string[] } {
       tokens.push(match);
       return `\u0000T${tokens.length - 1}\u0000`;
     })
+    .replace(/Chinese mainland|mainland Chinese/gi, (match) => {
+      tokens.push(match);
+      return `\u0000T${tokens.length - 1}\u0000`;
+    })
     .replace(/\[s\d+\]/g, (match) => {
       tokens.push(match);
       return `\u0000T${tokens.length - 1}\u0000`;

@@ -180,6 +180,12 @@ describe("internal linking", () => {
     );
     expect(linked).toContain("https://en.wikipedia.org/wiki/ByteDance");
     expect(linked).not.toContain("wiki/[ByteDance]");
+    expect(
+      linkCatalogCopy("Use Chinese mainland as a macro-region label, not a headquarters synonym.", "en", allCompanies(), allPeople()),
+    ).toContain("Chinese mainland");
+    expect(
+      linkCatalogCopy("Use Chinese mainland as a macro-region label, not a headquarters synonym.", "en", allCompanies(), allPeople()),
+    ).not.toMatch(/\[Chinese mainland\]/);
   });
 
   test("product brands and secondary listings become company links", () => {

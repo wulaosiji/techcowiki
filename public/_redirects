@@ -1,0 +1,3 @@
+# Missing Chinese URLs should keep the reader inside the zh locale.
+# Existing static files under /zh/ take precedence over this splat.
+/zh/* /zh/404 404

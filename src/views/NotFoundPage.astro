@@ -1,0 +1,78 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE_ORIGIN } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<BaseLayout
+  locale={locale}
+  title={locale === "zh" ? "未找到" : "Not found"}
+  description={
+    locale === "zh"
+      ? "该页面不在 TechCo.Wiki 记录中。"
+      : "This TechCo.Wiki page does not exist. / 本页不在 TechCo.Wiki 记录中。"
+  }
+  path="/404"
+  robots="noindex, follow"
+  markdownHref={`${SITE_ORIGIN}/llms.txt`}
+>
+  <div class="wrap">
+    <p class="kicker">404</p>
+    <h1>{locale === "zh" ? "未找到" : "Not found / 未找到"}</h1>
+    <p>
+      {locale === "zh"
+        ? "该实体或页面不在 TechCo.Wiki 记录中。缺席不是否定判断。"
+        : "This entity or page is not in the TechCo.Wiki record. Absence is not a negative judgment."}
+    </p>
+    {
+      locale === "en" && (
+        <p>该实体或页面不在 TechCo.Wiki 记录中。缺席不是否定判断。</p>
+      )
+    }
+    <form class="search-form" method="get" action={localePath(locale, "/search")} role="search">
+      <input
+        type="search"
+        name="q"
+        placeholder={locale === "zh" ? "搜索公司与人物" : "Search companies and people / 搜索公司与人物"}
+        aria-label={locale === "zh" ? "搜索" : "Search"}
+      />
+      <button type="submit">{locale === "zh" ? "搜索" : "Search / 搜索"}</button>
+    </form>
+    <p>
+      <a href={localePath(locale === "zh" ? "en" : "zh", "/search")}>
+        {locale === "zh" ? "English search" : "中文搜索"}
+      </a>
+      {" · "}
+      <a href={localePath(locale, "/")}>{locale === "zh" ? "首页" : "Home"}</a>
+      {" · "}
+      <a href={localePath(locale, "/companies")}>{locale === "zh" ? "公司" : "Companies"}</a>
+      {" · "}
+      <a href={localePath(locale, "/people")}>{locale === "zh" ? "人物" : "People"}</a>
+      {" · "}
+      <a href={localePath(locale, "/sectors")}>{locale === "zh" ? "行业" : "Sectors"}</a>
+      {" · "}
+      <a href={localePath(locale, "/regions")}>{locale === "zh" ? "地区" : "Regions"}</a>
+      {" · "}
+      <a href={localePath(locale, "/countries")}>{locale === "zh" ? "国家" : "Countries"}</a>
+      {" · "}
+      <a href={localePath(locale, "/cities")}>{locale === "zh" ? "城市" : "Cities"}</a>
+      {" · "}
+      <a href={localePath(locale, "/methodology")}>{locale === "zh" ? "方法" : "Methodology"}</a>
+      {" · "}
+      <a href={localePath(locale, "/inclusion")}>{locale === "zh" ? "收录标准" : "Inclusion rules"}</a>
+      {" · "}
+      <a href={localePath(locale, "/for-models")}>{locale === "zh" ? "给模型" : "For models"}</a>
+      {" · "}
+      <a href={localePath(locale, "/faq")}>FAQ</a>
+      {" · "}
+      <a href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
+    </p>
+  </div>
+</BaseLayout>
