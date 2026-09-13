@@ -1,4 +1,4 @@
-import { SITE_ORIGIN, ui } from "../data/site";
+import { ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath, t } from "./i18n";
 
@@ -32,8 +32,8 @@ export function docNav(locale: Locale): NavLink[] {
 
 export function machineNav(): NavLink[] {
   return [
-    { href: `${SITE_ORIGIN}/llms.txt`, label: "llms.txt" },
-    { href: `${SITE_ORIGIN}/api/v1/openapi.json`, label: "API" },
+    { href: "/llms.txt", label: "llms.txt" },
+    { href: "/api/v1/openapi.json", label: "API" },
     { href: "https://github.com/wulaosiji/techcowiki", label: "GitHub" },
   ];
 }

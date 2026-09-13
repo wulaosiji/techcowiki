@@ -6,10 +6,10 @@ import OnThisPage from "../components/OnThisPage.astro";
 import SeeAlso from "../components/SeeAlso.astro";
 import { getCompany, relatedPeople } from "../data/catalog";
 import { citySlug, countrySlug } from "../data/places";
-import { confidenceLabel, sectors, SITE_NAME, SITE_ORIGIN, ui } from "../data/site";
+import { confidenceLabel, sectors, SITE_NAME, ui } from "../data/site";
 import type { Locale, Person } from "../data/types";
 import { clipPlain, renderCitedHtml, splitParagraphs } from "../lib/citations";
-import { formatDate, localePath, markdownUrl, pageUrl, t } from "../lib/i18n";
+import { formatDate, localePath, markdownPath, pageUrl, t } from "../lib/i18n";
 import { docNav } from "../lib/nav";
 import { personGraph } from "../lib/schema";
 
@@ -106,8 +106,8 @@ const toc = [
             {t(ui.confidence, locale)}:
             <b class={`conf-${person.confidence}`}>{t(confidenceLabel[person.confidence], locale)}</b>
           </span>
-          <a href={markdownUrl(locale, `/people/${person.slug}`)}>{t(ui.markdown, locale)}</a>
-          <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
+          <a href={markdownPath(locale, `/people/${person.slug}`)}>{t(ui.markdown, locale)}</a>
+          <a href={`/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
         <OnThisPage locale={locale} items={toc} />
         {(person.claims ?? []).length > 0 && (

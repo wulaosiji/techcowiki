@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { SITE_ORIGIN } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath } from "../lib/i18n";
 
@@ -21,7 +20,7 @@ const { locale } = Astro.props;
   }
   path="/404"
   robots="noindex, follow"
-  markdownHref={`${SITE_ORIGIN}/llms.txt`}
+  markdownHref="/llms.txt"
 >
   <div class="wrap">
     <p class="kicker">404</p>
@@ -72,7 +71,7 @@ const { locale } = Astro.props;
       {" · "}
       <a href={localePath(locale, "/faq")}>FAQ</a>
       {" · "}
-      <a href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
+      <a href="/llms.txt">llms.txt</a>
     </p>
   </div>
 </BaseLayout>

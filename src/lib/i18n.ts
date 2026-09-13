@@ -30,12 +30,18 @@ export function pageUrl(locale: Locale, path = "/"): string {
   return local === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${local}`;
 }
 
-export function markdownUrl(locale: Locale, path: string): string {
+/** Same-origin Markdown twin. Use this for clickable UI so preview hosts stay on-site. */
+export function markdownPath(locale: Locale, path: string): string {
   const clean = path === "/" ? "/" : path.startsWith("/") ? path : `/${path}`;
   if (locale === "zh") {
-    return clean === "/" ? `${SITE_ORIGIN}/zh/index.md` : `${SITE_ORIGIN}/zh${clean}.md`;
+    return clean === "/" ? "/zh/index.md" : `/zh${clean}.md`;
   }
-  return clean === "/" ? `${SITE_ORIGIN}/index.md` : `${SITE_ORIGIN}${clean}.md`;
+  return clean === "/" ? "/index.md" : `${clean}.md`;
+}
+
+/** Canonical absolute Markdown URL for citations, sitemaps, and machine dumps. */
+export function markdownUrl(locale: Locale, path: string): string {
+  return `${SITE_ORIGIN}${markdownPath(locale, path)}`;
 }
 
 export function otherLocale(locale: Locale): Locale {

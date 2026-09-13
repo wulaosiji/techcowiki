@@ -125,8 +125,8 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
           <a href={localePath(locale, "/faq")}>{t(ui.navFaq, locale)}</a>
           <a href={localePath(locale, "/license")}>{t(ui.license, locale)}</a>
           <a href={localePath(locale, "/about")}>{t(ui.navAbout, locale)}</a>
-          <a href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
-          <a href={`${SITE_ORIGIN}/api/v1/openapi.json`}>API</a>
+          <a href="/llms.txt">llms.txt</a>
+          <a href="/api/v1/openapi.json">API</a>
           <a href="https://github.com/wulaosiji/techcowiki">GitHub</a>
         </nav>
         <div>CC BY-SA 4.0 · {locale === "zh" ? "代码 MIT" : "Code MIT"} · {SITE_ORIGIN}</div>

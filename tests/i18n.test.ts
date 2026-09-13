@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { GET as sitemapGet } from "../src/pages/sitemap.xml";
 import { GET as openapiGet } from "../src/pages/api/v1/openapi.json";
 import { GET as graphGet } from "../src/pages/api/v1/graph.json";
-import { appendSearch, switchLocale } from "../src/lib/i18n";
+import { appendSearch, markdownPath, markdownUrl, switchLocale } from "../src/lib/i18n";
 import { llmsFullTxt } from "../src/lib/llms";
 
 describe("locale and machine contracts", () => {
@@ -15,6 +15,13 @@ describe("locale and machine contracts", () => {
     expect(appendSearch("/zh/search", "?q=TSM")).toBe("/zh/search?q=TSM");
     expect(appendSearch("/zh/search?q=TSM", "?q=TSM")).toBe("/zh/search?q=TSM");
     expect(appendSearch("/zh/search", "")).toBe("/zh/search");
+  });
+
+  test("markdown twins keep a same-origin path and a canonical URL", () => {
+    expect(markdownPath("en", "/companies/nvidia")).toBe("/companies/nvidia.md");
+    expect(markdownPath("zh", "/companies/nvidia")).toBe("/zh/companies/nvidia.md");
+    expect(markdownPath("zh", "/")).toBe("/zh/index.md");
+    expect(markdownUrl("zh", "/companies/nvidia")).toBe("https://techco.wiki/zh/companies/nvidia.md");
   });
 
   test("Chinese llms-full dump is a complete parallel text", () => {

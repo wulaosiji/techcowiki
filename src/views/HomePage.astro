@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import EntityCard from "../components/EntityCard.astro";
 import { allCityHubs, allCompanies, allCountryHubs, catalogStats } from "../data/catalog";
-import { faqs, mission, regions, sectors, SITE_NAME, SITE_ORIGIN, tagline, ui } from "../data/site";
+import { faqs, mission, regions, sectors, SITE_NAME, tagline, ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath, t } from "../lib/i18n";
 import { catalogNav } from "../lib/nav";
@@ -46,23 +46,25 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
         <div class="toolbar">
           <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>
           <a class="btn" href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
-          <a class="btn" href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
+          <a class="btn" href="/llms.txt">llms.txt</a>
         </div>
       </div>
       <aside class="machine-box">
         <h2>{t(ui.machineIndex, locale)}</h2>
         <ul>
-          <li><a href={`${SITE_ORIGIN}/llms.txt`}>/llms.txt</a></li>
-          <li><a href={`${SITE_ORIGIN}/llms-full.txt`}>/llms-full.txt</a></li>
-          <li><a href={`${SITE_ORIGIN}/zh/llms-full.txt`}>/zh/llms-full.txt</a></li>
-          <li><a href={`${SITE_ORIGIN}/api/v1/openapi.json`}>/api/v1/openapi.json</a></li>
-          <li><a href={`${SITE_ORIGIN}/api/v1/companies.json`}>/api/v1/companies.json</a></li>
-          <li><a href={`${SITE_ORIGIN}/api/v1/people.json`}>/api/v1/people.json</a></li>
-          <li><a href={`${SITE_ORIGIN}/api/v1/dataset.json`}>/api/v1/dataset.json</a></li>
-          <li><a href={`${SITE_ORIGIN}/api/v1/graph.json`}>/api/v1/graph.json</a></li>
-          <li><a href={`${SITE_ORIGIN}/feed.xml`}>/feed.xml</a></li>
-          <li><a href={`${SITE_ORIGIN}/search.md`}>/search.md</a></li>
-          <li><a href={`${SITE_ORIGIN}/companies.md`}>/companies.md</a></li>
+          <li><a href="/llms.txt">/llms.txt</a></li>
+          <li><a href="/llms-full.txt">/llms-full.txt</a></li>
+          <li><a href="/zh/llms-full.txt">/zh/llms-full.txt</a></li>
+          <li><a href="/api/v1/openapi.json">/api/v1/openapi.json</a></li>
+          <li><a href="/api/v1/companies.json">/api/v1/companies.json</a></li>
+          <li><a href="/api/v1/people.json">/api/v1/people.json</a></li>
+          <li><a href="/api/v1/dataset.json">/api/v1/dataset.json</a></li>
+          <li><a href="/api/v1/graph.json">/api/v1/graph.json</a></li>
+          <li><a href="/feed.xml">/feed.xml</a></li>
+          <li><a href="/search.md">/search.md</a></li>
+          <li><a href="/zh/search.md">/zh/search.md</a></li>
+          <li><a href="/companies.md">/companies.md</a></li>
+          <li><a href="/zh/companies.md">/zh/companies.md</a></li>
         </ul>
       </aside>
     </section>
