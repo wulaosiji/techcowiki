@@ -1,2 +1,2 @@
 # Cloudflare Pages _redirects cannot rewrite to a 404 page (status 404 is unsupported).
-# Missing /zh/* URLs are served as the Chinese 404 by public/_worker.js.
+# Missing /zh/* and /zh-hant/* URLs are served as localized 404s by public/_worker.js.

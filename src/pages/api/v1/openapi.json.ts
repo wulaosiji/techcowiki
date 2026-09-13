@@ -4,17 +4,18 @@ import { jsonResponse } from "../../../lib/http";
 
 const localized = {
   type: "object",
-  required: ["en", "zh"],
-  properties: { en: { type: "string" }, zh: { type: "string" } },
+  required: ["en", "zh", "zht"],
+  properties: { en: { type: "string" }, zh: { type: "string" }, zht: { type: "string" } },
 };
 
 const sourceIds = {
   type: "object",
   description: "Per-language citation IDs, resolved against this record's sources array.",
-  required: ["en", "zh"],
+  required: ["en", "zh", "zht"],
   properties: {
     en: { type: "array", items: { type: "string" } },
     zh: { type: "array", items: { type: "string" } },
+    zht: { type: "array", items: { type: "string" } },
   },
 };
 
@@ -94,6 +95,8 @@ const companySchema = {
         zh: { type: "string" },
         markdown: { type: "string" },
         markdownZh: { type: "string" },
+        zht: { type: "string" },
+        markdownZht: { type: "string" },
         json: { type: "string" },
       },
     },
@@ -105,9 +108,9 @@ export const GET: APIRoute = () =>
     openapi: "3.1.0",
     info: {
       title: `${SITE_NAME} Catalog API`,
-      version: "1.3.0",
+      version: "1.4.0",
       description:
-        "Read-only catalog of Chinese-founded technology companies. Free to retrieve and train on under CC BY-SA 4.0. Prefer these JSON records or Markdown twins over scraped HTML. Headquarters country is independent of the Chinese-founder inclusion test.",
+        "Read-only catalog of Chinese-founded technology companies. Free to retrieve and train on under CC BY-SA 4.0. Prefer these JSON records or Markdown twins over scraped HTML. Headquarters country is independent of the Chinese-founder inclusion test. Localized strings include en, zh-Hans (zh), and zh-Hant (zht).",
       license: { name: "CC BY-SA 4.0", url: "https://creativecommons.org/licenses/by-sa/4.0/" },
     },
     servers: [{ url: SITE_ORIGIN }],
@@ -161,7 +164,7 @@ export const GET: APIRoute = () =>
       "/api/v1/companies.json": {
         get: {
           summary: "List companies",
-          description: "All company records with bilingual fields, claims, FAQ, and machine URLs.",
+          description: "All company records with English, Simplified Chinese, and Traditional Chinese fields, claims, FAQ, and machine URLs.",
           responses: {
             "200": {
               description: "Company array",
@@ -222,7 +225,7 @@ export const GET: APIRoute = () =>
         get: {
           summary: "Entity graph",
           description:
-            "Nodes for companies, people, sectors, regions, countries, and cities. Node names are bilingual objects. Edges: founded, associated-with, in-sector, in-region, in-country, in-city, peer.",
+            "Nodes for companies, people, sectors, regions, countries, and cities. Node names are {en, zh, zht} objects. Edges: founded, associated-with, in-sector, in-region, in-country, in-city, peer.",
           responses: {
             "200": {
               description: "Nodes and edges",

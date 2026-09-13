@@ -4,7 +4,7 @@ import worker from "../public/_worker.js";
 function assets(status = 404) {
   return { ASSETS: { fetch: vi.fn(async (input: Request) => {
     const url = new URL(input.url);
-    if (url.pathname === "/zh/404/") return new Response(input.method === "HEAD" ? null : "未找到", {
+    if (url.pathname === "/zh/404/" || url.pathname === "/zh-hant/404/") return new Response(input.method === "HEAD" ? null : "未找到", {
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" },
     });
     return new Response(input.method === "HEAD" ? null : "original", { status });
@@ -31,6 +31,13 @@ describe("Pages localized 404", () => {
     expect(response.status).toBe(404);
     expect(response.body).toBeNull();
     expect(env.ASSETS.fetch.mock.calls[1][0].method).toBe("HEAD");
+  });
+  test("serves Traditional Chinese 404 for /zh-hant missing URLs", async () => {
+    const env = assets();
+    const response = await worker.fetch(new Request("https://example.com/zh-hant/missing"), env);
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe("未找到");
+    expect(env.ASSETS.fetch.mock.calls[1][0].url).toBe("https://example.com/zh-hant/404/");
   });
   test.each(["/missing", "/zhang/missing"])("leaves other locales alone: %s", async (path) => {
     const env = assets();

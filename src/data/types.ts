@@ -1,6 +1,8 @@
-export type Locale = "en" | "zh";
+export type WrittenLocale = "en" | "zh";
+export type Locale = WrittenLocale | "zht";
 
-export type Localized = Record<Locale, string>;
+/** Source strings are English + Simplified Chinese. Traditional is derived at read time. */
+export type Localized = Record<WrittenLocale, string>;
 
 export type SourceType =
   | "encyclopedia"

@@ -1,14 +1,14 @@
-import type { Locale } from "./types";
+import type { Localized } from "./types";
 
 export interface EditorialBlock {
-  title: Record<Locale, string>;
-  body: Record<Locale, string[]>;
+  title: Localized;
+  body: { en: string[]; zh: string[] };
 }
 
 export interface EditorialDoc {
   slug: string;
-  title: Record<Locale, string>;
-  description: Record<Locale, string>;
+  title: Localized;
+  description: Localized;
   blocks: EditorialBlock[];
 }
 

@@ -15,6 +15,7 @@ import {
   type CountryHub,
 } from "./places";
 import { listingTickers } from "./copy";
+import { traditionalSearchVariants } from "../lib/traditional";
 import { regions, sectors } from "./site";
 import type { Company, Person, Region, Sector } from "./types";
 
@@ -81,16 +82,21 @@ export function companyHaystack(company: Company): string {
     company.id,
     company.name.en,
     company.name.zh,
+    ...traditionalSearchVariants(company.name.zh),
     company.legalName ?? "",
     ...company.aliases,
+    ...company.aliases.flatMap(traditionalSearchVariants),
     company.definition.en,
     company.definition.zh,
+    ...traditionalSearchVariants(company.definition.zh),
     company.lead.en,
     company.lead.zh,
     company.headquarters.city.en,
     company.headquarters.city.zh,
+    ...traditionalSearchVariants(company.headquarters.city.zh),
     company.headquarters.country.en,
     company.headquarters.country.zh,
+    ...traditionalSearchVariants(company.headquarters.country.zh),
     company.headquarters.countryCode,
     company.stock ? `${company.stock.exchange} ${company.stock.ticker}` : "",
     company.stock?.adr ? `${company.stock.adr.exchange} ${company.stock.adr.ticker}` : "",
@@ -129,15 +135,20 @@ export function personHaystack(person: Person): string {
     person.id,
     person.name.en,
     person.name.zh,
+    ...traditionalSearchVariants(person.name.zh),
     ...person.aliases,
+    ...person.aliases.flatMap(traditionalSearchVariants),
     person.definition.en,
     person.definition.zh,
+    ...traditionalSearchVariants(person.definition.zh),
     person.lead.en,
     person.lead.zh,
+    ...traditionalSearchVariants(person.lead.zh),
     ...person.companies.map((item) => item.companySlug),
     ...linked.flatMap((company) => [
       company.name.en,
       company.name.zh,
+      ...traditionalSearchVariants(company.name.zh),
       company.headquarters.city.en,
       company.headquarters.country.en,
       ...company.sectors,

@@ -209,12 +209,17 @@ await check("404-en-and-zh", async (page) => {
   const enTitle = await page.title();
   const zh = await page.goto(`${BASE}/zh/404`, { waitUntil: "domcontentloaded" });
   const zhTitle = await page.title();
+  await page.goto(`${BASE}/zh-hant/404`, { waitUntil: "domcontentloaded" });
+  const zhtTitle = await page.title();
+  const zhtLang = await page.$eval("html", (el) => el.lang);
   return {
-    ok: en.status() === 404 && /not found/i.test(enTitle) && /未找到/.test(zhTitle),
+    ok: en.status() === 404 && /not found/i.test(enTitle) && /未找到/.test(zhTitle) && /未找到/.test(zhtTitle) && zhtLang === "zh-Hant",
     enStatus: en.status(),
     zhStatus: zh.status(),
     enTitle,
     zhTitle,
+    zhtTitle,
+    zhtLang,
   };
 });
 
@@ -246,6 +251,20 @@ await check("search-whitespace-exact-filters-and-empty-state", async (page) => {
   return { ok: matched.tsmc && matched.exact && empty && invalid && switched.pathname.startsWith("/zh/search") && switched.searchParams.get("sector") === "semiconductors" && switched.searchParams.get("region") === "greater-china", matched, empty, invalid };
 });
 
+await check("traditional-chinese-page-and-search", async (page) => {
+  await page.goto(`${BASE}/zh-hant/companies/nvidia`, { waitUntil: "domcontentloaded" });
+  const heading = await page.$eval("h1", (el) => el.textContent ?? "");
+  const markdown = await page.$('a[href="/zh-hant/companies/nvidia.md"]');
+  await page.goto(`${BASE}/zh-hant/search?q=${encodeURIComponent("台積電")}`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector("#result-count")?.textContent);
+  const tsmc = await page.evaluate(() =>
+    [...document.querySelectorAll(".entity:not([hidden])")].some((node) =>
+      node.querySelector('.card-main[href="/zh-hant/companies/tsmc"]'),
+    ),
+  );
+  return { ok: heading.includes("英偉達") && Boolean(markdown) && tsmc, heading, tsmc };
+});
+
 await check("machine-links-are-clickable-on-preview", async (page) => {
   await page.goto(`${BASE}/companies/nvidia`, { waitUntil: "domcontentloaded" });
   await Promise.all([page.waitForNavigation({ waitUntil: "domcontentloaded" }), page.click('a[href="/companies/nvidia.md"]')]);
@@ -258,7 +277,7 @@ await check("machine-links-are-clickable-on-preview", async (page) => {
 await check("mobile-layout-and-control-labels", async (page) => {
   await page.setViewport({ width: 320, height: 740 });
   const failures = [];
-  for (const path of ["/", "/companies", "/companies/nvidia", "/people/jensen-huang", "/search?q=TSM", "/zh/search", "/zh/countries/tw"]) {
+  for (const path of ["/", "/companies", "/companies/nvidia", "/people/jensen-huang", "/search?q=TSM", "/zh/search", "/zh/countries/tw", "/zh-hant/search"]) {
     await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
     const issues = await page.evaluate(() => ({
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,

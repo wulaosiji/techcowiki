@@ -1,5 +1,6 @@
 ---
 import type { Locale } from "../data/types";
+import { pick } from "../lib/i18n";
 
 interface Crumb {
   href?: string;
@@ -11,10 +12,10 @@ interface Props {
   items: Crumb[];
 }
 
-const { items } = Astro.props;
+const { locale, items } = Astro.props;
 ---
 
-<nav class="breadcrumbs" aria-label={Astro.props.locale === "zh" ? "面包屑" : "Breadcrumb"}>
+<nav class="breadcrumbs" aria-label={pick(locale, "Breadcrumb", "面包屑")}>
   <ol>
     {items.map((item) => (
       <li>

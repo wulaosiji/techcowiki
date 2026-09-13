@@ -7,7 +7,7 @@ import { faqs, ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { linkCatalogCopy } from "../lib/autolink";
 import { renderCitedHtml } from "../lib/citations";
-import { localePath, t } from "../lib/i18n";
+import { localePath, pick, t } from "../lib/i18n";
 import { catalogNav, docNav } from "../lib/nav";
 import { faqGraph } from "../lib/schema";
 
@@ -22,8 +22,8 @@ const people = allPeople();
 
 <BaseLayout
   locale={locale}
-  title={locale === "zh" ? "常见问题" : "FAQ"}
-  description={locale === "zh" ? "关于 TechCo.Wiki 的常见问题。" : "Frequently asked questions about TechCo.Wiki."}
+  title={pick(locale, "FAQ", "常见问题")}
+  description={pick(locale, "Frequently asked questions about TechCo.Wiki.", "关于 TechCo.Wiki 的常见问题。")}
   path="/faq"
   jsonLd={faqGraph(faqs, locale)}
 >
@@ -32,21 +32,21 @@ const people = allPeople();
       locale={locale}
       items={[
         { href: localePath(locale, "/"), label: t(ui.home, locale) },
-        { label: locale === "zh" ? "常见问题" : "FAQ" },
+        { label: pick(locale, "FAQ", "常见问题")},
       ]}
     />
-    <h1>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h1>
+    <h1>{pick(locale, "Frequently asked questions", "常见问题")}</h1>
     {faqs.map((item) => (
       <section class="faq-item" id={item.id}>
-        <h2>{item.question[locale]}</h2>
-        <p set:html={renderCitedHtml(linkCatalogCopy(item.answer[locale], locale, companies, people), [])} />
+        <h2>{t(item.question, locale)}</h2>
+        <p set:html={renderCitedHtml(linkCatalogCopy(t(item.answer, locale), locale, companies, people), [])} />
       </section>
     ))}
     <SeeAlso
       locale={locale}
       groups={[
-        { title: locale === "zh" ? "目录" : "Catalog", links: catalogNav(locale) },
-        { title: locale === "zh" ? "文档" : "Docs", links: docNav(locale) },
+        { title: pick(locale, "Catalog", "目录"), links: catalogNav(locale) },
+        { title: pick(locale, "Docs", "文档"), links: docNav(locale) },
       ]}
     />
   </div>

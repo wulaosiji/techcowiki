@@ -33,7 +33,9 @@ export const contracts = {
     check("home title TechCo.Wiki", /<title>TechCo\.Wiki/.test(html));
     check("home machine /search.md", htmlHas(html, "/search.md"));
     check("home machine /zh/search.md", htmlHas(html, "/zh/search.md"));
+    check("home machine /zh-hant/search.md", htmlHas(html, "/zh-hant/search.md"));
     check("home machine /zh/llms-full.txt", htmlHas(html, "/zh/llms-full.txt"));
+    check("home machine /zh-hant/llms-full.txt", htmlHas(html, "/zh-hant/llms-full.txt"));
     check("home machine graph.json", htmlHas(html, "graph.json"));
     check("home clickable llms is same-origin", htmlHas(html, '<a href="/llms.txt">') || htmlHas(html, '<a class="btn" href="/llms.txt">'));
     check(
@@ -59,6 +61,15 @@ export const contracts = {
   zhNvidia(html) {
     check("zh nvidia title", /英伟达/.test(html));
     check("zh nvidia markdown same-origin", htmlHas(html, 'href="/zh/companies/nvidia.md"'));
+  },
+  zhtNvidia(html) {
+    check("zht nvidia title", /英偉達/.test(html));
+    check("zht nvidia markdown same-origin", htmlHas(html, 'href="/zh-hant/companies/nvidia.md"'));
+    check("zht html lang", /lang="zh-Hant"/.test(html));
+  },
+  zht404(html) {
+    check("zht 404 title", /未找到/.test(html));
+    check("zht 404 lang", /lang="zh-Hant"/.test(html));
   },
   search(html) {
     check("search persist script", htmlHas(html, "location.search") && htmlHas(html, "lang-switch"));

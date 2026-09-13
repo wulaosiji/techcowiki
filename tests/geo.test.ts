@@ -108,7 +108,9 @@ describe("GEO surfaces", () => {
     const record = companyRecord(allCompanies().find((company) => company.slug === "bytedance")!);
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
     expect(record.urls.markdownZh).toContain("/zh/companies/bytedance.md");
+    expect(record.urls.markdownZht).toContain("/zh-hant/companies/bytedance.md");
     expect(record.definition.zh).toContain("字节跳动");
+    expect(record.definition.zht).toContain("字節跳動");
     expect(record.license).toBe("CC BY-SA 4.0");
     expect(record.sections.length).toBeGreaterThanOrEqual(12);
     expect(record.faq.length).toBeGreaterThanOrEqual(18);
@@ -122,6 +124,7 @@ describe("GEO surfaces", () => {
     expect(datasetRecord(catalogStats()).endpoints.companiesMarkdown).toBe("https://techco.wiki/companies.md");
     expect(datasetRecord(catalogStats()).endpoints.companiesMarkdownZh).toBe("https://techco.wiki/zh/companies.md");
     expect(datasetRecord(catalogStats()).endpoints.llmsFullZh).toBe("https://techco.wiki/zh/llms-full.txt");
+    expect(datasetRecord(catalogStats()).endpoints.llmsFullZht).toBe("https://techco.wiki/zh-hant/llms-full.txt");
     expect(datasetRecord(catalogStats()).counts.countries).toBeGreaterThanOrEqual(8);
   });
 

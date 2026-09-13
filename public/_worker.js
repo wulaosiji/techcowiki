@@ -7,15 +7,20 @@ export default {
     }
 
     const path = url.pathname;
-    const isZh = path === "/zh" || path.startsWith("/zh/");
-    if (!isZh) {
+    const prefix =
+      path === "/zh-hant" || path.startsWith("/zh-hant/")
+        ? "/zh-hant"
+        : path === "/zh" || path.startsWith("/zh/")
+          ? "/zh"
+          : null;
+    if (!prefix) {
       return assetResponse;
     }
 
     // Pages redirects *.html to their clean URL; request that URL directly so
     // redirects or conditional request headers cannot prevent the fallback.
-    // Source artifact: /zh/404/index.html.
-    const notFound = await env.ASSETS.fetch(new Request(new URL("/zh/404/", url.origin), {
+    // Source artifacts: /zh/404/index.html and /zh-hant/404/index.html.
+    const notFound = await env.ASSETS.fetch(new Request(new URL(`${prefix}/404/`, url.origin), {
       method: request.method,
     }));
     if (!notFound.ok) {

@@ -199,6 +199,26 @@ h3 { font-size: 1.15rem; margin: 1.3rem 0 0.4rem; }
   letter-spacing: 0.04em;
 }
 
+:lang(zh-Hant) h1,
+:lang(zh-Hant) h2,
+:lang(zh-Hant) h3,
+:lang(zh-Hant) .card .name {
+  font-family: "Noto Sans TC", var(--sans);
+  letter-spacing: 0;
+}
+
+:lang(zh-Hant) .lede,
+:lang(zh-Hant) .lead,
+:lang(zh-Hant) .definition {
+  font-family: "Noto Sans TC", var(--serif);
+}
+
+:lang(zh-Hant) .brand-tag,
+:lang(zh-Hant) .kicker {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
 .lede, .lead, .definition {
   font-family: var(--serif);
   font-size: 1.2rem;

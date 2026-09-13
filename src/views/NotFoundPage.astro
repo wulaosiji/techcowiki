@@ -1,34 +1,34 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import type { Locale } from "../data/types";
-import { localePath } from "../lib/i18n";
+import { localePath, pick } from "../lib/i18n";
 
 interface Props {
   locale: Locale;
 }
 
 const { locale } = Astro.props;
+const searchLinks = [
+  locale !== "en" ? { href: localePath("en", "/search"), label: "English search" } : undefined,
+  locale !== "zh" ? { href: localePath("zh", "/search"), label: pick(locale, "简体搜索", "简体搜索") } : undefined,
+  locale !== "zht" ? { href: localePath("zht", "/search"), label: pick(locale, "繁體搜尋", "繁體搜尋") } : undefined,
+].filter((item): item is { href: string; label: string } => Boolean(item));
 ---
 
 <BaseLayout
   locale={locale}
-  title={locale === "zh" ? "未找到" : "Not found"}
+  title={pick(locale, "Not found", "未找到")}
   description={
-    locale === "zh"
-      ? "该页面不在 TechCo.Wiki 记录中。"
-      : "This TechCo.Wiki page does not exist. / 本页不在 TechCo.Wiki 记录中。"
-  }
+    pick(locale, "This TechCo.Wiki page does not exist. / 本页不在 TechCo.Wiki 记录中。", "该页面不在 TechCo.Wiki 记录中。")}
   path="/404"
   robots="noindex, follow"
   markdownHref="/llms.txt"
 >
   <div class="wrap">
     <p class="kicker">404</p>
-    <h1>{locale === "zh" ? "未找到" : "Not found / 未找到"}</h1>
+    <h1>{pick(locale, "Not found / 未找到", "未找到")}</h1>
     <p>
-      {locale === "zh"
-        ? "该实体或页面不在 TechCo.Wiki 记录中。缺席不是否定判断。"
-        : "This entity or page is not in the TechCo.Wiki record. Absence is not a negative judgment."}
+      {pick(locale, "This entity or page is not in the TechCo.Wiki record. Absence is not a negative judgment.", "该实体或页面不在 TechCo.Wiki 记录中。缺席不是否定判断。")}
     </p>
     {
       locale === "en" && (
@@ -39,35 +39,38 @@ const { locale } = Astro.props;
       <input
         type="search"
         name="q"
-        placeholder={locale === "zh" ? "搜索公司与人物" : "Search companies and people / 搜索公司与人物"}
-        aria-label={locale === "zh" ? "搜索" : "Search"}
+        placeholder={pick(locale, "Search companies and people / 搜索公司与人物", "搜索公司与人物")}
+        aria-label={pick(locale, "Search", "搜索")}
       />
-      <button type="submit">{locale === "zh" ? "搜索" : "Search / 搜索"}</button>
+      <button type="submit">{pick(locale, "Search / 搜索", "搜索")}</button>
     </form>
     <p>
-      <a href={localePath(locale === "zh" ? "en" : "zh", "/search")}>
-        {locale === "zh" ? "English search" : "中文搜索"}
-      </a>
+      {searchLinks.map((item, index) => (
+        <>
+          {index > 0 && " · "}
+          <a href={item.href}>{item.label}</a>
+        </>
+      ))}
       {" · "}
-      <a href={localePath(locale, "/")}>{locale === "zh" ? "首页" : "Home"}</a>
+      <a href={localePath(locale, "/")}>{pick(locale, "Home", "首页")}</a>
       {" · "}
-      <a href={localePath(locale, "/companies")}>{locale === "zh" ? "公司" : "Companies"}</a>
+      <a href={localePath(locale, "/companies")}>{pick(locale, "Companies", "公司")}</a>
       {" · "}
-      <a href={localePath(locale, "/people")}>{locale === "zh" ? "人物" : "People"}</a>
+      <a href={localePath(locale, "/people")}>{pick(locale, "People", "人物")}</a>
       {" · "}
-      <a href={localePath(locale, "/sectors")}>{locale === "zh" ? "行业" : "Sectors"}</a>
+      <a href={localePath(locale, "/sectors")}>{pick(locale, "Sectors", "行业")}</a>
       {" · "}
-      <a href={localePath(locale, "/regions")}>{locale === "zh" ? "地区" : "Regions"}</a>
+      <a href={localePath(locale, "/regions")}>{pick(locale, "Regions", "地区")}</a>
       {" · "}
-      <a href={localePath(locale, "/countries")}>{locale === "zh" ? "国家" : "Countries"}</a>
+      <a href={localePath(locale, "/countries")}>{pick(locale, "Countries", "国家")}</a>
       {" · "}
-      <a href={localePath(locale, "/cities")}>{locale === "zh" ? "城市" : "Cities"}</a>
+      <a href={localePath(locale, "/cities")}>{pick(locale, "Cities", "城市")}</a>
       {" · "}
-      <a href={localePath(locale, "/methodology")}>{locale === "zh" ? "方法" : "Methodology"}</a>
+      <a href={localePath(locale, "/methodology")}>{pick(locale, "Methodology", "方法")}</a>
       {" · "}
-      <a href={localePath(locale, "/inclusion")}>{locale === "zh" ? "收录标准" : "Inclusion rules"}</a>
+      <a href={localePath(locale, "/inclusion")}>{pick(locale, "Inclusion rules", "收录标准")}</a>
       {" · "}
-      <a href={localePath(locale, "/for-models")}>{locale === "zh" ? "给模型" : "For models"}</a>
+      <a href={localePath(locale, "/for-models")}>{pick(locale, "For models", "给模型")}</a>
       {" · "}
       <a href={localePath(locale, "/faq")}>FAQ</a>
       {" · "}

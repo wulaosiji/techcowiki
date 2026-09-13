@@ -1,7 +1,7 @@
 import { citySlug, countrySlug } from "../data/places";
 import { regions, sectors, SITE_ORIGIN } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
-import { localePath } from "./i18n";
+import { isZhFamily, localePath, t, toTraditional, traditionalSearchVariants } from "./i18n";
 import {
   cityHref,
   companyHref,
@@ -84,7 +84,7 @@ const STOP_WORDS = new Set([
 ]);
 
 const CATALOG_URL =
-  /https:\/\/techco\.wiki(\/zh)?(\/(?:companies|people|sectors|regions|countries|cities)\/[a-z0-9-]+)(?:\.md)?(#[\w-]+)?/gi;
+  /https:\/\/techco\.wiki(\/zh-hant|\/zh)?(\/(?:companies|people|sectors|regions|countries|cities)\/[a-z0-9-]+)(?:\.md)?(#[\w-]+)?/gi;
 
 const PAGE_PREFIX =
   /(?:Person page|Company page|Page|人物页|公司页|条目)[:：]\s*(\[[^\]]+\]\([^)]+\))/g;
@@ -166,8 +166,12 @@ function termsForLocale(
   for (const company of companies) {
     if (skipCompanies.has(company.slug)) continue;
     const href = companyHref(company.slug, locale);
-    addTerm(terms, seen, company.name[locale], href);
-    if (locale === "zh") addTerm(terms, seen, company.name.en, href);
+    addTerm(terms, seen, t(company.name, locale), href);
+    if (isZhFamily(locale)) addTerm(terms, seen, company.name.en, href);
+    if (locale === "zht") {
+      addTerm(terms, seen, company.name.zh, href);
+      for (const variant of traditionalSearchVariants(company.name.zh)) addTerm(terms, seen, variant, href);
+    }
     if (company.legalName) addTerm(terms, seen, company.legalName, href);
     for (const alias of company.aliases) {
       if (alias.length >= 3) addTerm(terms, seen, alias, href);
@@ -185,8 +189,12 @@ function termsForLocale(
   for (const person of people) {
     if (skipPeople.has(person.slug)) continue;
     const href = personHref(person.slug, locale);
-    addTerm(terms, seen, person.name[locale], href);
-    if (locale === "zh") addTerm(terms, seen, person.name.en, href);
+    addTerm(terms, seen, t(person.name, locale), href);
+    if (isZhFamily(locale)) addTerm(terms, seen, person.name.en, href);
+    if (locale === "zht") {
+      addTerm(terms, seen, person.name.zh, href);
+      for (const variant of traditionalSearchVariants(person.name.zh)) addTerm(terms, seen, variant, href);
+    }
     for (const alias of person.aliases) {
       if (alias.length >= 3) addTerm(terms, seen, alias, href);
     }
@@ -201,7 +209,7 @@ function termsForLocale(
     }
   }
   for (const sector of sectors) {
-    addTerm(terms, seen, sector.name[locale], sectorHref(sector.slug, locale));
+    addTerm(terms, seen, t(sector.name, locale), sectorHref(sector.slug, locale));
   }
   const cities = new Map<string, { name: Company["headquarters"]["city"] }>();
   const countries = new Map<string, { name: Company["headquarters"]["country"]; code: string }>();
@@ -214,15 +222,23 @@ function termsForLocale(
     }
   }
   for (const [slug, city] of cities) {
-    addTerm(terms, seen, city.name[locale], cityHref(slug, locale));
-    if (locale === "zh") addTerm(terms, seen, city.name.en, cityHref(slug, locale));
+    addTerm(terms, seen, t(city.name, locale), cityHref(slug, locale));
+    if (isZhFamily(locale)) addTerm(terms, seen, city.name.en, cityHref(slug, locale));
+    if (locale === "zht") {
+      addTerm(terms, seen, city.name.zh, cityHref(slug, locale));
+      for (const variant of traditionalSearchVariants(city.name.zh)) addTerm(terms, seen, variant, cityHref(slug, locale));
+    }
   }
   for (const [slug, country] of countries) {
-    addTerm(terms, seen, country.name[locale], countryHref(slug, locale));
-    if (locale === "zh") addTerm(terms, seen, country.name.en, countryHref(slug, locale));
+    addTerm(terms, seen, t(country.name, locale), countryHref(slug, locale));
+    if (isZhFamily(locale)) addTerm(terms, seen, country.name.en, countryHref(slug, locale));
+    if (locale === "zht") {
+      addTerm(terms, seen, country.name.zh, countryHref(slug, locale));
+      for (const variant of traditionalSearchVariants(country.name.zh)) addTerm(terms, seen, variant, countryHref(slug, locale));
+    }
   }
   for (const region of regions) {
-    addTerm(terms, seen, region.name[locale], regionHref(region.slug, locale));
+    addTerm(terms, seen, t(region.name, locale), regionHref(region.slug, locale));
   }
   if (locale === "en") {
     addTerm(terms, seen, "Methodology", docHref("methodology", locale));
@@ -232,12 +248,17 @@ function termsForLocale(
     addTerm(terms, seen, "License", docHref("license", locale), true);
     addTerm(terms, seen, "FAQ", docHref("faq", locale), true);
   } else {
-    addTerm(terms, seen, "收录标准", docHref("inclusion", locale));
-    addTerm(terms, seen, "给模型", docHref("for-models", locale));
-    addTerm(terms, seen, "方法", docHref("methodology", locale));
-    addTerm(terms, seen, "关于", docHref("about", locale));
-    addTerm(terms, seen, "许可", docHref("license", locale));
-    addTerm(terms, seen, "常见问题", docHref("faq", locale));
+    const docs: [string, string][] = [
+      ["收录标准", "inclusion"],
+      ["给模型", "for-models"],
+      ["方法", "methodology"],
+      ["关于", "about"],
+      ["许可", "license"],
+      ["常见问题", "faq"],
+    ];
+    for (const [label, slug] of docs) {
+      addTerm(terms, seen, locale === "zht" ? toTraditional(label) : label, docHref(slug, locale));
+    }
   }
 
   return terms.sort((a, b) => b.term.length - a.term.length);
@@ -271,17 +292,29 @@ function labelForPath(
   const parts = path.split("/").filter(Boolean);
   if (parts.length < 2) return undefined;
   const [kind, slug] = parts;
-  if (kind === "companies") return companies.find((item) => item.slug === slug)?.name[locale] ?? slug;
-  if (kind === "people") return people.find((item) => item.slug === slug)?.name[locale] ?? slug;
-  if (kind === "sectors") return sectors.find((item) => item.slug === slug)?.name[locale] ?? slug;
-  if (kind === "regions") return regions.find((item) => item.slug === slug)?.name[locale] ?? slug;
+  if (kind === "companies") {
+    const company = companies.find((item) => item.slug === slug);
+    return company ? t(company.name, locale) : slug;
+  }
+  if (kind === "people") {
+    const person = people.find((item) => item.slug === slug);
+    return person ? t(person.name, locale) : slug;
+  }
+  if (kind === "sectors") {
+    const sector = sectors.find((item) => item.slug === slug);
+    return sector ? t(sector.name, locale) : slug;
+  }
+  if (kind === "regions") {
+    const region = regions.find((item) => item.slug === slug);
+    return region ? t(region.name, locale) : slug;
+  }
   if (kind === "countries") {
     const company = companies.find((item) => item.headquarters.countryCode.toLowerCase() === slug);
-    return company?.headquarters.country[locale] ?? slug.toUpperCase();
+    return company ? t(company.headquarters.country, locale) : slug.toUpperCase();
   }
   if (kind === "cities") {
     const company = companies.find((item) => citySlug(item.headquarters.city.en) === slug);
-    return company?.headquarters.city[locale] ?? slug;
+    return company ? t(company.headquarters.city, locale) : slug;
   }
   return slug;
 }
@@ -301,7 +334,7 @@ function protect(text: string): { text: string; tokens: string[] } {
       tokens.push(match);
       return `\u0000T${tokens.length - 1}\u0000`;
     })
-    .replace(/中国大陆/g, (match) => {
+    .replace(/中国大陆|中國大陸/g, (match) => {
       tokens.push(match);
       return `\u0000T${tokens.length - 1}\u0000`;
     })
