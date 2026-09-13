@@ -369,6 +369,6 @@ export function bootSiteAnalytics(): void {
     trackPage(config);
     bind(config);
   } catch {
-    /* public pages still render if analytics fails */
+    /* pages.dev, localhost, and broken config must not break the page */
   }
 }

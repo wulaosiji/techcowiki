@@ -63,12 +63,14 @@ describe("development harness contracts", () => {
     expect(rule).toContain("The repository defaults to English");
   });
 
-  test("GA4 is gated to public hosts and includes products", () => {
+  test("GA4 is gated to production hosts and includes products", () => {
     const analytics = read("src/lib/analytics.ts");
     const layout = read("src/layouts/BaseLayout.astro");
     const client = read("src/lib/analytics-client.ts");
     expect(analytics).toContain("G-8RYHT0WLHE");
     expect(analytics).toContain('products: "product"');
+    expect(analytics).toContain('host.endsWith(".pages.dev")');
+    expect(analytics).toContain('host === "techco.wiki"');
     expect(analytics).not.toMatch(/from ["'].*catalog/);
     expect(layout).toContain("bootSiteAnalytics");
     expect(layout).not.toMatch(/src="https:\/\/www\.googletagmanager\.com/);

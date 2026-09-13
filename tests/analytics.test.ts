@@ -134,11 +134,12 @@ describe("href classification", () => {
 });
 
 describe("public-host gate and CSP", () => {
-  test("loads only on the public site hosts", () => {
+  test("loads only on production hosts, not pages.dev or localhost", () => {
     expect(isPublicAnalyticsHost("techco.wiki")).toBe(true);
     expect(isPublicAnalyticsHost("www.techco.wiki")).toBe(true);
-    expect(isPublicAnalyticsHost("techcowiki.pages.dev")).toBe(true);
-    expect(isPublicAnalyticsHost("abc.techcowiki.pages.dev")).toBe(true);
+    expect(isPublicAnalyticsHost("techcowiki.pages.dev")).toBe(false);
+    expect(isPublicAnalyticsHost("abc.techcowiki.pages.dev")).toBe(false);
+    expect(isPublicAnalyticsHost("preview.pages.dev")).toBe(false);
     expect(isPublicAnalyticsHost("localhost")).toBe(false);
     expect(isPublicAnalyticsHost("127.0.0.1")).toBe(false);
     expect(isPublicAnalyticsHost("example.com")).toBe(false);

@@ -147,21 +147,23 @@ export function normalizeAnalyticsPath(path: string): string {
   return (stripLocalePrefix(bare).replace(/\/$/, "") || "/");
 }
 
+/** gtag loads only on the production encyclopedia hosts. Demo, preview, and local stay off. */
 export function isPublicAnalyticsHost(hostname: string): boolean {
   const host = hostname.toLowerCase().replace(/\.$/, "");
   if (!host || host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1") {
     return false;
   }
-  return (
-    host === "techco.wiki" ||
-    host === "www.techco.wiki" ||
-    host === "techcowiki.pages.dev" ||
-    (host.endsWith(".techcowiki.pages.dev") && host !== ".techcowiki.pages.dev")
-  );
+  if (host === "pages.dev" || host.endsWith(".pages.dev")) return false;
+  return host === "techco.wiki" || host === "www.techco.wiki";
 }
 
 export function isSiteHostname(hostname: string): boolean {
-  return isPublicAnalyticsHost(hostname);
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  if (isPublicAnalyticsHost(host)) return true;
+  return (
+    host === "techcowiki.pages.dev" ||
+    (host.endsWith(".techcowiki.pages.dev") && host !== ".techcowiki.pages.dev")
+  );
 }
 
 export function isSameSiteHost(hostname: string, pageHostname?: string): boolean {
