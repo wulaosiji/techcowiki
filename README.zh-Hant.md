@@ -78,6 +78,8 @@ API 文件版本 **1.5.0** 繼續使用 `/api/v1/` 路徑：
 
 目前開發預覽：<https://techcowiki.pages.dev>
 
+該主機及 `*.pages.dev` 預覽別名會發送 `X-Robots-Tag: noindex, nofollow`，並提供 `Disallow: /` 的 robots.txt，避免爬蟲把 demo 當成 `techco.wiki` 的重複站。此門禁只看 `public/_worker.js` 的 Host，共享 HTML 仍是 `index, follow`。沒有 demo 密碼。
+
 本地已登入 Wrangler 時：
 
 ```bash

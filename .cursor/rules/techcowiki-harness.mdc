@@ -15,6 +15,7 @@ The repository defaults to English. Only README files and the public website sta
 - Ethnic Chinese identity explains inclusion only. Do not call NVIDIA, Yahoo, or Fremont-headquartered Pony.ai Chinese companies. Do not call TSMC / UMC / MediaTek mainland Chinese companies.
 - Publisher wordmark is `TechCo.Wiki`. Canonical host is lowercase `techco.wiki`.
 - Do not expand the catalog, add UGC, wire custom DNS, or submit IndexNow/Google/Bing unless the user asked.
+- Demo `*.pages.dev` noindex is host-gated in `public/_worker.js` (`X-Robots-Tag` + `Disallow: /` robots.txt). Do not add a global noindex to shared HTML, and do not password-protect the demo.
 
 ## Acceptance (in order)
 

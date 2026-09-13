@@ -2,7 +2,9 @@
 import { BROWSER_UA, check, contracts } from "./lib.mjs";
 
 const BASE = (process.env.HARNESS_BASE || "http://127.0.0.1:4321").replace(/\/$/, "");
-const local = ["localhost", "127.0.0.1", "[::1]"].includes(new URL(BASE).hostname);
+const hostname = new URL(BASE).hostname;
+const local = ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
+const pagesDev = hostname === "pages.dev" || hostname.endsWith(".pages.dev");
 const CHECK_ZH_SPLAT = process.env.HARNESS_ZH_SPLAT === "1" || !local;
 
 async function get(path, { redirect = "follow" } = {}) {
@@ -18,6 +20,28 @@ async function get(path, { redirect = "follow" } = {}) {
 const home = await get("/");
 check(`host reachable ${BASE} (${home.status})`, home.status === 200, home.text.slice(0, 160));
 contracts.home(home.text);
+
+if (pagesDev) {
+  check(
+    "pages.dev X-Robots-Tag",
+    home.res.headers.get("x-robots-tag") === "noindex, nofollow",
+    home.res.headers.get("x-robots-tag") ?? "",
+  );
+  const robots = await get("/robots.txt");
+  check("pages.dev robots.txt 200", robots.status === 200);
+  check("pages.dev robots.txt Disallow", /Disallow:\s*\//.test(robots.text), robots.text.slice(0, 160));
+  check(
+    "pages.dev robots.txt X-Robots-Tag",
+    robots.res.headers.get("x-robots-tag") === "noindex, nofollow",
+    robots.res.headers.get("x-robots-tag") ?? "",
+  );
+} else {
+  check(
+    "non-pages.dev home is not demo-noindexed",
+    home.res.headers.get("x-robots-tag") !== "noindex, nofollow",
+    home.res.headers.get("x-robots-tag") ?? "",
+  );
+}
 
 const nvidia = await get("/companies/nvidia");
 check("nvidia 200", nvidia.status === 200);
