@@ -4,6 +4,7 @@ import {
   allCompanies,
   allCountryHubs,
   allPeople,
+  allProducts,
   companiesByRegion,
   companiesBySector,
   companiesInCity,
@@ -169,12 +170,18 @@ describe("internal linking", () => {
     expect(companiesMd).toContain("/companies/nvidia");
     expect(peopleMd).toContain("# 人物");
     expect(peopleMd).toContain("/zh/people/jensen-huang");
+    const productsMd = catalogIndexMarkdown("products", "en");
+    expect(productsMd).toContain("# Products");
+    expect(productsMd).toContain("/products/cuda-gpus");
+    expect(allProducts().length).toBeGreaterThan(0);
   });
 
   test("sitemap lists markdown twins, hreflang, and machine files", async () => {
     const text = await (await sitemapGet({} as never)).text();
     expect(text).toContain("https://techco.wiki/companies.md");
     expect(text).toContain("https://techco.wiki/zh/people.md");
+    expect(text).toContain("https://techco.wiki/products.md");
+    expect(text).toContain("https://techco.wiki/zh-hant/products.md");
     expect(text).toContain("https://techco.wiki/llms-full.txt");
     expect(text).toContain("https://techco.wiki/api/v1/graph.json");
     expect(text).toContain('hreflang="zh-Hans"');
@@ -202,6 +209,25 @@ describe("internal linking", () => {
     expect(
       linkCatalogCopy("Use Chinese mainland as a macro-region label, not a headquarters synonym.", "en", allCompanies(), allPeople()),
     ).not.toMatch(/\[Chinese mainland\]/);
+  });
+
+  test("product stubs link distinct product names to /products/{slug}", () => {
+    const companies = allCompanies();
+    const people = allPeople();
+    const stubs = allProducts().map((product) => ({
+      slug: product.slug,
+      name: product.name.en,
+      companySlug: product.companySlug,
+    }));
+    expect(linkCatalogCopy("CUDA GPUs ship from NVIDIA.", "en", companies, people, {}, stubs)).toContain(
+      "[CUDA GPUs](/products/cuda-gpus)",
+    );
+    expect(linkCatalogCopy("NVIDIA designs accelerators.", "en", companies, people, {}, stubs)).toContain(
+      "[NVIDIA](/companies/nvidia)",
+    );
+    expect(linkCatalogCopy("WeChat is a recorded Tencent line.", "en", companies, people, {}, stubs)).toContain(
+      "[WeChat](/products/wechat)",
+    );
   });
 
   test("product brands and secondary listings become company links", () => {

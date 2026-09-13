@@ -1,5 +1,6 @@
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, EntityClaim, EntityFaq, Person } from "../data/types";
+import type { CatalogProduct, Company, EntityClaim, EntityFaq, Person } from "../data/types";
+import { productForLine } from "../data/catalog";
 import { localizedTriple, markdownUrl, pageUrl } from "./i18n";
 import { toTraditional } from "./traditional";
 import { stripCitations, usedSourceIds } from "./citations";
@@ -63,7 +64,23 @@ export function companyRecord(company: Company) {
     stage: company.stage,
     sectors: company.sectors,
     regions: company.regions,
-    products: company.products,
+    products: company.products.map((product) => {
+      const entity = productForLine(company.slug, product.name);
+      return {
+        name: product.name,
+        description: localizedTriple(product.description),
+        slug: entity?.slug ?? null,
+        id: entity?.id ?? null,
+        urls: entity
+          ? {
+              en: pageUrl("en", `/products/${entity.slug}`),
+              zh: pageUrl("zh", `/products/${entity.slug}`),
+              zht: pageUrl("zht", `/products/${entity.slug}`),
+              json: `${SITE_ORIGIN}/api/v1/products/${entity.slug}.json`,
+            }
+          : null,
+      };
+    }),
     founders: company.founders,
     employees: company.employees ?? null,
     stock: company.stock ?? null,
@@ -148,6 +165,54 @@ export function personRecord(person: Person) {
   };
 }
 
+export function productRecord(product: CatalogProduct) {
+  return {
+    id: product.id,
+    slug: product.slug,
+    name: localizedTriple(product.name),
+    aliases: product.aliases,
+    definition: {
+      en: stripCitations(product.definition.en),
+      zh: stripCitations(product.definition.zh),
+      zht: stripCitations(toTraditional(product.definition.zh)),
+    },
+    lead: {
+      en: stripCitations(product.lead.en),
+      zh: stripCitations(product.lead.zh),
+      zht: stripCitations(toTraditional(product.lead.zh)),
+    },
+    companySlug: product.companySlug,
+    sectors: product.sectors,
+    regions: product.regions,
+    confidence: product.confidence,
+    lastReviewed: product.lastReviewed,
+    license: CONTENT_LICENSE,
+    urls: {
+      en: pageUrl("en", `/products/${product.slug}`),
+      zh: pageUrl("zh", `/products/${product.slug}`),
+      zht: pageUrl("zht", `/products/${product.slug}`),
+      markdown: `${SITE_ORIGIN}/products/${product.slug}.md`,
+      markdownZh: `${SITE_ORIGIN}/zh/products/${product.slug}.md`,
+      markdownZht: markdownUrl("zht", `/products/${product.slug}`),
+      json: `${SITE_ORIGIN}/api/v1/products/${product.slug}.json`,
+    },
+    sources: product.sources,
+    citations: { definition: sourceIds(product.definition), lead: sourceIds(product.lead) },
+    faq: faqRecord(product.faq),
+    claims: claimsRecord(product.claims),
+    sections: product.sections.map((section) => ({
+      id: section.id,
+      title: localizedTriple(section.title),
+      body: {
+        en: stripCitations(section.body.en),
+        zh: stripCitations(section.body.zh),
+        zht: stripCitations(toTraditional(section.body.zh)),
+      },
+      sourceIds: sourceIds(section.body),
+    })),
+  };
+}
+
 export function datasetRecord(stats: {
   companies: number;
   people: number;
@@ -155,6 +220,7 @@ export function datasetRecord(stats: {
   regions: number;
   countries?: number;
   cities?: number;
+  products?: number;
   sources: number;
 }) {
   return {
@@ -174,6 +240,7 @@ export function datasetRecord(stats: {
       openapi: `${SITE_ORIGIN}/api/v1/openapi.json`,
       companies: `${SITE_ORIGIN}/api/v1/companies.json`,
       people: `${SITE_ORIGIN}/api/v1/people.json`,
+      products: `${SITE_ORIGIN}/api/v1/products.json`,
       graph: `${SITE_ORIGIN}/api/v1/graph.json`,
       feed: `${SITE_ORIGIN}/feed.xml`,
       companiesMarkdown: `${SITE_ORIGIN}/companies.md`,
@@ -182,6 +249,9 @@ export function datasetRecord(stats: {
       peopleMarkdownZh: `${SITE_ORIGIN}/zh/people.md`,
       companiesMarkdownZht: `${SITE_ORIGIN}/zh-hant/companies.md`,
       peopleMarkdownZht: `${SITE_ORIGIN}/zh-hant/people.md`,
+      productsMarkdown: `${SITE_ORIGIN}/products.md`,
+      productsMarkdownZh: `${SITE_ORIGIN}/zh/products.md`,
+      productsMarkdownZht: `${SITE_ORIGIN}/zh-hant/products.md`,
       sectorsMarkdown: `${SITE_ORIGIN}/sectors.md`,
       regionsMarkdown: `${SITE_ORIGIN}/regions.md`,
       countriesMarkdown: `${SITE_ORIGIN}/countries.md`,

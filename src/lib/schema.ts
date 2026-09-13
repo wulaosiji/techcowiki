@@ -1,4 +1,4 @@
-import { getCompany, getPerson, seeAlsoCompanies } from "../data/catalog";
+import { getCompany, getPerson, productForLine, relatedProducts, seeAlsoCompanies } from "../data/catalog";
 import { citySlug, countrySlug } from "../data/places";
 import {
   CONTENT_LICENSE,
@@ -10,7 +10,7 @@ import {
   sectors,
   tagline,
 } from "../data/site";
-import type { Company, EntityFaq, FaqItem, Locale, Person } from "../data/types";
+import type { CatalogProduct, Company, EntityFaq, FaqItem, Locale, Person } from "../data/types";
 import { htmlLang, pageUrl, pick, t, tOpt } from "./i18n";
 import { clipPlain, stripCitations } from "./citations";
 
@@ -148,11 +148,16 @@ export function companyGraph(company: Company, locale: Locale) {
             identifier: person?.id,
           };
         }),
-        brand: company.products.map((product) => ({
-          "@type": "Brand",
-          name: product.name,
-          description: t(product.description, locale),
-        })),
+        brand: company.products.map((product) => {
+          const entity = productForLine(company.slug, product.name);
+          return {
+            "@type": "Brand",
+            name: product.name,
+            description: t(product.description, locale),
+            url: entity ? pageUrl(locale, `/products/${entity.slug}`) : undefined,
+            identifier: entity?.id,
+          };
+        }),
         tickerSymbol: company.stock
           ? [
               `${company.stock.exchange}:${company.stock.ticker}`,
@@ -280,6 +285,79 @@ export function personGraph(person: Person, locale: Locale) {
           ];
         })(),
         { name: t(person.name, locale), url },
+      ]),
+    ],
+  };
+}
+
+export function productGraph(product: CatalogProduct, locale: Locale) {
+  const url = pageUrl(locale, `/products/${product.slug}`);
+  const company = getCompany(product.companySlug);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationNode(),
+      {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        name: t(product.name, locale),
+        alternateName: product.aliases,
+        description: richDescription(t(product.definition, locale), 320),
+        identifier: {
+          "@type": "PropertyValue",
+          propertyID: "techco",
+          value: product.id,
+        },
+        brand: company
+          ? {
+              "@type": "Organization",
+              name: t(company.name, locale),
+              url: pageUrl(locale, `/companies/${company.slug}`),
+              identifier: company.id,
+            }
+          : undefined,
+        additionalProperty: (product.claims ?? []).map((claim) => ({
+          "@type": "PropertyValue",
+          name: t(claim.label, locale),
+          value: stripCitations(t(claim.value, locale)),
+        })),
+        mentions: relatedProducts(product, 6).map((other) => ({
+          "@type": "Product",
+          name: t(other.name, locale),
+          url: pageUrl(locale, `/products/${other.slug}`),
+          identifier: other.id,
+        })),
+      },
+      webPageNode({
+        url,
+        name: t(product.name, locale),
+        description: richDescription(t(product.lead, locale)),
+        locale,
+        dateModified: product.lastReviewed,
+        about: `${url}#product`,
+        parts: product.sections.map((section) => ({
+          "@type": "WebPageElement",
+          name: t(section.title, locale),
+          cssSelector: `#${section.id}`,
+        })),
+      }),
+      entityFaqGraph(url, product.faq, locale),
+      breadcrumb([
+        { name: SITE_NAME, url: pageUrl(locale, "/") },
+        { name: pick(locale, "Products", "产品"), url: pageUrl(locale, "/products") },
+        ...(company
+          ? [
+              {
+                name: t(company.name, locale),
+                url: pageUrl(locale, `/companies/${company.slug}`),
+              },
+              {
+                name: t(company.headquarters.country, locale),
+                url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+              },
+            ]
+          : []),
+        { name: t(product.name, locale), url },
       ]),
     ],
   };

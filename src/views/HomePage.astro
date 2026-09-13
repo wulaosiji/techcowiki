@@ -35,7 +35,7 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
         <h1>{t(tagline, locale)}</h1>
         <p class="lede definition">{t(mission, locale)}</p>
         <p>
-          {pick(locale, "This is not a fundraising database. Every company and person has a citation-ready brief, a catalog comparison, nationality rules, and HTML / Markdown / JSON twins so models and people read the same record.", "这不是融资数据库。每家公司与每个人物都有一段可独立引用的简述、目录对照、国籍规则和 HTML / Markdown / JSON 副本，让模型与人读到同一条记录。")}
+          {pick(locale, "This is not a fundraising database. Every company, person, and recorded product line has a citation-ready brief, a catalog comparison, nationality rules, and HTML / Markdown / JSON twins so models and people read the same record.", "这不是融资数据库。每家公司、每个人物与每条已记录产品线都有一段可独立引用的简述、目录对照、国籍规则和 HTML / Markdown / JSON 副本，让模型与人读到同一条记录。")}
         </p>
         <form class="search-form" method="get" action={localePath(locale, "/search")}>
           <input type="search" name="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
@@ -57,6 +57,7 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
           <li><a href="/api/v1/openapi.json">/api/v1/openapi.json</a></li>
           <li><a href="/api/v1/companies.json">/api/v1/companies.json</a></li>
           <li><a href="/api/v1/people.json">/api/v1/people.json</a></li>
+          <li><a href="/api/v1/products.json">/api/v1/products.json</a></li>
           <li><a href="/api/v1/dataset.json">/api/v1/dataset.json</a></li>
           <li><a href="/api/v1/graph.json">/api/v1/graph.json</a></li>
           <li><a href="/feed.xml">/feed.xml</a></li>
@@ -66,6 +67,9 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
           <li><a href="/companies.md">/companies.md</a></li>
           <li><a href="/zh/companies.md">/zh/companies.md</a></li>
           <li><a href="/zh-hant/companies.md">/zh-hant/companies.md</a></li>
+          <li><a href="/products.md">/products.md</a></li>
+          <li><a href="/zh/products.md">/zh/products.md</a></li>
+          <li><a href="/zh-hant/products.md">/zh-hant/products.md</a></li>
         </ul>
       </aside>
     </section>
@@ -73,6 +77,7 @@ const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance",
     <div class="stat-row">
       <div class="stat"><b>{stats.companies}</b>{pick(locale, "companies", "家公司")}</div>
       <div class="stat"><b>{stats.people}</b>{pick(locale, "people", "位人物")}</div>
+      <div class="stat"><b>{stats.products}</b>{pick(locale, "products", "条产品")}</div>
       <div class="stat"><b>{stats.sectors}</b>{pick(locale, "sectors", "个行业")}</div>
       <div class="stat"><b>{stats.sources}</b>{pick(locale, "unique sources", "个独立来源")}</div>
     </div>

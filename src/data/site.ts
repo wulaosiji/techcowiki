@@ -197,8 +197,19 @@ export const faqs: FaqItem[] = [
       zh: "TechCo.Wiki 是什么？",
     },
     answer: {
-      en: "TechCo.Wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record. Start at the [company catalog](/companies), [people](/people), [sector hubs](/sectors), [country hubs](/countries), or [Methodology](/methodology).",
-      zh: "TechCo.Wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。可从[公司目录](/zh/companies)、[人物](/zh/people)、[行业枢纽](/zh/sectors)、[国家枢纽](/zh/countries)或[方法](/zh/methodology)进入。",
+      en: "TechCo.Wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record. Start at the [company catalog](/companies), [people](/people), [products](/products), [sector hubs](/sectors), [country hubs](/countries), or [Methodology](/methodology).",
+      zh: "TechCo.Wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。可从[公司目录](/zh/companies)、[人物](/zh/people)、[产品](/zh/products)、[行业枢纽](/zh/sectors)、[国家枢纽](/zh/countries)或[方法](/zh/methodology)进入。",
+    },
+  },
+  {
+    id: "are-products-first-class",
+    question: {
+      en: "Does TechCo.Wiki publish product pages?",
+      zh: "TechCo.Wiki 有独立的产品条目吗？",
+    },
+    answer: {
+      en: "Yes. Every recorded company product line has a first-class page at /products/{slug}, with HTML, Markdown, JSON-LD, and /api/v1/products/{slug}.json twins. Product pages reprint the recorded gloss and inherit the publisher's headquarters nationality rule. They do not invent funding, valuation, SKU prices, or tickers. Start at the [product catalog](/products).",
+      zh: "有。每条已记录的公司产品线都有一等条目 /products/{slug}，并提供 HTML、Markdown、JSON-LD 与 /api/v1/products/{slug}.json 副本。产品页复述已记录释义，并继承出品方总部的国籍规则。它们不编造融资、估值、SKU 价格或证券代码。可从[产品目录](/zh/products)进入。",
     },
   },
   {
@@ -272,6 +283,7 @@ export const faqs: FaqItem[] = [
 export const ui = {
   navCompanies: { en: "Companies", zh: "公司" },
   navPeople: { en: "People", zh: "人物" },
+  navProducts: { en: "Products", zh: "产品" },
   navSectors: { en: "Sectors", zh: "行业" },
   navRegions: { en: "Regions", zh: "地区" },
   navCountries: { en: "Countries", zh: "国家" },
@@ -280,7 +292,7 @@ export const ui = {
   navMethod: { en: "Methodology", zh: "方法" },
   navFaq: { en: "FAQ", zh: "问答" },
   navForModels: { en: "For models", zh: "给模型" },
-  search: { en: "Search companies and people", zh: "搜索公司与人物" },
+  search: { en: "Search companies, people, and products", zh: "搜索公司、人物与产品" },
   navSearch: { en: "Search", zh: "搜索" },
   onThisPage: { en: "On this page", zh: "本页目录" },
   ticker: { en: "Ticker", zh: "证券代码" },
@@ -302,6 +314,7 @@ export const ui = {
   identifiers: { en: "Identifiers", zh: "标识符" },
   sameAs: { en: "Same as", zh: "同一实体" },
   products: { en: "Products", zh: "产品" },
+  publisher: { en: "Publisher", zh: "出品方" },
   related: { en: "See also", zh: "参见" },
   faq: { en: "Frequently asked questions", zh: "常见问题" },
   claims: { en: "Extractable facts", zh: "可抽取事实" },

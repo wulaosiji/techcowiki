@@ -67,8 +67,12 @@ for (const [file, page] of pages) {
 
 const companies = json("api/v1/companies.json");
 const people = json("api/v1/people.json");
+const products = json("api/v1/products.json");
 demand(companies.length === 100 && people.length === 100, "catalog must contain 100 companies and 100 people");
-for (const [kind, records] of [["companies", companies], ["people", people]]) {
+demand(products.length > 0, "catalog must derive at least one product");
+const expectedProducts = companies.reduce((sum, company) => sum + (company.products?.length ?? 0), 0);
+demand(products.length === expectedProducts, `product count ${products.length} must match recorded company lines ${expectedProducts}`);
+for (const [kind, records] of [["companies", companies], ["people", people], ["products", products]]) {
   for (const record of records) {
     demand(JSON.stringify(json(`api/v1/${kind}/${record.slug}.json`)) === JSON.stringify(record), `${record.id}: list/detail API mismatch`);
     const sourceIds = new Set(record.sources.map((source) => source.id));
@@ -96,6 +100,6 @@ for (const path of ["search/index.html", "zh/search/index.html", "zh-hant/search
 }
 if (errors.length) throw new Error(`${errors.length} site contracts failed:\n${errors.slice(0, 40).join("\n")}`);
 check(`${pages.size} HTML pages: links, anchors, headings, canonicals and JSON-LD`, true);
-check(`${companies.length + people.length} records: API twins and per-field citations`, true);
+check(`${companies.length + people.length + products.length} records: API twins and per-field citations`, true);
 check(`${graph.nodes.length} graph nodes and ${urls.length} sitemap URLs`, true);
 check("search payload budget", true);

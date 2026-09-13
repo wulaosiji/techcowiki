@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { allCompanies, allPeople, companyHaystack, getCompany, getPerson } from "../src/data/catalog";
+import { allCompanies, allPeople, allProducts, companyHaystack, getCompany, getPerson } from "../src/data/catalog";
 import { englishBodyLength } from "../src/data/enrich";
 import { usedSourceIds } from "../src/lib/citations";
 
@@ -104,7 +104,7 @@ describe("catalog integrity", () => {
   });
 
   test("citation tokens resolve to sources", () => {
-    for (const entity of [...allCompanies(), ...allPeople()]) {
+    for (const entity of [...allCompanies(), ...allPeople(), ...allProducts()]) {
       const ids = new Set(entity.sources.map((source) => source.id));
       const sections = "sections" in entity ? (entity.sections ?? []) : [];
       const used = [
@@ -282,7 +282,7 @@ describe("catalog integrity", () => {
   });
 
   test("every source has an https URL", () => {
-    for (const entity of [...allCompanies(), ...allPeople()]) {
+    for (const entity of [...allCompanies(), ...allPeople(), ...allProducts()]) {
       for (const source of entity.sources) {
         expect(source.url.startsWith("https://"), source.url).toBe(true);
       }

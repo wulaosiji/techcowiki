@@ -1,24 +1,43 @@
 ---
+import { getCompany } from "../data/catalog";
 import { citySlug, countrySlug } from "../data/places";
 import { sectors } from "../data/site";
-import type { Company, Locale, Person } from "../data/types";
+import type { CatalogProduct, Company, Locale, Person } from "../data/types";
 import { altName, localePath, t } from "../lib/i18n";
-import { stripCitations } from "../lib/citations";
+import { clipPlain, stripCitations } from "../lib/citations";
 
 interface Props {
   locale: Locale;
   company?: Company;
   person?: Person;
+  product?: CatalogProduct;
 }
 
-const { locale, company, person } = Astro.props;
+const { locale, company, person, product } = Astro.props;
+const publisher = product ? getCompany(product.companySlug) : undefined;
 const href = company
   ? localePath(locale, `/companies/${company.slug}`)
-  : localePath(locale, `/people/${person!.slug}`);
-const entity = company ?? person!;
-const name = t(entity.name, locale);
-const sub = altName(entity.name, locale);
-const text = stripCitations(t(entity.definition, locale));
+  : product
+    ? localePath(locale, `/products/${product.slug}`)
+    : localePath(locale, `/people/${person!.slug}`);
+const name = company
+  ? t(company.name, locale)
+  : product
+    ? t(product.name, locale)
+    : t(person!.name, locale);
+const sub = company
+  ? altName(company.name, locale)
+  : product
+    ? publisher
+      ? t(publisher.name, locale)
+      : altName(product.name, locale)
+    : altName(person!.name, locale);
+const text = product
+  ? clipPlain(t(product.definition, locale), 160)
+  : stripCitations(
+      company ? t(company.definition, locale) : t(person!.definition, locale),
+    );
+const chipCompany = company ?? publisher;
 ---
 
 <article class="card">
@@ -27,9 +46,9 @@ const text = stripCitations(t(entity.definition, locale));
     <div class="sub">{sub}</div>
     <p>{text}</p>
   </a>
-  {company && (
+  {chipCompany && (
     <div class="chips">
-      {company.sectors.slice(0, 2).map((slug) => (
+      {chipCompany.sectors.slice(0, 2).map((slug) => (
         <a class="chip" href={localePath(locale, `/sectors/${slug}`)}>
           {(() => {
             const sector = sectors.find((item) => item.slug === slug);
@@ -37,11 +56,11 @@ const text = stripCitations(t(entity.definition, locale));
           })()}
         </a>
       ))}
-      <a class="chip" href={localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}>
-        {t(company.headquarters.city, locale)}
+      <a class="chip" href={localePath(locale, `/cities/${citySlug(chipCompany.headquarters.city.en)}`)}>
+        {t(chipCompany.headquarters.city, locale)}
       </a>
-      <a class="chip" href={localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}>
-        {t(company.headquarters.country, locale)}
+      <a class="chip" href={localePath(locale, `/countries/${countrySlug(chipCompany.headquarters.countryCode)}`)}>
+        {t(chipCompany.headquarters.country, locale)}
       </a>
     </div>
   )}

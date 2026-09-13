@@ -4,6 +4,8 @@ import {
   allCompanies,
   allCountryHubs,
   allPeople,
+  allProducts,
+  getCompany,
   seeAlsoCompanies,
 } from "../../../data/catalog";
 import { citySlug, countrySlug } from "../../../data/places";
@@ -24,6 +26,12 @@ export const GET: APIRoute = () => {
       type: "person",
       slug: person.slug,
       name: localizedTriple(person.name),
+    })),
+    ...allProducts().map((product) => ({
+      id: product.id,
+      type: "product",
+      slug: product.slug,
+      name: localizedTriple(product.name),
     })),
     ...sectors.map((sector) => ({
       id: `techco:sector:${sector.slug}`,
@@ -94,5 +102,39 @@ export const GET: APIRoute = () => {
       type: "peer",
     })),
   );
-  return jsonResponse({ nodes, edges: [...founded, ...associations, ...memberships, ...peers] });
+  const offers = allProducts().map((product) => ({
+    from: `techco:company:${product.companySlug}`,
+    to: product.id,
+    type: "offers",
+  }));
+  const productMemberships = allProducts().flatMap((product) => {
+    const company = getCompany(product.companySlug);
+    if (!company) return [];
+    return [
+      ...product.sectors.map((slug) => ({
+        from: product.id,
+        to: `techco:sector:${slug}`,
+        type: "in-sector",
+      })),
+      ...product.regions.map((slug) => ({
+        from: product.id,
+        to: `techco:region:${slug}`,
+        type: "in-region",
+      })),
+      {
+        from: product.id,
+        to: `techco:country:${countrySlug(company.headquarters.countryCode)}`,
+        type: "in-country",
+      },
+      {
+        from: product.id,
+        to: `techco:city:${citySlug(company.headquarters.city.en)}`,
+        type: "in-city",
+      },
+    ];
+  });
+  return jsonResponse({
+    nodes,
+    edges: [...founded, ...associations, ...memberships, ...peers, ...offers, ...productMemberships],
+  });
 };

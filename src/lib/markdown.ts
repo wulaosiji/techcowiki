@@ -1,11 +1,11 @@
-import { getCompany, getPerson, relatedPeople, seeAlsoCompanies } from "../data/catalog";
+import { getCompany, getPerson, productForLine, relatedPeople, relatedProducts, seeAlsoCompanies } from "../data/catalog";
 import { regionName, sectorName, tickerText } from "../data/copy";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
-import type { Company, EntityClaim, EntityFaq, Locale, Person } from "../data/types";
+import type { CatalogProduct, Company, EntityClaim, EntityFaq, Locale, Person } from "../data/types";
 import { citySlug, countrySlug } from "../data/places";
 import { stripCiteMarks } from "./citations";
 import { formatFounded, markdownUrl, pageUrl, pick, t } from "./i18n";
-import { companyMdLink, personMdLink } from "./links";
+import { companyMdLink, personMdLink, productMdLink } from "./links";
 
 function claimsMarkdown(claims: EntityClaim[] | undefined, locale: Locale): string[] {
   if (!claims?.length) return [];
@@ -40,9 +40,11 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     const name = person ? personMdLink(person, locale) : founder.personSlug;
     return `${name} (${t(founder.role, locale)}; ${founder.personSlug})`;
   });
-  const products = company.products.map(
-    (product) => `${product.name}: ${t(product.description, locale)}`,
-  );
+  const products = company.products.map((product) => {
+    const entity = productForLine(company.slug, product.name);
+    const label = entity ? productMdLink(entity, locale) : product.name;
+    return `${label}: ${t(product.description, locale)}`;
+  });
   const lines = [
     `# ${t(company.name, locale)}`,
     "",
@@ -188,13 +190,71 @@ export function personMarkdown(person: Person, locale: Locale): string {
     .join("\n");
 }
 
+export function productMarkdown(product: CatalogProduct, locale: Locale): string {
+  const url = pageUrl(locale, `/products/${product.slug}`);
+  const company = getCompany(product.companySlug);
+  return [
+    `# ${t(product.name, locale)}`,
+    "",
+    `> ${stripCiteMarks(t(product.definition, locale))}`,
+    "",
+    `- Stable ID: \`${product.id}\``,
+    `- Canonical URL: ${url}`,
+    `- Markdown twin: ${markdownUrl(locale, `/products/${product.slug}`)}`,
+    `- JSON: ${SITE_ORIGIN}/api/v1/products/${product.slug}.json`,
+    `- Last reviewed: ${product.lastReviewed}`,
+    `- Confidence: ${product.confidence}`,
+    `- License: ${CONTENT_LICENSE} (${CONTENT_LICENSE_URL})`,
+    company
+      ? `- Publisher: ${companyMdLink(company, locale)} (\`${company.id}\`)`
+      : `- Publisher: ${product.companySlug}`,
+    company
+      ? `- Headquarters: [${t(company.headquarters.city, locale)}](${pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}), [${t(company.headquarters.country, locale)}](${pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}) (${company.headquarters.countryCode})`
+      : undefined,
+    `- Sectors: ${product.sectors.map((slug) => `[${sectorName(slug, locale)}](${pageUrl(locale, `/sectors/${slug}`)})`).join(", ")}`,
+    `- Regions: ${product.regions.map((slug) => `[${regionName(slug, locale)}](${pageUrl(locale, `/regions/${slug}`)})`).join(", ")}`,
+    "",
+    ...claimsMarkdown(product.claims, locale),
+    stripCiteMarks(t(product.lead, locale)),
+    "",
+    ...product.sections
+      .filter((section) => section.id !== "faq")
+      .flatMap((section) => [
+        `## ${t(section.title, locale)}`,
+        "",
+        stripCiteMarks(t(section.body, locale)),
+        "",
+      ]),
+    ...faqMarkdown(product.faq, locale),
+    "## Sources",
+    "",
+    ...product.sources.map(
+      (source, index) =>
+        `${index + 1}. ${source.title}. ${source.publisher}. ${source.url}` +
+        (source.published ? ` (${source.published})` : "") +
+        ` (accessed ${source.accessed}).`,
+    ),
+    "",
+    pick(locale, "## See also", "## 参见"),
+    "",
+    company ? `- ${companyMdLink(company, locale)}` : undefined,
+    ...relatedProducts(product, 6).map((other) => `- ${productMdLink(other, locale)}`),
+    ...product.sectors.map((slug) => `- [${sectorName(slug, locale)}](${pageUrl(locale, `/sectors/${slug}`)})`),
+    "",
+    `How to cite: ${SITE_NAME}, "${product.name.en}," ${url}, last reviewed ${product.lastReviewed}, ${product.id}.`,
+    "",
+  ]
+    .filter((line) => line !== undefined)
+    .join("\n");
+}
+
 export function homeMarkdown(locale: Locale): string {
   return [
     `# ${SITE_NAME}`,
     "",
     pick(locale, "> The open encyclopedia of Chinese-founded technology companies. Written first for generative engines, then for people.", "> 全球华人创办科技公司的开放百科。内容首先写给生成式引擎，同时供人类阅读。"),
     "",
-    pick(locale, "English is the canonical text, with complete Simplified Chinese and Traditional Chinese editions. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company and person page includes extractable fact cards, identity disambiguation, dated facts, FAQ, unrecorded-field notes, model-description rules, a public-record section, and retrieval instructions.", "默认使用英语规范文本，并提供完整简体中文与繁体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司与每个人物条目都包含可抽取事实卡、身份消解、带日期事实、问答、未记录字段、模型表述说明、公共记录与检索说明。"),
+    pick(locale, "English is the canonical text, with complete Simplified Chinese and Traditional Chinese editions. Every claim is sourced, every entity has a stable identifier, and every page ships HTML, Markdown, and JSON. Each company, person, and product page includes extractable fact cards, identity disambiguation, dated facts, FAQ, unrecorded-field notes, model-description rules, a public-record section, and retrieval instructions.", "默认使用英语规范文本，并提供完整简体中文与繁体中文版。每条事实带出处，实体有稳定标识符，页面提供 HTML、Markdown 与 JSON。每家公司、每个人物与每条产品条目都包含可抽取事实卡、身份消解、带日期事实、问答、未记录字段、模型表述说明、公共记录与检索说明。"),
     "",
     "## Machine entry points",
     "",
@@ -206,6 +266,7 @@ export function homeMarkdown(locale: Locale): string {
     `- [Dataset](${SITE_ORIGIN}/api/v1/dataset.json)`,
     `- [Companies JSON](${SITE_ORIGIN}/api/v1/companies.json)`,
     `- [People JSON](${SITE_ORIGIN}/api/v1/people.json)`,
+    `- [Products JSON](${SITE_ORIGIN}/api/v1/products.json)`,
     `- [Entity graph](${SITE_ORIGIN}/api/v1/graph.json)`,
     `- [RSS feed](${SITE_ORIGIN}/feed.xml)`,
     "",
@@ -220,6 +281,7 @@ export function homeMarkdown(locale: Locale): string {
     "",
     `- [Companies](${pageUrl(locale, "/companies")})`,
     `- [People](${pageUrl(locale, "/people")})`,
+    `- [Products](${pageUrl(locale, "/products")})`,
     `- [Sectors](${pageUrl(locale, "/sectors")})`,
     `- [Regions](${pageUrl(locale, "/regions")})`,
     `- [Countries](${pageUrl(locale, "/countries")})`,
@@ -232,14 +294,16 @@ export function searchMarkdown(locale: Locale): string {
   return [
     pick(locale, "# Search", "# 搜索"),
     "",
-    pick(locale, "The TechCo.Wiki search page is static HTML. The full catalog is in the page; query parameters only hide cards in the browser. Without JavaScript, every company and person remains readable.", "TechCo.Wiki 的搜索页是静态 HTML：完整目录写在页面里，查询参数只在浏览器里筛选卡片。无 JavaScript 时仍能阅读全部公司与人物。"),
+    pick(locale, "The TechCo.Wiki search page is static HTML. The full catalog is in the page; query parameters only hide cards in the browser. Without JavaScript, every company, person, and product remains readable.", "TechCo.Wiki 的搜索页是静态 HTML：完整目录写在页面里，查询参数只在浏览器里筛选卡片。无 JavaScript 时仍能阅读全部公司、人物与产品。"),
     "",
     pick(locale, "## Machine entry points", "## 机器入口"),
     "",
     `- [${pick(locale, "All companies", "全部公司")}](${pageUrl(locale, "/companies")}.md)`,
     `- [${pick(locale, "All people", "全部人物")}](${pageUrl(locale, "/people")}.md)`,
+    `- [${pick(locale, "All products", "全部产品")}](${pageUrl(locale, "/products")}.md)`,
     `- [Companies JSON](${SITE_ORIGIN}/api/v1/companies.json)`,
     `- [People JSON](${SITE_ORIGIN}/api/v1/people.json)`,
+    `- [Products JSON](${SITE_ORIGIN}/api/v1/products.json)`,
     "",
   ].join("\n");
 }

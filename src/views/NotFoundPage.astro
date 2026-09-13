@@ -39,7 +39,7 @@ const searchLinks = [
       <input
         type="search"
         name="q"
-        placeholder={pick(locale, "Search companies and people / 搜索公司与人物", "搜索公司与人物")}
+        placeholder={pick(locale, "Search companies, people, and products / 搜索公司、人物与产品", "搜索公司、人物与产品")}
         aria-label={pick(locale, "Search", "搜索")}
       />
       <button type="submit">{pick(locale, "Search / 搜索", "搜索")}</button>
@@ -57,6 +57,8 @@ const searchLinks = [
       <a href={localePath(locale, "/companies")}>{pick(locale, "Companies", "公司")}</a>
       {" · "}
       <a href={localePath(locale, "/people")}>{pick(locale, "People", "人物")}</a>
+      {" · "}
+      <a href={localePath(locale, "/products")}>{pick(locale, "Products", "产品")}</a>
       {" · "}
       <a href={localePath(locale, "/sectors")}>{pick(locale, "Sectors", "行业")}</a>
       {" · "}

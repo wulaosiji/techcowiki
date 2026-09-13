@@ -55,18 +55,20 @@ Done means the relevant gates are green. A screenshot alone is not success.
 | --- | --- | --- |
 | `src/lib/autolink.ts` | `tests/links.test.ts` | NVIDIA / TSMC pages: Wikipedia URLs unchanged; hyphenated nationality not split into “United” |
 | `src/lib/i18n.ts` / `BaseLayout.astro` | `tests/i18n.test.ts` + e2e search language switch | `/search?q=TSM` → after Simplified Chinese the URL still has `q=TSM` |
-| Company / person data or `normalize.ts` | `tests/catalog.test.ts` `tests/geo.test.ts` | That entity’s en / zh / zh-hant pages; search haystack (ticker / alias / HQ) |
+| Company / person / product data or `normalize.ts` | `tests/catalog.test.ts` `tests/geo.test.ts` `tests/products.test.ts` | That entity’s en / zh / zh-hant pages; search haystack (ticker / alias / HQ) |
 | Toolbar, homepage machine box, footer | `tests/harness.test.ts` + `npm run harness` | Preview clicks on Markdown / llms.txt stay on the current host |
 | 404 / `_worker.js` / `_redirects` | `tests/redirects.test.ts` + harness | Local `/zh/404` and `/zh-hant/404`; live `/zh/this-page-does-not-exist` and `/zh-hant/this-page-does-not-exist` titles are `未找到` |
 | Machine surface (llms / sitemap / OpenAPI / graph) | `tests/i18n.test.ts` `tests/geo.test.ts` | OpenAPI path is **`/api/v1/openapi.json`**, not root `/openapi.json` |
 
 ## Information architecture (do not invent URLs)
 
-- `/companies/{slug}` `/people/{slug}` entities
+- `/companies/{slug}` `/people/{slug}` `/products/{slug}` entities
 - `/sectors` `/regions` `/countries` `/cities` hubs
+- Product records are derived from recorded `company.products` lines. Count is not fixed at 100. IDs use `techco:product:{slug}`.
 - `/zh/...` Simplified Chinese parallel edition + hreflang
 - `/zh-hant/...` Traditional Chinese parallel edition + hreflang (`htmlLang=zh-Hant`). Strip `/zh-hant` before `/zh` when parsing URLs
 - `/search` is static HTML: `?q=` / `?sector=` / `?region=` filter only in the browser; crawlers still see the full catalog
+- Search HTML keeps company, person, and product cards. Do not assume the visible set is exactly 200.
 - The search page’s static language-switch href has no query; the `BaseLayout` footer script must append `location.search` (including `/zh-hant/search`)
 - On English pages the first language-switch link is still Simplified Chinese, so existing e2e that clicks the first `.lang-switch` reaches `/zh/search`
 - Localized 404 build artifacts are `dist/zh/404/index.html` and `dist/zh-hant/404/index.html`, not `dist/zh/404.html`
@@ -119,3 +121,11 @@ Unless the user names them: custom domain, search-engine submission, UGC, catalo
 - `npm run e2e:pages` proves the local Pages runtime. It is not proof of a live deploy. Hosted checks must not treat a 200 error page as a passing 404.
 - Headquarters is not founding place. A historical company association is not current employment. Machine fields and human prose must keep the same evidence scope.
 - Search and autolink optimizations must not rewrite entry facts. JSON plaintext must keep per-field citation IDs.
+
+## Language policy
+
+Repo default language is English. Only README files and the public website stay multilingual. New AGENTS.md, harness, and comments must be English. Site product pages may still carry zh and zh-Hant copy.
+
+## Products
+
+`/products/{slug}` is a first-class catalog entity next to companies and people. Pages reprint the recorded company gloss and inherit the publisher headquarters nationality rule. Do not invent funding, valuation, SKU prices, or tickers on product pages. Machine twins: HTML, Markdown, JSON-LD, `/api/v1/products.json`, and `/api/v1/products/{slug}.json`. Graph edge `offers` links a company to its derived product records.

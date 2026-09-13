@@ -4,7 +4,7 @@ import Breadcrumbs from "../components/Breadcrumbs.astro";
 import CitedBody from "../components/CitedBody.astro";
 import OnThisPage from "../components/OnThisPage.astro";
 import SeeAlso from "../components/SeeAlso.astro";
-import { allCompanies, allPeople, seeAlsoCompanies } from "../data/catalog";
+import { allCompanies, allPeople, productForLine, seeAlsoCompanies } from "../data/catalog";
 import { linkCatalogCopy } from "../lib/autolink";
 import { citySlug, countrySlug } from "../data/places";
 import { confidenceLabel, regions, sectors, SITE_NAME, stageLabel, statusLabel, ui } from "../data/site";
@@ -139,13 +139,20 @@ const toc = [
         </ul>
         <h2 id="products">{t(ui.products, locale)}</h2>
         <ul>
-          {company.products.map((product) => (
-            <li>
-              <strong set:html={renderCitedHtml(linkCatalogCopy(product.name, locale, allCompanies(), people, { companySlugs: [company.slug] }), [])} />
-              {". "}
-              {t(product.description, locale)}
-            </li>
-          ))}
+          {company.products.map((product) => {
+            const entity = productForLine(company.slug, product.name);
+            return (
+              <li>
+                {entity ? (
+                  <a href={localePath(locale, `/products/${entity.slug}`)}><strong>{product.name}</strong></a>
+                ) : (
+                  <strong set:html={renderCitedHtml(linkCatalogCopy(product.name, locale, allCompanies(), people, { companySlugs: [company.slug] }), [])} />
+                )}
+                {". "}
+                {t(product.description, locale)}
+              </li>
+            );
+          })}
         </ul>
         <SeeAlso
           locale={locale}
@@ -163,6 +170,16 @@ const toc = [
                 href: localePath(locale, `/people/${person.slug}`),
                 label: t(person.name, locale),
               })),
+            },
+            {
+              title: t(ui.navProducts, locale),
+              links: company.products
+                .map((product) => productForLine(company.slug, product.name))
+                .filter((item): item is NonNullable<typeof item> => Boolean(item))
+                .map((item) => ({
+                  href: localePath(locale, `/products/${item.slug}`),
+                  label: t(item.name, locale),
+                })),
             },
             {
               title: pick(locale, "Places and sectors", "地点与行业"),

@@ -63,12 +63,13 @@ npm run e2e:pages                 # 本地 Pages runtime：瀏覽器 + 真實中
 
 ## 檢索與 API 契約
 
-搜尋保留完整的 200 個實體卡片，無 JavaScript 時仍可閱讀。瀏覽器按所有空白分隔的關鍵詞篩選，忽略大小寫並歸一化全形字元；行業和地區使用完整 slug。未知篩選值按未選擇處理，語言切換保留查詢和篩選條件。檢索文本去除重複詞和 Markdown 目標地址，原始英/簡體源文不受影響。
+搜尋保留公司、人物與產品卡片，無 JavaScript 時仍可閱讀。瀏覽器按所有空白分隔的關鍵詞篩選，忽略大小寫並歸一化全形字元；行業和地區使用完整 slug。未知篩選值按未選擇處理，語言切換保留查詢和篩選條件。檢索文本去除重複詞和 Markdown 目標地址，原始英/簡體源文不受影響。
 
-API 文件版本 **1.4.0** 繼續使用 `/api/v1/` 路徑：
+API 文件版本 **1.5.0** 繼續使用 `/api/v1/` 路徑：
 
 - 本地化字串與 `citations` / `sourceIds` 含 `en`、`zh`（簡體）和 `zht`（繁體）；ID 對應實體的 `sources` 陣列。
 - 圖譜中的 `works-at` 更正為 `associated-with`，並提供 `{en, zh, zht}` 的 `role`。既有呼叫者須更新對該邊類型的判斷；歷史創始、任職關聯不證明當前僱傭關係。
+- 一等產品記錄見 `/api/v1/products.json` 與 `/api/v1/products/{slug}.json`。圖譜 `offers` 邊連接公司與已記錄產品線。產品頁不編造融資、估值、SKU 價格或證券代碼。
 - JSON-LD 使用總部 `location`，不從總部推斷 `foundingLocation`；人物使用帶角色的 `affiliation`。
 
 詳細審查與驗證記錄見 [docs/review-2026-09-13.md](./docs/review-2026-09-13.md)。

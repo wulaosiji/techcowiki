@@ -11,6 +11,7 @@ export function catalogNav(locale: Locale): NavLink[] {
   return [
     { href: localePath(locale, "/companies"), label: t(ui.navCompanies, locale) },
     { href: localePath(locale, "/people"), label: t(ui.navPeople, locale) },
+    { href: localePath(locale, "/products"), label: t(ui.navProducts, locale) },
     { href: localePath(locale, "/sectors"), label: t(ui.navSectors, locale) },
     { href: localePath(locale, "/regions"), label: t(ui.navRegions, locale) },
     { href: localePath(locale, "/countries"), label: t(ui.navCountries, locale) },

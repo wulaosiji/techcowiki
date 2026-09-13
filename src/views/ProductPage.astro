@@ -1,0 +1,235 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import CitedBody from "../components/CitedBody.astro";
+import OnThisPage from "../components/OnThisPage.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { getCompany, relatedProducts } from "../data/catalog";
+import { citySlug, countrySlug } from "../data/places";
+import { confidenceLabel, regions, sectors, SITE_NAME, ui } from "../data/site";
+import type { CatalogProduct, Locale } from "../data/types";
+import { clipPlain, renderCitedHtml, splitParagraphs } from "../lib/citations";
+import { altName, formatDate, localePath, markdownPath, pageUrl, pick, t } from "../lib/i18n";
+import { docNav } from "../lib/nav";
+import { productGraph } from "../lib/schema";
+
+interface Props {
+  locale: Locale;
+  product: CatalogProduct;
+}
+
+const { locale, product } = Astro.props;
+const company = getCompany(product.companySlug);
+const related = relatedProducts(product, 6);
+const countryPath = company ? `/countries/${countrySlug(company.headquarters.countryCode)}` : undefined;
+const cityPath = company ? `/cities/${citySlug(company.headquarters.city.en)}` : undefined;
+const jsonUrl = `/api/v1/products/${product.slug}.json`;
+const mdUrl = markdownPath(locale, `/products/${product.slug}`);
+const cite = `${SITE_NAME}, "${product.name.en}," ${pageUrl(locale, `/products/${product.slug}`)}, last reviewed ${product.lastReviewed}, ${product.id}.`;
+const toc = [
+  (product.claims ?? []).length > 0
+    ? { id: "recorded-facts", title: t(ui.claims, locale) }
+    : undefined,
+  ...product.sections
+    .filter((section) => section.id !== "faq")
+    .map((section) => ({ id: section.id, title: t(section.title, locale) })),
+  (product.faq ?? []).length > 0 ? { id: "faq", title: t(ui.faq, locale) } : undefined,
+  { id: "see-also", title: t(ui.related, locale) },
+  { id: "sources", title: t(ui.sources, locale) },
+].filter((item): item is { id: string; title: string } => Boolean(item));
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(product.name, locale)}
+  description={clipPlain(t(product.definition, locale), 220)}
+  path={`/products/${product.slug}`}
+  jsonLd={productGraph(product, locale)}
+  lastModified={product.lastReviewed}
+>
+  <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { href: localePath(locale, "/products"), label: t(ui.navProducts, locale) },
+        ...(company
+          ? [
+              { href: localePath(locale, `/companies/${company.slug}`), label: t(company.name, locale) },
+              ...(countryPath
+                ? [{ href: localePath(locale, countryPath), label: t(company.headquarters.country, locale) }]
+                : []),
+            ]
+          : []),
+        { label: t(product.name, locale) },
+      ]}
+    />
+    <div class="article-layout">
+      <article>
+        <p class="entity-id">{product.id}</p>
+        <h1>{t(product.name, locale)}</h1>
+        <p class="aliases">
+          {altName(product.name, locale)}
+          {company ? ` · ${t(company.name, locale)}` : ""}
+        </p>
+        <p class="definition" set:html={renderCitedHtml(t(product.definition, locale), product.sources)} />
+        {splitParagraphs(t(product.lead, locale)).map((paragraph) => (
+          <p class="lead" set:html={renderCitedHtml(paragraph, product.sources)} />
+        ))}
+        <div class="toolbar">
+          <span>{t(ui.lastReviewed, locale)}: {formatDate(product.lastReviewed, locale)}</span>
+          <span>
+            {t(ui.confidence, locale)}:
+            <b class={`conf-${product.confidence}`}>{t(confidenceLabel[product.confidence], locale)}</b>
+          </span>
+          <a href={mdUrl}>{t(ui.markdown, locale)}</a>
+          <a href={jsonUrl}>{t(ui.json, locale)}</a>
+        </div>
+        <OnThisPage locale={locale} items={toc} />
+        {(product.claims ?? []).length > 0 && (
+          <section id="recorded-facts">
+            <h2>{t(ui.claims, locale)}</h2>
+            <dl class="claims">
+              {product.claims!.map((item) => (
+                <div>
+                  <dt>{t(item.label, locale)}</dt>
+                  <dd set:html={renderCitedHtml(t(item.value, locale), product.sources)} />
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+        {
+          product.sections
+            .filter((section) => section.id !== "faq")
+            .map((section) => (
+              <section id={section.id}>
+                <h2>{t(section.title, locale)}</h2>
+                <CitedBody text={t(section.body, locale)} sources={product.sources} />
+              </section>
+            ))
+        }
+        {(product.faq ?? []).length > 0 && (
+          <section id="faq">
+            <h2>{t(ui.faq, locale)}</h2>
+            {product.faq!.map((item) => (
+              <div class="faq-item" id={`faq-${item.id}`}>
+                <h3>{t(item.question, locale)}</h3>
+                <CitedBody text={t(item.answer, locale)} sources={product.sources} />
+              </div>
+            ))}
+          </section>
+        )}
+        <SeeAlso
+          locale={locale}
+          groups={[
+            {
+              title: t(ui.navCompanies, locale),
+              links: company
+                ? [{ href: localePath(locale, `/companies/${company.slug}`), label: t(company.name, locale) }]
+                : [],
+            },
+            {
+              title: t(ui.navProducts, locale),
+              links: related.map((item) => ({
+                href: localePath(locale, `/products/${item.slug}`),
+                label: t(item.name, locale),
+              })),
+            },
+            {
+              title: pick(locale, "Places and sectors", "地点与行业"),
+              links: [
+                ...product.sectors.map((slug) => ({
+                  href: localePath(locale, `/sectors/${slug}`),
+                  label: sectors.find((item) => item.slug === slug) ? t(sectors.find((item) => item.slug === slug)!.name, locale) : slug,
+                })),
+                ...product.regions.map((slug) => ({
+                  href: localePath(locale, `/regions/${slug}`),
+                  label: regions.find((item) => item.slug === slug) ? t(regions.find((item) => item.slug === slug)!.name, locale) : slug,
+                })),
+                ...(countryPath && company
+                  ? [{ href: localePath(locale, countryPath), label: t(company.headquarters.country, locale) }]
+                  : []),
+                ...(cityPath && company
+                  ? [{ href: localePath(locale, cityPath), label: t(company.headquarters.city, locale) }]
+                  : []),
+              ],
+            },
+            {
+              title: pick(locale, "Docs", "文档"),
+              links: docNav(locale).slice(0, 3),
+            },
+          ]}
+        />
+        <h2 id="sources">{t(ui.sources, locale)}</h2>
+        <ol class="sources">
+          {product.sources.map((source) => (
+            <li id={`source-${source.id}`}>
+              <a href={source.url} rel="nofollow noopener">{source.title}</a>
+              {`. ${source.publisher}. `}
+              {source.published ? `${source.published}. ` : ""}
+              {t(ui.accessed, locale)} {source.accessed}.
+            </li>
+          ))}
+        </ol>
+        <aside class="cite-box">
+          <h2>{t(ui.citeThis, locale)}</h2>
+          <p class="mono">{cite}</p>
+        </aside>
+      </article>
+      <aside class="infobox">
+        <h2>{t(ui.infobox, locale)}</h2>
+        <dl>
+          {company && (
+            <div>
+              <dt>{t(ui.publisher, locale)}</dt>
+              <dd><a href={localePath(locale, `/companies/${company.slug}`)}>{t(company.name, locale)}</a></dd>
+            </div>
+          )}
+          {company && (
+            <div>
+              <dt>{t(ui.headquarters, locale)}</dt>
+              <dd>
+                {cityPath && <a href={localePath(locale, cityPath)}>{t(company.headquarters.city, locale)}</a>}
+                {", "}
+                {countryPath && <a href={localePath(locale, countryPath)}>{t(company.headquarters.country, locale)}</a>}
+              </dd>
+            </div>
+          )}
+          <div>
+            <dt>{t(ui.sectorsLabel, locale)}</dt>
+            <dd>
+              {product.sectors.map((slug, index) => {
+                const sector = sectors.find((item) => item.slug === slug);
+                return (
+                  <>
+                    {index > 0 && ", "}
+                    <a href={localePath(locale, `/sectors/${slug}`)}>{sector ? t(sector.name, locale) : slug}</a>
+                  </>
+                );
+              })}
+            </dd>
+          </div>
+          <div>
+            <dt>{t(ui.identifiers, locale)}</dt>
+            <dd class="mono">{product.id}</dd>
+          </div>
+          <div>
+            <dt>{t(ui.region, locale)}</dt>
+            <dd>
+              {product.regions.map((slug, index) => {
+                const region = regions.find((item) => item.slug === slug);
+                return (
+                  <>
+                    {index > 0 && ", "}
+                    <a href={localePath(locale, `/regions/${slug}`)}>{region ? t(region.name, locale) : slug}</a>
+                  </>
+                );
+              })}
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

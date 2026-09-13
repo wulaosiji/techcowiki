@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import EntityCard from "../components/EntityCard.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { allProducts } from "../data/catalog";
+import { SITE_ORIGIN, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, pageUrl, pick, t } from "../lib/i18n";
+import { catalogNav, docNav } from "../lib/nav";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const products = allProducts();
+const title = t(ui.navProducts, locale);
+const description = pick(
+  locale,
+  "Recorded product lines of companies in the TechCo.Wiki catalog. A product page reprints the company gloss; it does not add funding, valuation, or a ticker.",
+  "TechCo.Wiki 目录中已记录的公司产品线。产品页复述公司条目上的释义，不补充融资、估值或证券代码。",
+);
+const path = "/products";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: title,
+  description,
+  url: pageUrl(locale, path),
+  isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+  about: { "@id": `${SITE_ORIGIN}/#org` },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: products.length,
+    itemListElement: products.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: t(item.name, locale),
+      url: pageUrl(locale, `/products/${item.slug}`),
+    })),
+  },
+};
+---
+
+<BaseLayout locale={locale} title={title} description={description} path={path} jsonLd={jsonLd}>
+  <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: title },
+      ]}
+    />
+    <p class="kicker">{t(ui.catalog, locale)}</p>
+    <h1>{title}</h1>
+    <p class="lede">{description}</p>
+    <p class="lead">
+      {pick(
+        locale,
+        `Each product has a citation-ready brief, extractable facts, publisher geography, nationality rules inherited from the company page, FAQ, unrecorded-field notes, and HTML / Markdown / JSON twins. ${products.length} product lines are recorded. Absence is not a negative judgment.`,
+        `每条产品都有可独立引用的简述、可抽取事实、出品方地理、继承自公司页的国籍规则、问答、未记录字段，以及 HTML / Markdown / JSON 副本。已记录 ${products.length} 条产品线。缺席不代表否定判断。`,
+      )}
+    </p>
+    <form class="filters" method="get" action={localePath(locale, "/search")}>
+      <input type="search" name="q" aria-label={t(ui.search, locale)} placeholder={t(ui.search, locale)} />
+      <button type="submit">{pick(locale, "Filter", "筛选")}</button>
+    </form>
+    <p class="meta">{products.length} {t(ui.navProducts, locale)}</p>
+    <div class="grid">
+      {products.map((product) => <EntityCard locale={locale} product={product} />)}
+    </div>
+    <SeeAlso
+      locale={locale}
+      groups={[
+        { title: pick(locale, "Catalog", "目录"), links: catalogNav(locale) },
+        { title: pick(locale, "Docs", "文档"), links: docNav(locale).slice(0, 4) },
+      ]}
+    />
+  </div>
+</BaseLayout>

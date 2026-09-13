@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { allCompanies, allPeople } from "../data/catalog";
+import { allCompanies, allPeople, allProducts } from "../data/catalog";
 import { SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
 import { escapeHtml, stripCitations } from "../lib/citations";
 import { textResponse } from "../lib/http";
@@ -26,6 +26,15 @@ export const GET: APIRoute = () => {
     <guid isPermaLink="false">${person.id}</guid>
     <pubDate>${rfc822(person.lastReviewed)}</pubDate>
     <description>${escapeHtml(stripCitations(person.definition.en))}</description>
+  </item>`,
+    ),
+    ...allProducts().map(
+      (product) => `  <item>
+    <title>${escapeHtml(product.name.en)}</title>
+    <link>${SITE_ORIGIN}/products/${product.slug}</link>
+    <guid isPermaLink="false">${product.id}</guid>
+    <pubDate>${rfc822(product.lastReviewed)}</pubDate>
+    <description>${escapeHtml(stripCitations(product.definition.en))}</description>
   </item>`,
     ),
   ].join("\n");

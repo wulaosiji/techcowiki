@@ -9,6 +9,7 @@ import {
   docHref,
   mdLink,
   personHref,
+  productHref,
   regionHref,
   sectorHref,
 } from "./links";
@@ -16,6 +17,13 @@ import {
 export interface AutolinkExclude {
   companySlugs?: string[];
   personSlugs?: string[];
+  productSlugs?: string[];
+}
+
+export interface AutolinkProduct {
+  slug: string;
+  name: string;
+  companySlug?: string;
 }
 
 interface Term {
@@ -84,7 +92,7 @@ const STOP_WORDS = new Set([
 ]);
 
 const CATALOG_URL =
-  /https:\/\/techco\.wiki(\/zh-hant|\/zh)?(\/(?:companies|people|sectors|regions|countries|cities)\/[a-z0-9-]+)(?:\.md)?(#[\w-]+)?/gi;
+  /https:\/\/techco\.wiki(\/zh-hant|\/zh)?(\/(?:companies|people|products|sectors|regions|countries|cities)\/[a-z0-9-]+)(?:\.md)?(#[\w-]+)?/gi;
 
 const PAGE_PREFIX =
   /(?:Person page|Company page|Page|人物页|公司页|条目)[:：]\s*(\[[^\]]+\]\([^)]+\))/g;
@@ -157,11 +165,13 @@ function termsForLocale(
   companies: Company[],
   people: Person[],
   exclude: AutolinkExclude,
+  products: AutolinkProduct[],
 ): Term[] {
   const terms: Term[] = [];
   const seen = new Set<string>();
   const skipCompanies = new Set(exclude.companySlugs ?? []);
   const skipPeople = new Set(exclude.personSlugs ?? []);
+  const skipProducts = new Set(exclude.productSlugs ?? []);
 
   for (const company of companies) {
     if (skipCompanies.has(company.slug)) continue;
@@ -199,12 +209,21 @@ function termsForLocale(
       if (alias.length >= 3) addTerm(terms, seen, alias, href);
     }
   }
-  for (const company of companies) {
-    if (skipCompanies.has(company.slug)) continue;
-    const href = companyHref(company.slug, locale);
-    for (const product of company.products) {
-      for (const name of productTerms(product.name)) {
-        addTerm(terms, seen, name, href);
+  for (const product of products) {
+    if (skipProducts.has(product.slug)) continue;
+    const href = productHref(product.slug, locale);
+    for (const name of productTerms(product.name)) {
+      addTerm(terms, seen, name, href);
+    }
+  }
+  if (products.length === 0) {
+    for (const company of companies) {
+      if (skipCompanies.has(company.slug)) continue;
+      const href = companyHref(company.slug, locale);
+      for (const product of company.products) {
+        for (const name of productTerms(product.name)) {
+          addTerm(terms, seen, name, href);
+        }
       }
     }
   }
@@ -269,6 +288,7 @@ function convertCatalogUrls(
   locale: Locale,
   companies: Company[],
   people: Person[],
+  products: AutolinkProduct[],
 ): string {
   // Existing links and inline code are opaque; replacing inside their URLs would
   // create nested Markdown links and corrupt the destination.
@@ -276,7 +296,7 @@ function convertCatalogUrls(
     if (index % 2) return part;
     return part.replace(CATALOG_URL, (match, _zh: string, path: string, hash = "") => {
     return mdLink(
-      labelForPath(path, locale, companies, people) ?? match,
+      labelForPath(path, locale, companies, people, products) ?? match,
       `${localePath(locale, path)}${hash}`,
     );
     });
@@ -288,6 +308,7 @@ function labelForPath(
   locale: Locale,
   companies: Company[],
   people: Person[],
+  products: AutolinkProduct[],
 ): string | undefined {
   const parts = path.split("/").filter(Boolean);
   if (parts.length < 2) return undefined;
@@ -299,6 +320,9 @@ function labelForPath(
   if (kind === "people") {
     const person = people.find((item) => item.slug === slug);
     return person ? t(person.name, locale) : slug;
+  }
+  if (kind === "products") {
+    return products.find((item) => item.slug === slug)?.name ?? slug;
   }
   if (kind === "sectors") {
     const sector = sectors.find((item) => item.slug === slug);
@@ -388,17 +412,23 @@ export function linkCatalogCopy(
   companies: Company[],
   people: Person[],
   exclude: AutolinkExclude = {},
+  products: AutolinkProduct[] = [],
 ): string {
-  return createCatalogLinker(companies, people, exclude).text(text, locale);
+  return createCatalogLinker(companies, people, exclude, products).text(text, locale);
 }
 
 /** Reuse one locale dictionary across all fields of an entity. No global cache. */
-export function createCatalogLinker(companies: Company[], people: Person[], exclude: AutolinkExclude = {}) {
+export function createCatalogLinker(
+  companies: Company[],
+  people: Person[],
+  exclude: AutolinkExclude = {},
+  products: AutolinkProduct[] = [],
+) {
   const dictionaries: Partial<Record<Locale, Term[]>> = {};
   function text(value: string, locale: Locale): string {
     if (!value) return value;
-    const terms = dictionaries[locale] ??= termsForLocale(locale, companies, people, exclude);
-    const withUrls = convertCatalogUrls(value, locale, companies, people).replace(PAGE_PREFIX, "$1");
+    const terms = dictionaries[locale] ??= termsForLocale(locale, companies, people, exclude, products);
+    const withUrls = convertCatalogUrls(value, locale, companies, people, products).replace(PAGE_PREFIX, "$1");
     return linkTerms(withUrls, terms);
   }
   return {

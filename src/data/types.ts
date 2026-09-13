@@ -34,6 +34,25 @@ export interface Product {
   description: Localized;
 }
 
+/** First-class catalog product, derived from a recorded company product line. */
+export interface CatalogProduct {
+  id: string;
+  slug: string;
+  name: Localized;
+  aliases: string[];
+  definition: Localized;
+  lead: Localized;
+  companySlug: string;
+  sectors: string[];
+  regions: string[];
+  sections: CompanySection[];
+  faq?: EntityFaq[];
+  claims?: EntityClaim[];
+  sources: Source[];
+  lastReviewed: string;
+  confidence: Confidence;
+}
+
 export interface FounderRef {
   personSlug: string;
   role: Localized;

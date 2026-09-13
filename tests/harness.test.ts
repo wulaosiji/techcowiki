@@ -25,6 +25,10 @@ describe("development harness contracts", () => {
     expect(home).not.toContain("${SITE_ORIGIN}/llms.txt");
     expect(company).toContain("markdownPath");
     expect(company).toContain("`/api/v1/companies/${company.slug}.json`");
+    expect(home).toContain('href="/api/v1/products.json"');
+    expect(home).toContain('href="/products.md"');
+    expect(read("src/views/ProductPage.astro")).toContain("markdownPath");
+    expect(read("src/views/ProductPage.astro")).toContain("`/api/v1/products/${product.slug}.json`");
     expect(person).toContain("markdownPath");
     expect(layout).toContain('href="/llms.txt"');
     expect(nav).toContain('href: "/llms.txt"');
@@ -61,7 +65,7 @@ describe("development harness contracts", () => {
 
   test("OpenAPI is versioned under /api/v1", () => {
     const openapi = read("src/pages/api/v1/openapi.json.ts");
-    expect(openapi).toContain("1.4.0");
+    expect(openapi).toContain("1.5.0");
     expect(read("src/views/HomePage.astro")).toContain("/api/v1/openapi.json");
   });
 });

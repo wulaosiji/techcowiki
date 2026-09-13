@@ -3,7 +3,7 @@ import { compactSearchText } from "../lib/search";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import EntityCard from "../components/EntityCard.astro";
-import { allCompanies, allPeople, companyHaystack, personHaystack, personRegions, personSectors } from "../data/catalog";
+import { allCompanies, allPeople, allProducts, companyHaystack, personHaystack, personRegions, personSectors, productHaystack } from "../data/catalog";
 import { searchGraph } from "../lib/schema";
 import { regions, sectors, ui } from "../data/site";
 import type { Locale } from "../data/types";
@@ -17,6 +17,7 @@ interface Props {
 const { locale } = Astro.props;
 const companies = allCompanies();
 const people = allPeople();
+const products = allProducts();
 ---
 
 <BaseLayout
@@ -85,6 +86,22 @@ const people = allPeople();
           data-region={personRegions(person).join(" ")}
         >
           <EntityCard locale={locale} person={person} />
+        </div>
+      ))}
+        </div>
+      </section>
+    <section class="result-group" data-results>
+    <h2>{t(ui.navProducts, locale)}</h2>
+    <div class="grid" id="product-grid">
+      {products.map((product) => (
+        <div
+          class="entity"
+          data-kind="product"
+          data-haystack={compactSearchText(productHaystack(product))}
+          data-sector={product.sectors.join(" ")}
+          data-region={product.regions.join(" ")}
+        >
+          <EntityCard locale={locale} product={product} />
         </div>
       ))}
     </div>

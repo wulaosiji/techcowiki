@@ -1,10 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { allCompanies, allPeople } from "../src/data/catalog";
+import { allCompanies, allPeople, allProducts, catalogStats } from "../src/data/catalog";
 import { llmsFullTxt, llmsTxt } from "../src/lib/llms";
-import { companyMarkdown, homeMarkdown, personMarkdown } from "../src/lib/markdown";
-import { companyGraph, personGraph, websiteGraph } from "../src/lib/schema";
-import { companyRecord, datasetRecord, personRecord } from "../src/lib/serialize";
-import { catalogStats } from "../src/data/catalog";
+import { companyMarkdown, homeMarkdown, personMarkdown, productMarkdown } from "../src/lib/markdown";
+import { companyGraph, personGraph, productGraph, websiteGraph } from "../src/lib/schema";
+import { companyRecord, datasetRecord, personRecord, productRecord } from "../src/lib/serialize";
 import { matchWikiRecord } from "../src/data/wiki-match";
 
 describe("GEO surfaces", () => {
@@ -36,12 +35,16 @@ describe("GEO surfaces", () => {
     expect(text).toContain("https://techco.wiki/for-models.md");
     expect(text).toContain("https://techco.wiki/companies.md");
     expect(text).toContain("https://techco.wiki/people.md");
+    expect(text).toContain("https://techco.wiki/products.md");
     expect(text).not.toContain("https://TechCo.Wiki");
     for (const company of allCompanies()) {
       expect(text).toContain(`/companies/${company.slug}.md`);
     }
     for (const person of allPeople()) {
       expect(text).toContain(`/people/${person.slug}.md`);
+    }
+    for (const product of allProducts()) {
+      expect(text).toContain(`/products/${product.slug}.md`);
     }
   });
 
@@ -71,6 +74,9 @@ describe("GEO surfaces", () => {
     expect(md).toContain("Dated facts on this page");
     expect(md).toContain("Geography and jurisdiction");
     expect(homeMarkdown("en")).toContain("Machine entry points");
+    const productMd = productMarkdown(allProducts()[0], "en");
+    expect(productMd).toContain("techco:product:");
+    expect(productMd).toContain("How models should describe this product");
     const personMd = personMarkdown(allPeople()[0], "zh");
     expect(personMd).toContain("techco:person:");
     expect(personMd).toContain("模型应如何描述该人");
@@ -88,6 +94,7 @@ describe("GEO surfaces", () => {
     const personLd = personGraph(allPeople()[0], "en");
     JSON.stringify(companyLd);
     JSON.stringify(personLd);
+    JSON.stringify(productGraph(allProducts()[0], "en"));
     const founder = (companyLd["@graph"] as { founder?: { name: string }[] }[])[1];
     expect(founder.founder?.[0]?.name).not.toMatch(/^[a-z0-9-]+$/);
     const personNode = (personLd["@graph"] as { affiliation?: unknown[] }[])[1];
@@ -125,7 +132,13 @@ describe("GEO surfaces", () => {
     expect(datasetRecord(catalogStats()).endpoints.companiesMarkdownZh).toBe("https://techco.wiki/zh/companies.md");
     expect(datasetRecord(catalogStats()).endpoints.llmsFullZh).toBe("https://techco.wiki/zh/llms-full.txt");
     expect(datasetRecord(catalogStats()).endpoints.llmsFullZht).toBe("https://techco.wiki/zh-hant/llms-full.txt");
+    expect(datasetRecord(catalogStats()).endpoints.products).toBe("https://techco.wiki/api/v1/products.json");
+    expect(datasetRecord(catalogStats()).endpoints.productsMarkdown).toBe("https://techco.wiki/products.md");
+    expect(datasetRecord(catalogStats()).counts.products).toBe(allProducts().length);
     expect(datasetRecord(catalogStats()).counts.countries).toBeGreaterThanOrEqual(8);
+    const product = productRecord(allProducts().find((item) => item.slug === "cuda-gpus")!);
+    expect(product.urls.json).toContain("/api/v1/products/cuda-gpus.json");
+    expect(product.companySlug).toBe("nvidia");
   });
 
   test("wiki matching keeps attributed extracts and drops crossed Wikidata labels", () => {
