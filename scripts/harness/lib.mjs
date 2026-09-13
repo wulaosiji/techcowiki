@@ -39,6 +39,8 @@ export const contracts = {
     check("home machine graph.json", htmlHas(html, "graph.json"));
     check("home machine products.json", htmlHas(html, "/api/v1/products.json"));
     check("home machine /products.md", htmlHas(html, "/products.md"));
+    check("home has GA4 measurement id", htmlHas(html, "G-8RYHT0WLHE"));
+    check("home has analytics config", htmlHas(html, "techco-analytics-config"));
     check("home clickable llms is same-origin", htmlHas(html, '<a href="/llms.txt">') || htmlHas(html, '<a class="btn" href="/llms.txt">'));
     check(
       "home does not click-out llms to SITE_ORIGIN",

@@ -108,6 +108,7 @@ const products = allProducts();
     </section>
   </div>
   <script>
+    import { SEARCH_RESULTS_EVENT, type SearchResultsDetail } from "../lib/analytics";
     import { matchesSearch } from "../lib/search";
 
     const params = new URLSearchParams(window.location.search);
@@ -127,7 +128,8 @@ const products = allProducts();
         regions: (node.dataset.region ?? "").split(" "),
       }, filters);
     }
-    const count = entities.filter((node) => !node.hidden).length;
+    const visible = entities.filter((node) => !node.hidden);
+    const count = visible.length;
     document.querySelector<HTMLElement>("#empty")!.hidden = count > 0;
     const status = document.querySelector<HTMLElement>("#result-count")!;
     const locale = status.dataset.locale ?? "en";
@@ -140,5 +142,16 @@ const products = allProducts();
     for (const group of document.querySelectorAll<HTMLElement>("[data-results]")) {
       group.hidden = ![...group.querySelectorAll<HTMLElement>(".entity")].some((node) => !node.hidden);
     }
+    const detail: SearchResultsDetail = {
+      search_term: qInput.value,
+      sector: sectorInput.value,
+      region: regionInput.value,
+      results_count: count,
+      company_count: visible.filter((node) => node.dataset.kind === "company").length,
+      person_count: visible.filter((node) => node.dataset.kind === "person").length,
+      product_count: visible.filter((node) => node.dataset.kind === "product").length,
+    };
+    window.__TECHCO_SEARCH_RESULTS = detail;
+    window.dispatchEvent(new CustomEvent(SEARCH_RESULTS_EVENT, { detail }));
   </script>
 </BaseLayout>
