@@ -78,6 +78,8 @@ See [docs/review-2026-09-13.md](./docs/review-2026-09-13.md) for the earlier rev
 
 Current development preview: <https://techcowiki.pages.dev>
 
+That host and `*.pages.dev` preview aliases send `X-Robots-Tag: noindex, nofollow` and a `Disallow: /` robots.txt so crawlers do not treat the demo as a duplicate of `techco.wiki`. The gate is Host-header only in `public/_worker.js`. Shared HTML stays `index, follow`. There is no demo password.
+
 When Wrangler is logged in locally:
 
 ```bash

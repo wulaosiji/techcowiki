@@ -57,7 +57,7 @@ Done means the relevant gates are green. A screenshot alone is not success.
 | `src/lib/i18n.ts` / `BaseLayout.astro` | `tests/i18n.test.ts` + e2e search language switch | `/search?q=TSM` → after Simplified Chinese the URL still has `q=TSM` |
 | Company / person / product data or `normalize.ts` | `tests/catalog.test.ts` `tests/geo.test.ts` `tests/products.test.ts` | That entity’s en / zh / zh-hant pages; search haystack (ticker / alias / HQ) |
 | Toolbar, homepage machine box, footer | `tests/harness.test.ts` + `npm run harness` | Preview clicks on Markdown / llms.txt stay on the current host |
-| 404 / `_worker.js` / `_redirects` | `tests/redirects.test.ts` + harness | Local `/zh/404` and `/zh-hant/404`; live `/zh/this-page-does-not-exist` and `/zh-hant/this-page-does-not-exist` titles are `未找到` |
+| 404 / `_worker.js` / `_redirects` | `tests/redirects.test.ts` `tests/worker.test.ts` + harness | Local `/zh/404` and `/zh-hant/404`; live `/zh/this-page-does-not-exist` and `/zh-hant/this-page-does-not-exist` titles are `未找到`. `*.pages.dev` responses carry `X-Robots-Tag: noindex, nofollow`; `techco.wiki` must not. |
 | Machine surface (llms / sitemap / OpenAPI / graph) | `tests/i18n.test.ts` `tests/geo.test.ts` | OpenAPI path is **`/api/v1/openapi.json`**, not root `/openapi.json` |
 
 ## Information architecture (do not invent URLs)
@@ -82,6 +82,7 @@ Done means the relevant gates are green. A screenshot alone is not success.
 ## Deploy
 
 Pages project: `techcowiki`. Demo: https://techcowiki.pages.dev
+The Pages `_worker.js` sends `X-Robots-Tag: noindex, nofollow` and a `Disallow: /` `robots.txt` on `*.pages.dev` hosts only. Do not add a global noindex to shared HTML — production `techco.wiki` stays indexable. There is no demo password.
 When Wrangler is logged in locally: `npm run deploy`.
 
 When it is not, use Direct Upload (do not put the JWT in the repo or in a user-visible reply):
@@ -121,6 +122,7 @@ Unless the user names them: custom domain, search-engine submission, UGC, catalo
 - `npm run e2e:pages` proves the local Pages runtime. It is not proof of a live deploy. Hosted checks must not treat a 200 error page as a passing 404.
 - Headquarters is not founding place. A historical company association is not current employment. Machine fields and human prose must keep the same evidence scope.
 - Search and autolink optimizations must not rewrite entry facts. JSON plaintext must keep per-field citation IDs.
+- `*.pages.dev` noindex is host-gated in `_worker.js` (`X-Robots-Tag` + `Disallow: /` robots.txt). Shared HTML and `techco.wiki` stay indexable. No demo password.
 
 ## Language policy
 

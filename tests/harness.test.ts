@@ -52,6 +52,22 @@ describe("development harness contracts", () => {
     expect(redirects).not.toMatch(/\/zh\/\* \/zh\/404 404/);
   });
 
+  test("pages.dev noindex is host-gated in the worker, not in shared HTML", () => {
+    const worker = read("public/_worker.js");
+    const layout = read("src/layouts/BaseLayout.astro");
+    const robots = read("src/pages/robots.txt.ts");
+    const headers = read("public/_headers");
+    expect(worker).toContain(".pages.dev");
+    expect(worker).toContain("noindex, nofollow");
+    expect(worker).toContain("Disallow: /");
+    expect(worker).not.toMatch(/WWW-Authenticate|Basic realm|123456/);
+    expect(layout).toContain('robots ?? "index, follow, max-snippet:-1, max-image-preview:large"');
+    expect(robots).toContain("Allow: /");
+    expect(robots).not.toContain("Disallow: /");
+    expect(headers).not.toMatch(/x-robots-tag/i);
+  });
+
+
   test("project docs default to English", () => {
     const agents = read("AGENTS.md");
     const review = read("docs/review-2026-09-13.md");

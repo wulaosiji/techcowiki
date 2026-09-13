@@ -26,6 +26,9 @@ mustExist(file("zh-hant/products.md"));
 const worker = read(file("_worker.js"));
 check("worker serves zh 404 file", worker.includes("/zh/404/index.html"));
 check("worker returns HTTP 404", worker.includes("status: 404") || worker.includes("status:404"));
+check("worker gates pages.dev noindex", worker.includes(".pages.dev") && worker.includes("noindex, nofollow"));
+check("worker has no demo password", !/WWW-Authenticate|Basic realm|123456/.test(worker));
+
 
 const openapi = JSON.parse(read(file("api/v1/openapi.json")));
 check("openapi path is versioned", openapi.info?.version?.startsWith("1."));
