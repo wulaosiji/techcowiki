@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { SITE_NAME, SITE_ORIGIN, tagline, ui } from "../data/site";
+import { REPO_URL, SITE_NAME, SITE_ORIGIN, tagline, ui } from "../data/site";
 import {
   htmlLang,
   localeMeta,
@@ -160,7 +160,7 @@ const analytics = analyticsPageConfig(locale, path);
           <a href={localePath(locale, "/about")}>{t(ui.navAbout, locale)}</a>
           <a href="/llms.txt">llms.txt</a>
           <a href="/api/v1/openapi.json">API</a>
-          <a href="https://github.com/wulaosiji/techcowiki">GitHub</a>
+          <a href={REPO_URL}>GitHub</a>
         </nav>
         <div>CC BY-SA 4.0 · {pick(locale, "Code MIT", "代码 MIT")} · {SITE_ORIGIN}</div>
       </div>
