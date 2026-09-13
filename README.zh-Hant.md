@@ -4,7 +4,7 @@
 
 全球華人創辦科技公司的開放百科。**GEO（生成式引擎優化）是第一優先級**：先寫成生成式引擎願意引用的權威記錄，再兼顧人類瀏覽。
 
-英文是規範文本。簡體中文（`/zh`）與繁體中文（`/zh-hant`）是完整平行版本。站點域名：<https://techco.wiki>
+英文是規範文本。簡體中文（`/zh`）與繁體中文（`/zh-hant`）是完整平行版本。站點域名：<https://techco.wiki>。原始碼倉庫：<https://github.com/aaron-he-zhu/techcowiki>
 
 倉庫預設英文。只有 README 與公開網站保持多語言（en、zh-CN、zh-Hant）。代理、Harness 與 CI 文件使用英文。
 
@@ -68,7 +68,7 @@ npm run e2e:pages                 # 本地 Pages runtime：瀏覽器 + 真實中
 API 文件版本 **1.5.0** 繼續使用 `/api/v1/` 路徑：
 
 - 本地化字串與 `citations` / `sourceIds` 含 `en`、`zh`（簡體）和 `zht`（繁體）；ID 對應實體的 `sources` 陣列。
-- 圖譜中的 `works-at` 更正為 `associated-with`，並提供 `{en, zh, zht}` 的 `role`。既有呼叫者須更新對該邊類型的判斷；歷史創始、任職關聯不證明當前僱傭關係。
+- 圖譜中的 `works-at` 更正為 `associated-with`，並提供 `{en, zh, zht}` 的 `role`。既有呼叫者須更新對該邊類型的判斷；歷史創始、任職關聯不證明當前雇傭關係。
 - 一等產品記錄見 `/api/v1/products.json` 與 `/api/v1/products/{slug}.json`。圖譜 `offers` 邊連接公司與已記錄產品線。產品頁不編造融資、估值、SKU 價格或證券代碼。
 - JSON-LD 使用總部 `location`，不從總部推斷 `foundingLocation`；人物使用帶角色的 `affiliation`。
 
