@@ -137,7 +137,7 @@ export const regions: Region[] = [
     slug: "greater-china",
     name: { en: "Greater China", zh: "大中华" },
     definition: {
-      en: "Companies headquartered in mainland China, Hong Kong, Macau, or Taiwan.",
+      en: "Companies headquartered in the Chinese mainland, Hong Kong, Macau, or Taiwan.",
       zh: "总部位于中国大陆、香港、澳门或台湾的公司。",
     },
     countryCodes: ["CN", "HK", "MO", "TW"],

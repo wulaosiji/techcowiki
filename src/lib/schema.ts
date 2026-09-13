@@ -151,9 +151,15 @@ export function companyGraph(company: Company, locale: Locale) {
           description: product.description[locale],
         })),
         tickerSymbol: company.stock
-          ? company.stock.adr
-            ? `${company.stock.exchange}:${company.stock.ticker} / ${company.stock.adr.exchange}:${company.stock.adr.ticker}`
-            : `${company.stock.exchange}:${company.stock.ticker}`
+          ? [
+              `${company.stock.exchange}:${company.stock.ticker}`,
+              company.stock.adr
+                ? `${company.stock.adr.exchange}:${company.stock.adr.ticker}`
+                : undefined,
+              ...(company.stock.secondary ?? []).map((item) => `${item.exchange}:${item.ticker}`),
+            ]
+              .filter(Boolean)
+              .join(" / ")
           : undefined,
         additionalProperty: (company.claims ?? []).map((claim) => ({
           "@type": "PropertyValue",
@@ -323,6 +329,53 @@ function webPageNode(input: {
       ],
     },
     copyrightNotice: CONTENT_LICENSE,
+  };
+}
+
+export function editorialGraph(locale: Locale, path: string, name: string, description: string) {
+  const url = pageUrl(locale, path);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationNode(),
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name,
+        description,
+        inLanguage: locale === "zh" ? "zh-Hans" : "en",
+        isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+        publisher: { "@id": `${SITE_ORIGIN}/#org` },
+        license: CONTENT_LICENSE_URL,
+        isAccessibleForFree: true,
+      },
+      breadcrumb([
+        { name: SITE_NAME, url: pageUrl(locale, "/") },
+        { name, url },
+      ]),
+    ],
+  };
+}
+
+export function searchGraph(locale: Locale) {
+  const url = pageUrl(locale, "/search");
+  return {
+    "@context": "https://schema.org",
+    "@type": "SearchResultsPage",
+    url,
+    name: locale === "zh" ? "搜索" : "Search",
+    inLanguage: locale === "zh" ? "zh-Hans" : "en",
+    isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+    publisher: { "@id": `${SITE_ORIGIN}/#org` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${url}?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 }
 

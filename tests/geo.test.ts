@@ -86,6 +86,7 @@ describe("GEO surfaces", () => {
   test("JSON records expose both locales and machine URLs", () => {
     const record = companyRecord(allCompanies().find((company) => company.slug === "bytedance")!);
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
+    expect(record.urls.markdownZh).toContain("/zh/companies/bytedance.md");
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
     expect(record.sections.length).toBeGreaterThanOrEqual(12);
@@ -98,6 +99,8 @@ describe("GEO surfaces", () => {
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
     expect(datasetRecord(catalogStats()).endpoints.companiesMarkdown).toBe("https://techco.wiki/companies.md");
+    expect(datasetRecord(catalogStats()).endpoints.companiesMarkdownZh).toBe("https://techco.wiki/zh/companies.md");
+    expect(datasetRecord(catalogStats()).endpoints.llmsFullZh).toBe("https://techco.wiki/zh/llms-full.txt");
     expect(datasetRecord(catalogStats()).counts.countries).toBeGreaterThanOrEqual(8);
   });
 

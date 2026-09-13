@@ -90,6 +90,7 @@ export interface Company {
     exchange: string;
     ticker: string;
     adr?: { exchange: string; ticker: string };
+    secondary?: { exchange: string; ticker: string }[];
   };
   website: string;
   sameAs: SameAs;

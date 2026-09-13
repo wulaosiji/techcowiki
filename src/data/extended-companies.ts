@@ -1450,7 +1450,7 @@ export const extendedCompanies: Company[] = [
     legalName: "Futu Holdings Limited",
     aliases: ["富途控股", "Moomoo", "Futubull"],
     definition: { en: "Futu is a Hong Kong-headquartered technology company that provides online brokerage, margin, and wealth-management services.", zh: "富途是一家总部位于香港的科技公司，提供在线券商、融资融券与财富管理服务。" },
-    lead: { en: "Futu is a Hong Kong technology company founded in 2012 and associated with founder and CEO Leaf Li.[s1] It provides online brokerage, margin, and wealth-management services.[s1] Leaf Li, a former Tencent employee, founded the Hong Kong brokerage; ADRs have traded on Nasdaq since 2019.", zh: "富途是一家香港科技公司，创立于 2012 年，与创始人兼首席执行官李叶相关。[s1] 公司提供在线券商、融资融券与财富管理服务。[s1] 前腾讯员工李华创办了这家香港券商；美国存托凭证自 2019 年起在纳斯达克交易。" },
+    lead: { en: "Futu is a Hong Kong technology company founded in 2012 and associated with founder and CEO Leaf Li.[s1] It provides online brokerage, margin, and wealth-management services.[s1] Leaf Li (also reported as Li Hua), a former Tencent employee, founded the Hong Kong brokerage; ADRs have traded on Nasdaq as FUTU since 2019.", zh: "富途是一家香港科技公司，创立于 2012 年，与创始人兼首席执行官李叶相关。[s1] 公司提供在线券商、融资融券与财富管理服务。[s1] 前腾讯员工李叶（亦常被报道为李华）创办了这家香港券商；美国存托凭证自 2019 年起以 FUTU 在纳斯达克交易。" },
     founded: "2012",
     foundedPrecision: "year",
     city: { en: "Hong Kong", zh: "香港" },

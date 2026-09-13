@@ -49,7 +49,12 @@ export interface CompactCompany {
   products: { name: string; en: string; zh: string }[];
   founders: { slug: string; en: string; zh: string }[];
   employees?: { value: number; asOf: string };
-  stock?: { exchange: string; ticker: string };
+  stock?: {
+    exchange: string;
+    ticker: string;
+    adr?: { exchange: string; ticker: string };
+    secondary?: { exchange: string; ticker: string }[];
+  };
   website: string;
   wiki: string;
   wikiZh?: string;

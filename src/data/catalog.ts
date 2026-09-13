@@ -1,6 +1,7 @@
 import { companies as seedCompanies } from "./companies";
 import { enrichCompany, enrichPerson } from "./enrich";
 import { extendedCompanies } from "./extended-companies";
+import { normalizeCompany } from "./normalize";
 import { people as seedPeople } from "./people";
 import { extendedPeople } from "./extended-people";
 import { pickPeers } from "./peers";
@@ -13,10 +14,11 @@ import {
   type CityHub,
   type CountryHub,
 } from "./places";
+import { listingTickers } from "./copy";
 import { regions, sectors } from "./site";
 import type { Company, Person, Region, Sector } from "./types";
 
-const rawCompanies: Company[] = [...seedCompanies, ...extendedCompanies];
+const rawCompanies: Company[] = [...seedCompanies, ...extendedCompanies].map(normalizeCompany);
 const rawPeople: Person[] = [...seedPeople, ...extendedPeople];
 
 export const companies: Company[] = rawCompanies.map((company) =>
@@ -92,12 +94,36 @@ export function companyHaystack(company: Company): string {
     company.headquarters.countryCode,
     company.stock ? `${company.stock.exchange} ${company.stock.ticker}` : "",
     company.stock?.adr ? `${company.stock.adr.exchange} ${company.stock.adr.ticker}` : "",
+    ...(company.stock?.secondary ?? []).map((item) => `${item.exchange} ${item.ticker}`),
+    ...listingTickers(company),
     ...company.products.map((product) => `${product.name} ${product.description.en} ${product.description.zh}`),
     ...company.founders.map((founder) => founder.personSlug),
+    ...(company.faq ?? []).flatMap((item) => [
+      item.question.en,
+      item.question.zh,
+      item.answer.en,
+      item.answer.zh,
+    ]),
+    ...(company.claims ?? []).flatMap((item) => [item.label.en, item.label.zh, item.value.en, item.value.zh]),
   ].join(" ");
 }
 
+export function personCompanyRecords(person: Person): Company[] {
+  return person.companies
+    .map((item) => companies.find((company) => company.slug === item.companySlug))
+    .filter((company): company is Company => Boolean(company));
+}
+
+export function personSectors(person: Person): string[] {
+  return [...new Set(personCompanyRecords(person).flatMap((company) => company.sectors))];
+}
+
+export function personRegions(person: Person): string[] {
+  return [...new Set(personCompanyRecords(person).flatMap((company) => company.regions))];
+}
+
 export function personHaystack(person: Person): string {
+  const linked = personCompanyRecords(person);
   return [
     person.slug,
     person.id,
@@ -109,6 +135,20 @@ export function personHaystack(person: Person): string {
     person.lead.en,
     person.lead.zh,
     ...person.companies.map((item) => item.companySlug),
+    ...linked.flatMap((company) => [
+      company.name.en,
+      company.name.zh,
+      company.headquarters.city.en,
+      company.headquarters.country.en,
+      ...company.sectors,
+      ...company.regions,
+    ]),
+    ...(person.faq ?? []).flatMap((item) => [
+      item.question.en,
+      item.question.zh,
+      item.answer.en,
+      item.answer.zh,
+    ]),
   ].join(" ");
 }
 

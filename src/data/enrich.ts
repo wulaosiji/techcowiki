@@ -346,7 +346,7 @@ function namedFoundersSection(
         ? ` Other catalog companies linked to this person: ${joinList(otherCompanies, "en")}.`
         : " This catalog build links this person only to this company page.";
     const aliases = person.aliases.length ? ` Aliases: ${joinList(person.aliases, "en")}.` : "";
-    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${aliases}${other} Person page: ${SITE_ORIGIN}/people/${person.slug}.`;
+    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${aliases}${other} [${person.name.en}](/people/${person.slug}).`;
   });
   const blocksZh = company.founders.map((founder) => {
     const person = personBySlug(people, founder.personSlug);
@@ -371,7 +371,7 @@ function namedFoundersSection(
         ? `本目录中与该人关联的其他公司：${joinList(otherCompanies, "zh")}。`
         : "本构建仅将该人关联到本公司条目。";
     const aliases = person.aliases.length ? `别名：${joinList(person.aliases, "zh")}。` : "";
-    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${aliases}${other} 人物页：${SITE_ORIGIN}/people/${person.slug}。`;
+    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${aliases}${other} [${person.name.zh}](/zh/people/${person.slug})。`;
   });
   return {
     id: "named-founders",

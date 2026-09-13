@@ -12,10 +12,11 @@ export function localePath(locale: Locale, path = "/"): string {
   return `/zh${clean}`.replace(/\/$/, "");
 }
 
-export function switchLocale(locale: Locale, path: string): string {
+export function switchLocale(locale: Locale, path: string, search = ""): string {
   const next = locale === "en" ? "zh" : "en";
   const stripped = path.replace(/^\/zh(?=\/|$)/, "") || "/";
-  return localePath(next, stripped);
+  const query = !search || search === "?" ? "" : search.startsWith("?") ? search : `?${search}`;
+  return `${localePath(next, stripped)}${query}`;
 }
 
 export function pageUrl(locale: Locale, path = "/"): string {

@@ -1,4 +1,4 @@
-import { getCompany, getPerson } from "../data/catalog";
+import { getCompany, getPerson, relatedPeople, seeAlsoCompanies } from "../data/catalog";
 import { regionName, sectorName, tickerText } from "../data/copy";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
 import type { Company, EntityClaim, EntityFaq, Locale, Person } from "../data/types";
@@ -99,6 +99,7 @@ export function companyMarkdown(company: Company, locale: Locale): string {
       const person = getPerson(founder.personSlug);
       return `- ${person ? personMdLink(person, locale) : founder.personSlug}`;
     }),
+    ...seeAlsoCompanies(company, 6).map((peer) => `- ${companyMdLink(peer, locale)}`),
     "",
     `How to cite: ${SITE_NAME}, "${company.name.en}," ${url}, last reviewed ${company.lastReviewed}, ${company.id}.`,
     "",
@@ -161,6 +162,7 @@ export function personMarkdown(person: Person, locale: Locale): string {
       const company = getCompany(item.companySlug);
       return `- ${company ? companyMdLink(company, locale) : item.companySlug}`;
     }),
+    ...relatedPeople(person, 6).map((other) => `- ${personMdLink(other, locale)}`),
     ...[
       ...new Map(
         person.companies
@@ -202,11 +204,13 @@ export function homeMarkdown(locale: Locale): string {
     "",
     `- [llms.txt](${SITE_ORIGIN}/llms.txt)`,
     `- [llms-full.txt](${SITE_ORIGIN}/llms-full.txt)`,
+    `- [Chinese llms-full.txt](${SITE_ORIGIN}/zh/llms-full.txt)`,
     `- [OpenAPI](${SITE_ORIGIN}/api/v1/openapi.json)`,
     `- [Dataset](${SITE_ORIGIN}/api/v1/dataset.json)`,
     `- [Companies JSON](${SITE_ORIGIN}/api/v1/companies.json)`,
     `- [People JSON](${SITE_ORIGIN}/api/v1/people.json)`,
     `- [Entity graph](${SITE_ORIGIN}/api/v1/graph.json)`,
+    `- [RSS feed](${SITE_ORIGIN}/feed.xml)`,
     "",
     "## Editorial",
     "",
@@ -223,6 +227,24 @@ export function homeMarkdown(locale: Locale): string {
     `- [Regions](${pageUrl(locale, "/regions")})`,
     `- [Countries](${pageUrl(locale, "/countries")})`,
     `- [Cities](${pageUrl(locale, "/cities")})`,
+    "",
+  ].join("\n");
+}
+
+export function searchMarkdown(locale: Locale): string {
+  return [
+    locale === "zh" ? "# 搜索" : "# Search",
+    "",
+    locale === "zh"
+      ? "TechCo.Wiki 的搜索页是静态 HTML：完整目录写在页面里，查询参数只在浏览器里筛选卡片。无 JavaScript 时仍能阅读全部公司与人物。"
+      : "The TechCo.Wiki search page is static HTML. The full catalog is in the page; query parameters only hide cards in the browser. Without JavaScript, every company and person remains readable.",
+    "",
+    locale === "zh" ? "## 机器入口" : "## Machine entry points",
+    "",
+    `- [${locale === "zh" ? "全部公司" : "All companies"}](${pageUrl(locale, "/companies")}.md)`,
+    `- [${locale === "zh" ? "全部人物" : "All people"}](${pageUrl(locale, "/people")}.md)`,
+    `- [Companies JSON](${SITE_ORIGIN}/api/v1/companies.json)`,
+    `- [People JSON](${SITE_ORIGIN}/api/v1/people.json)`,
     "",
   ].join("\n");
 }

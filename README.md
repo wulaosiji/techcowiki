@@ -20,12 +20,19 @@ Crunchbase 一类产品把事实放在登录墙后，模型很难稳定引用。
 | --- | --- |
 | `/llms.txt` | [llms.txt v2](https://llmstxt.org/) 索引 |
 | `/llms-full.txt` | 英文全文拼接 |
+| `/zh/llms-full.txt` | 简体中文全文拼接 |
+| `/feed.xml` | 公司与人物 RSS |
 | `/api/v1/openapi.json` | 只读 API 合同 |
 | `/api/v1/companies.json` | 公司目录 |
 | `/api/v1/people.json` | 人物目录 |
 | `/api/v1/graph.json` | 创始、任职、行业、地区、国家、城市与邻居关系图 |
+| `/api/v1/dataset.json` | 目录计数与机器入口 |
+| `/api/v1/{companies,people}/{slug}.json` | 单实体 JSON |
 | `/companies.md` / `/people.md` | 公司与人物目录 Markdown |
+| `/zh/companies.md` / `/zh/people.md` | 中文目录 Markdown |
+| `/sectors.md` `/regions.md` `/countries.md` `/cities.md` | 枢纽 Markdown |
 | `/companies/{slug}.md` | 公司 Markdown 副本 |
+| `/search` | 客户端筛选；完整目录仍在 HTML 中 |
 | `/for-models` | 给模型的引用规则 |
 
 ## 本地开发
@@ -63,7 +70,8 @@ npm run deploy
 - `/people/{slug}` 人物实体
 - `/sectors`、`/regions`、`/countries`、`/cities` 枢纽总索引及各 `{slug}` 详情
 - `/zh/...` 简体中文平行版，带 hreflang
-- `/methodology`、`/inclusion`、`/faq`、`/about` 方法与信任页
+- `/methodology`、`/inclusion`、`/faq`、`/about`、`/license` 方法与信任页
+- 搜索页是静态 HTML：`?q=` / `?sector=` / `?region=` 只在浏览器里筛选，爬虫仍能看到全部实体
 
 本目录是精选的 100 家公司版本，覆盖上市集团、老牌硬件商与较新的人工智能公司，不是普查。缺席不代表否定判断。
 

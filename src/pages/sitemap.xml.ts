@@ -37,16 +37,19 @@ export const GET: APIRoute = () => {
     ...allCityHubs().map((hub) => `/cities/${hub.slug}`),
   ];
   const htmlPaths = [...staticPaths, ...entityPaths];
-  const markdownPaths = htmlPaths.filter((path) => path !== "/search");
+  const markdownPaths = htmlPaths;
   const machine = [
     `${SITE_ORIGIN}/llms.txt`,
     `${SITE_ORIGIN}/llms-full.txt`,
+    `${SITE_ORIGIN}/zh/llms-full.txt`,
     `${SITE_ORIGIN}/feed.xml`,
     `${SITE_ORIGIN}/api/v1/dataset.json`,
     `${SITE_ORIGIN}/api/v1/openapi.json`,
     `${SITE_ORIGIN}/api/v1/graph.json`,
     `${SITE_ORIGIN}/api/v1/companies.json`,
     `${SITE_ORIGIN}/api/v1/people.json`,
+    ...allCompanies().map((company) => `${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`),
+    ...allPeople().map((person) => `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`),
   ];
   const body = [
     `<?xml version="1.0" encoding="UTF-8"?>`,

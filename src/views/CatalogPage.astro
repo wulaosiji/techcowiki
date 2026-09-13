@@ -16,7 +16,7 @@ import {
   peopleForCompanyList,
 } from "../data/catalog";
 import { citySlug, countrySlug, regionForCountry } from "../data/places";
-import { regions, sectors, ui } from "../data/site";
+import { regions, sectors, SITE_ORIGIN, ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath, pageUrl, t } from "../lib/i18n";
 
@@ -131,12 +131,12 @@ const jsonLd = {
   name: title,
   description,
   url: pageUrl(locale, path),
-  isPartOf: { "@id": "https://techco.wiki/#website" },
-  about: { "@id": "https://techco.wiki/#org" },
+  isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+  about: { "@id": `${SITE_ORIGIN}/#org` },
   mainEntity: {
     "@type": "ItemList",
     numberOfItems: listed.length,
-    itemListElement: listed.slice(0, 40).map((item, index) => ({
+    itemListElement: listed.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: item.name[locale],

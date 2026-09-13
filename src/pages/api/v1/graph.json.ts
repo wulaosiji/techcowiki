@@ -16,37 +16,37 @@ export const GET: APIRoute = () => {
       id: company.id,
       type: "company",
       slug: company.slug,
-      name: company.name.en,
+      name: company.name,
     })),
     ...allPeople().map((person) => ({
       id: person.id,
       type: "person",
       slug: person.slug,
-      name: person.name.en,
+      name: person.name,
     })),
     ...sectors.map((sector) => ({
       id: `techco:sector:${sector.slug}`,
       type: "sector",
       slug: sector.slug,
-      name: sector.name.en,
+      name: sector.name,
     })),
     ...regions.map((region) => ({
       id: `techco:region:${region.slug}`,
       type: "region",
       slug: region.slug,
-      name: region.name.en,
+      name: region.name,
     })),
     ...allCountryHubs().map((hub) => ({
       id: `techco:country:${hub.slug}`,
       type: "country",
       slug: hub.slug,
-      name: hub.name.en,
+      name: hub.name,
     })),
     ...allCityHubs().map((hub) => ({
       id: `techco:city:${hub.slug}`,
       type: "city",
       slug: hub.slug,
-      name: hub.name.en,
+      name: hub.name,
     })),
   ];
   const founded = allCompanies().flatMap((company) =>

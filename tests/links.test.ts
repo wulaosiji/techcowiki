@@ -170,4 +170,32 @@ describe("internal linking", () => {
     expect(getEditorial("inclusion")?.title.en).toBe("Inclusion rules");
     expect(editorialDocs.some((doc) => doc.slug === "inclusion")).toBe(true);
   });
+
+  test("autolink does not rewrite Wikipedia URLs", () => {
+    const linked = linkCatalogCopy(
+      "See https://en.wikipedia.org/wiki/ByteDance for the encyclopedia article.",
+      "en",
+      allCompanies(),
+      allPeople(),
+    );
+    expect(linked).toContain("https://en.wikipedia.org/wiki/ByteDance");
+    expect(linked).not.toContain("wiki/[ByteDance]");
+  });
+
+  test("product brands and secondary listings become company links", () => {
+    const companies = allCompanies();
+    const people = allPeople();
+    expect(linkCatalogCopy("HarmonyOS ships on Huawei phones.", "en", companies, people)).toContain(
+      "[HarmonyOS](/companies/huawei)",
+    );
+    expect(linkCatalogCopy("Snack Video is an overseas brand.", "en", companies, people)).toContain(
+      "[Snack Video](/companies/kuaishou)",
+    );
+    expect(linkCatalogCopy("The Hong Kong line is 9988.", "en", companies, people)).toContain(
+      "[9988](/companies/alibaba)",
+    );
+    expect(linkCatalogCopy("Dianping merged into the group.", "en", companies, people)).toContain(
+      "[Dianping](/companies/meituan)",
+    );
+  });
 });

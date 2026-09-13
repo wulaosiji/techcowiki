@@ -1,5 +1,6 @@
 import { allCityHubs, allCountryHubs, companies, people } from "../data/catalog";
 import { regions, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
+import type { Locale } from "../data/types";
 import { companyMarkdown, homeMarkdown, personMarkdown } from "./markdown";
 
 export function llmsTxt(): string {
@@ -66,6 +67,8 @@ How to use this file: start here, then fetch only the Markdown twins you need. P
 - [All companies](${SITE_ORIGIN}/api/v1/companies.json)
 - [All people](${SITE_ORIGIN}/api/v1/people.json)
 - [Entity graph](${SITE_ORIGIN}/api/v1/graph.json)
+- [RSS feed](${SITE_ORIGIN}/feed.xml)
+- [Chinese full dump](${SITE_ORIGIN}/zh/llms-full.txt)
 
 ## Companies
 
@@ -106,11 +109,11 @@ ${cityLinks}
 `;
 }
 
-export function llmsFullTxt(): string {
+export function llmsFullTxt(locale: Locale = "en"): string {
   const parts = [
-    homeMarkdown("en"),
-    ...companies.map((company) => companyMarkdown(company, "en")),
-    ...people.map((person) => personMarkdown(person, "en")),
+    homeMarkdown(locale),
+    ...companies.map((company) => companyMarkdown(company, locale)),
+    ...people.map((person) => personMarkdown(person, locale)),
   ];
   return parts.join("\n---\n\n");
 }

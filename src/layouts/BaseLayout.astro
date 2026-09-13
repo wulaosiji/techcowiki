@@ -12,9 +12,10 @@ interface Props {
   jsonLd?: unknown;
   markdownHref?: string;
   lastModified?: string;
+  robots?: string;
 }
 
-const { locale, title, description, path, jsonLd, markdownHref, lastModified } = Astro.props;
+const { locale, title, description, path, jsonLd, markdownHref, lastModified, robots } = Astro.props;
 const canonical = pageUrl(locale, path);
 const alternate = pageUrl(otherLocale(locale), path);
 const markdown =
@@ -44,7 +45,7 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="robots" content={robots ?? "index, follow, max-snippet:-1, max-image-preview:large"} />
     <meta name="license" content="CC BY-SA 4.0" />
     <meta name="theme-color" content="#f3efe4" />
     <meta name="color-scheme" content="light" />
@@ -94,7 +95,7 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
               {item.label}
             </a>
           ))}
-          <a class="lang-switch" href={switchLocale(locale, path)}>{t(ui.language, locale)}</a>
+          <a class="lang-switch" href={switchLocale(locale, path, Astro.url.search)}>{t(ui.language, locale)}</a>
         </nav>
       </div>
     </header>

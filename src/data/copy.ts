@@ -203,12 +203,26 @@ export function hqBreakdown(
     .sort((a, b) => b.count - a.count || a.countryCode.localeCompare(b.countryCode));
 }
 
+export function listingTickers(company: Company): string[] {
+  if (!company.stock) return [];
+  return [
+    company.stock.ticker,
+    company.stock.adr?.ticker,
+    ...(company.stock.secondary ?? []).map((item) => item.ticker),
+  ].filter((ticker): ticker is string => Boolean(ticker && ticker.length >= 3));
+}
+
 export function tickerText(company: Company, locale: Locale): string {
   if (!company.stock) return locale === "zh" ? "未记录" : "none recorded";
-  const primary = `${company.stock.exchange}:${company.stock.ticker}`;
-  if (!company.stock.adr) return primary;
-  const adr = `${company.stock.adr.exchange}:${company.stock.adr.ticker}`;
-  return locale === "zh" ? `${primary}；美国存托凭证 ${adr}` : `${primary}; ADR ${adr}`;
+  const parts = [`${company.stock.exchange}:${company.stock.ticker}`];
+  if (company.stock.adr) {
+    const adr = `${company.stock.adr.exchange}:${company.stock.adr.ticker}`;
+    parts.push(locale === "zh" ? `美国存托凭证 ${adr}` : `ADR ${adr}`);
+  }
+  for (const item of company.stock.secondary ?? []) {
+    parts.push(`${item.exchange}:${item.ticker}`);
+  }
+  return parts.join(locale === "zh" ? "；" : "; ");
 }
 
 export function hqBreakdownText(list: Company[], locale: Locale): string {

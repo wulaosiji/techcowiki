@@ -10,6 +10,7 @@ import { ui } from "../data/site";
 import { linkCatalogCopy } from "../lib/autolink";
 import { renderCitedHtml } from "../lib/citations";
 import { catalogNav, docNav } from "../lib/nav";
+import { editorialGraph } from "../lib/schema";
 
 interface Props {
   locale: Locale;
@@ -26,6 +27,7 @@ const people = allPeople();
   title={t(doc.title, locale)}
   description={t(doc.description, locale)}
   path={`/${doc.slug}`}
+  jsonLd={editorialGraph(locale, `/${doc.slug}`, t(doc.title, locale), t(doc.description, locale))}
 >
   <div class="wrap">
     <Breadcrumbs

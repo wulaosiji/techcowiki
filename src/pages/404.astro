@@ -8,6 +8,7 @@ import { SITE_ORIGIN } from "../data/site";
   title="Not found"
   description="This TechCo.Wiki page does not exist. / 本页不在 TechCo.Wiki 记录中。"
   path="/404"
+  robots="noindex, follow"
   markdownHref={`${SITE_ORIGIN}/llms.txt`}
 >
   <div class="wrap">
@@ -16,17 +17,23 @@ import { SITE_ORIGIN } from "../data/site";
     <p>This entity or page is not in the TechCo.Wiki record. Absence is not a negative judgment.</p>
     <p>该实体或页面不在 TechCo.Wiki 记录中。缺席不是否定判断。</p>
     <form class="search-form" method="get" action="/search" role="search">
-      <input type="search" name="q" placeholder="Search companies and people" aria-label="Search" />
+      <input type="search" name="q" placeholder="Search companies and people / 搜索公司与人物" aria-label="Search" />
       <button type="submit">Search / 搜索</button>
     </form>
     <p>
+      <a href="/zh/search">中文搜索</a>
+      {" · "}
       <a href="/">Home</a>
       {" · "}
       <a href="/zh">首页</a>
       {" · "}
       <a href="/companies">Companies</a>
       {" · "}
+      <a href="/zh/companies">公司</a>
+      {" · "}
       <a href="/people">People</a>
+      {" · "}
+      <a href="/zh/people">人物</a>
       {" · "}
       <a href="/sectors">Sectors</a>
       {" · "}
@@ -35,8 +42,6 @@ import { SITE_ORIGIN } from "../data/site";
       <a href="/countries">Countries</a>
       {" · "}
       <a href="/cities">Cities</a>
-      {" · "}
-      <a href="/search">Search</a>
       {" · "}
       <a href="/methodology">Methodology</a>
       {" · "}

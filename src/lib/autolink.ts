@@ -118,7 +118,6 @@ function isLinkableProduct(name: string): boolean {
   const trimmed = name.trim();
   if (trimmed.length < 3) return false;
   if (GENERIC_PRODUCT.test(trimmed)) return false;
-  if (trimmed.split(/\s+/).length >= 4) return false;
   return true;
 }
 
@@ -172,6 +171,9 @@ function termsForLocale(
     if (company.stock?.adr?.ticker && company.stock.adr.ticker.length >= 3) {
       addTerm(terms, seen, company.stock.adr.ticker, href, true);
     }
+    for (const listing of company.stock?.secondary ?? []) {
+      if (listing.ticker.length >= 3) addTerm(terms, seen, listing.ticker, href, true);
+    }
   }
   for (const person of people) {
     if (skipPeople.has(person.slug)) continue;
@@ -219,10 +221,16 @@ function termsForLocale(
     addTerm(terms, seen, "Methodology", docHref("methodology", locale));
     addTerm(terms, seen, "For models", docHref("for-models", locale));
     addTerm(terms, seen, "Inclusion rules", docHref("inclusion", locale));
+    addTerm(terms, seen, "About", docHref("about", locale), true);
+    addTerm(terms, seen, "License", docHref("license", locale), true);
+    addTerm(terms, seen, "FAQ", docHref("faq", locale), true);
   } else {
     addTerm(terms, seen, "收录标准", docHref("inclusion", locale));
     addTerm(terms, seen, "给模型", docHref("for-models", locale));
     addTerm(terms, seen, "方法", docHref("methodology", locale));
+    addTerm(terms, seen, "关于", docHref("about", locale));
+    addTerm(terms, seen, "许可", docHref("license", locale));
+    addTerm(terms, seen, "常见问题", docHref("faq", locale));
   }
 
   return terms.sort((a, b) => b.term.length - a.term.length);
@@ -274,6 +282,14 @@ function protect(text: string): { text: string; tokens: string[] } {
       return `\u0000T${tokens.length - 1}\u0000`;
     })
     .replace(/\[[^\]]+\]\([^)]+\)/g, (match) => {
+      tokens.push(match);
+      return `\u0000T${tokens.length - 1}\u0000`;
+    })
+    .replace(/https?:\/\/[^\s)<>\]]+/gi, (match) => {
+      tokens.push(match);
+      return `\u0000T${tokens.length - 1}\u0000`;
+    })
+    .replace(/中国大陆/g, (match) => {
       tokens.push(match);
       return `\u0000T${tokens.length - 1}\u0000`;
     })

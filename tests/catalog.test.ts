@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { allCompanies, allPeople, getCompany, getPerson } from "../src/data/catalog";
+import { allCompanies, allPeople, companyHaystack, getCompany, getPerson } from "../src/data/catalog";
 import { englishBodyLength } from "../src/data/enrich";
 import { usedSourceIds } from "../src/lib/citations";
 
@@ -194,6 +194,28 @@ describe("catalog integrity", () => {
     expect(tsmc?.lead.en).not.toContain("[the](");
     expect(tsmc?.claims?.find((claim) => claim.id === "ticker")?.value.en).toMatch(/ADR NYSE:TSM/);
     expect(tsmc?.aliases).toContain("TSM");
+  });
+
+  test("TSMC geography does not treat China as a headquarters synonym", () => {
+    const geo = getCompany("tsmc")?.sections.find((section) => section.id === "geography")?.body.en ?? "";
+    expect(geo).toContain("macro-region label");
+    expect(geo).not.toMatch(/Greater China \([^)]*\[China\]\(\/countries\/cn\)/);
+    expect(geo).toMatch(/does not move the headquarters to (\[China\]\(\/countries\/cn\)|China)/);
+  });
+
+  test("extended leads lowercase role titles after associated with", () => {
+    for (const company of allCompanies()) {
+      expect(company.lead.en, company.slug).not.toMatch(
+        /associated with (Co-founder|Founder|Founding chairman|Executive chairman)/,
+      );
+    }
+  });
+
+  test("search haystack includes FAQ answers and secondary tickers", () => {
+    expect(companyHaystack(getCompany("nvidia")!).toLowerCase()).toContain("chinese company");
+    expect(companyHaystack(getCompany("alibaba")!)).toContain("9988");
+    expect(getCompany("alibaba")?.stock?.secondary?.some((item) => item.ticker === "9988")).toBe(true);
+    expect(getCompany("pony-ai")?.definition.en).toMatch(/Fremont-headquartered/);
   });
 
   test("NASDAQ listings are normalized to Nasdaq", () => {

@@ -4,7 +4,8 @@ import Breadcrumbs from "../components/Breadcrumbs.astro";
 import CitedBody from "../components/CitedBody.astro";
 import OnThisPage from "../components/OnThisPage.astro";
 import SeeAlso from "../components/SeeAlso.astro";
-import { allPeople, seeAlsoCompanies } from "../data/catalog";
+import { allCompanies, allPeople, seeAlsoCompanies } from "../data/catalog";
+import { linkCatalogCopy } from "../lib/autolink";
 import { citySlug, countrySlug } from "../data/places";
 import { confidenceLabel, regions, sectors, SITE_NAME, SITE_ORIGIN, stageLabel, statusLabel, ui } from "../data/site";
 import type { Company, Locale } from "../data/types";
@@ -140,8 +141,8 @@ const toc = [
         <ul>
           {company.products.map((product) => (
             <li>
-              <strong>{product.name}.</strong>
-              {" "}
+              <strong set:html={renderCitedHtml(linkCatalogCopy(product.name, locale, allCompanies(), people, { companySlugs: [company.slug] }), [])} />
+              {". "}
               {t(product.description, locale)}
             </li>
           ))}

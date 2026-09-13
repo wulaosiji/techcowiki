@@ -1183,8 +1183,8 @@ export const companies: Company[] = [
     legalName: "Pony AI Inc.",
     aliases: ["小马智行", "Pony AI"],
     definition: {
-      en: "Pony.ai is a Sino-American autonomous-driving company that develops robotaxi software and operates public robotaxi services in selected Chinese cities.",
-      zh: "小马智行是一家中美自动驾驶公司，开发 Robotaxi 软件，并在部分中国城市运营公开 Robotaxi 服务。",
+      en: "Pony.ai is a Fremont-headquartered autonomous-driving company that develops robotaxi software and operates public robotaxi services in selected Chinese cities.",
+      zh: "小马智行是一家总部位于弗里蒙特的自动驾驶公司，开发 Robotaxi 软件，并在部分中国城市运营公开 Robotaxi 服务。",
     },
     lead: {
       en: "Pony.ai is an autonomous-vehicle company founded in 2016 by James Peng and Tiancheng Lou, with operations in California and China.[s1] Both founders are Chinese engineers formerly associated with Baidu's autonomous-driving work; that is the inclusion basis.[s1] The company has listed in the United States; confirm the live ticker from the latest exchange notice before stating a symbol.",

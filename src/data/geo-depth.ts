@@ -450,14 +450,22 @@ export function geographySection(
   );
   const regionBitsEn = company.regions
     .map((slug) => {
+      const name = regionName(slug, "en");
+      if (["TW", "HK", "MO"].includes(company.headquarters.countryCode) && slug === "greater-china") {
+        return `${name} (a catalog macro-region label, not a headquarters-country synonym)`;
+      }
       const definition = regionDefinition(slug, "en");
-      return definition ? `${regionName(slug, "en")} (${definition})` : regionName(slug, "en");
+      return definition ? `${name} (${definition})` : name;
     })
     .join("; ");
   const regionBitsZh = company.regions
     .map((slug) => {
+      const name = regionName(slug, "zh");
+      if (["TW", "HK", "MO"].includes(company.headquarters.countryCode) && slug === "greater-china") {
+        return `${name}（目录宏观地区标签，不是总部国家同义词）`;
+      }
       const definition = regionDefinition(slug, "zh");
-      return definition ? `${regionName(slug, "zh")}（${definition}）` : regionName(slug, "zh");
+      return definition ? `${name}（${definition}）` : name;
     })
     .join("；");
   const listingEn = company.stock

@@ -343,6 +343,14 @@ a.chip:hover { color: var(--accent); }
   margin: 0;
   padding: 0;
   list-style: none;
+  min-width: 0;
+}
+
+.breadcrumbs li {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .breadcrumbs li:not(:last-child)::after {
@@ -488,5 +496,13 @@ footer {
   .infobox { position: static; }
   .brand-tag { display: none; }
   .nav-search { max-width: none; flex-basis: 100%; }
-  .nav { width: 100%; }
+  .nav {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.15rem;
+  }
+  .nav a { white-space: nowrap; }
 }
