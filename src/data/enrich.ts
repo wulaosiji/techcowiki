@@ -73,6 +73,7 @@ import {
 import { pickPeers } from "./peers";
 import { LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityFaq, Localized, Person, Source } from "./types";
+import { linkLocalized } from "../lib/autolink";
 
 export { nationalityRule, pickPeers };
 
@@ -316,6 +317,7 @@ function historySection(company: Company, people: Person[], sources: Source[]): 
 function namedFoundersSection(
   company: Company,
   people: Person[],
+  allCompanies: Company[],
   sources: Source[],
 ): CompanySection {
   const wiki = cite(wikiId(sources));
@@ -333,7 +335,11 @@ function namedFoundersSection(
       .join(" ");
     const otherCompanies = person.companies
       .filter((item) => item.companySlug !== company.slug)
-      .map((item) => `${item.companySlug} (${item.role.en})`);
+      .map((item) => {
+        const other = companyBySlug(allCompanies, item.companySlug);
+        const name = other ? other.name.en : item.companySlug;
+        return `${name} (${item.role.en})`;
+      });
     const other =
       otherCompanies.length > 0
         ? ` Other catalog companies linked to this person: ${joinList(otherCompanies, "en")}.`
@@ -354,7 +360,11 @@ function namedFoundersSection(
       .join("");
     const otherCompanies = person.companies
       .filter((item) => item.companySlug !== company.slug)
-      .map((item) => `${item.companySlug}（${item.role.zh}）`);
+      .map((item) => {
+        const other = companyBySlug(allCompanies, item.companySlug);
+        const name = other ? other.name.zh : item.companySlug;
+        return `${name}（${item.role.zh}）`;
+      });
     const other =
       otherCompanies.length > 0
         ? `本目录中与该人关联的其他公司：${joinList(otherCompanies, "zh")}。`
@@ -739,7 +749,7 @@ export function enrichCompany(
     historySection(withWiki, people, sources),
     inclusionSection(withWiki, people, sources),
     scopeSection(withWiki, sources),
-    namedFoundersSection(withWiki, people, sources),
+    namedFoundersSection(withWiki, people, pool, sources),
     operationsSection(withWiki, sources),
     geographySection(withWiki, pool, sources),
     sectorContextSection(withWiki, pool, sources),
@@ -753,21 +763,33 @@ export function enrichCompany(
     companyPublicRecord(withWiki, sources),
     retrievalSection(withWiki, sources),
   ]);
+  const exclude = { companySlugs: [withWiki.slug] };
+  const claims = [
+    ...companyClaims(withWiki, people, sources),
+    ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
+    ...authorityCompanyClaims(withWiki, pool, sources),
+  ];
   return {
     ...withWiki,
-    lead: thickenCompanyLead(withWiki, sources, pool),
+    definition: linkLocalized(withWiki.definition, pool, people, exclude),
+    lead: linkLocalized(thickenCompanyLead(withWiki, sources, pool), pool, people, exclude),
     sameAs: {
       ...withWiki.sameAs,
       official: withWiki.sameAs.official ?? withWiki.website,
     },
     sources,
-    sections,
-    faq,
-    claims: [
-      ...companyClaims(withWiki, people, sources),
-      ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
-      ...authorityCompanyClaims(withWiki, pool, sources),
-    ],
+    sections: sections.map((section) => ({
+      ...section,
+      body: linkLocalized(section.body, pool, people, exclude),
+    })),
+    faq: faq.map((item) => ({
+      ...item,
+      answer: linkLocalized(item.answer, pool, people, exclude),
+    })),
+    claims: claims.map((item) => ({
+      ...item,
+      value: linkLocalized(item.value, pool, people, exclude),
+    })),
   };
 }
 
@@ -1192,17 +1214,29 @@ export function enrichPerson(
     personRetrievalSection(withWiki, sources),
   ];
   const sections = mergeSections(withWiki.sections ?? [], generated);
+  const exclude = { personSlugs: [withWiki.slug] };
+  const claims = [
+    ...personClaims(withWiki, companies, sources),
+    ...encyclopediaClaims(personWikiSubject(withWiki), sources),
+    ...authorityPersonClaims(withWiki, companies, sources),
+  ];
   return {
     ...withWiki,
-    lead: thickenPersonLead(withWiki, sources, companies),
+    definition: linkLocalized(withWiki.definition, companies, pool, exclude),
+    lead: linkLocalized(thickenPersonLead(withWiki, sources, companies), companies, pool, exclude),
     sources,
-    sections,
-    faq,
-    claims: [
-      ...personClaims(withWiki, companies, sources),
-      ...encyclopediaClaims(personWikiSubject(withWiki), sources),
-      ...authorityPersonClaims(withWiki, companies, sources),
-    ],
+    sections: sections.map((section) => ({
+      ...section,
+      body: linkLocalized(section.body, companies, pool, exclude),
+    })),
+    faq: faq.map((item) => ({
+      ...item,
+      answer: linkLocalized(item.answer, companies, pool, exclude),
+    })),
+    claims: claims.map((item) => ({
+      ...item,
+      value: linkLocalized(item.value, companies, pool, exclude),
+    })),
   };
 }
 

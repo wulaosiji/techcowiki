@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { allCompanies, allPeople } from "../data/catalog";
+import { allCityHubs, allCompanies, allCountryHubs, allPeople } from "../data/catalog";
 import { editorialDocs } from "../data/pages";
 import { LAST_REVIEWED, regions, sectors, SITE_ORIGIN } from "../data/site";
 import { pageUrl } from "../lib/i18n";
@@ -13,12 +13,25 @@ function url(loc: string, lastmod: string) {
 export const GET: APIRoute = () => {
   const locales: Locale[] = ["en", "zh"];
   const last = LAST_REVIEWED;
-  const staticPaths = ["/", "/companies", "/people", "/search", "/faq", ...editorialDocs.map((doc) => `/${doc.slug}`)];
+  const staticPaths = [
+    "/",
+    "/companies",
+    "/people",
+    "/sectors",
+    "/regions",
+    "/countries",
+    "/cities",
+    "/search",
+    "/faq",
+    ...editorialDocs.map((doc) => `/${doc.slug}`),
+  ];
   const entityPaths = [
     ...allCompanies().map((company) => `/companies/${company.slug}`),
     ...allPeople().map((person) => `/people/${person.slug}`),
     ...sectors.map((sector) => `/sectors/${sector.slug}`),
     ...regions.map((region) => `/regions/${region.slug}`),
+    ...allCountryHubs().map((hub) => `/countries/${hub.slug}`),
+    ...allCityHubs().map((hub) => `/cities/${hub.slug}`),
   ];
   const body = [
     `<?xml version="1.0" encoding="UTF-8"?>`,

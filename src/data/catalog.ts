@@ -3,6 +3,16 @@ import { enrichCompany, enrichPerson } from "./enrich";
 import { extendedCompanies } from "./extended-companies";
 import { people as seedPeople } from "./people";
 import { extendedPeople } from "./extended-people";
+import { pickPeers } from "./peers";
+import {
+  cityHubs,
+  companiesByCity as filterCompaniesByCity,
+  companiesByCountry as filterCompaniesByCountry,
+  countryHubs,
+  peopleForCompanies,
+  type CityHub,
+  type CountryHub,
+} from "./places";
 import { regions, sectors } from "./site";
 import type { Company, Person, Region, Sector } from "./types";
 
@@ -133,8 +143,57 @@ export function catalogStats() {
     people: people.length,
     sectors: sectors.length,
     regions: regions.length,
+    countries: countryHubs(companies).length,
+    cities: cityHubs(companies).length,
     sources: new Set(
       [...companies, ...people].flatMap((entity) => entity.sources.map((source) => source.url)),
     ).size,
   };
 }
+
+export function allCountryHubs(): CountryHub[] {
+  return countryHubs(companies);
+}
+
+export function allCityHubs(): CityHub[] {
+  return cityHubs(companies);
+}
+
+export function getCountryHub(slug: string): CountryHub | undefined {
+  return allCountryHubs().find((hub) => hub.slug === slug);
+}
+
+export function getCityHub(slug: string): CityHub | undefined {
+  return allCityHubs().find((hub) => hub.slug === slug);
+}
+
+export function companiesInCountry(code: string): Company[] {
+  return filterCompaniesByCountry(companies, code);
+}
+
+export function companiesInCity(slug: string): Company[] {
+  return filterCompaniesByCity(companies, slug);
+}
+
+export function seeAlsoCompanies(company: Company, limit = 6): Company[] {
+  return pickPeers(company, companies, limit);
+}
+
+export function relatedPeople(person: Person, limit = 6): Person[] {
+  const companySlugs = new Set(person.companies.map((item) => item.companySlug));
+  const scored = people
+    .filter((other) => other.slug !== person.slug)
+    .map((other) => {
+      const shared = other.companies.filter((item) => companySlugs.has(item.companySlug)).length;
+      return { other, shared };
+    })
+    .filter((entry) => entry.shared > 0)
+    .sort((a, b) => b.shared - a.shared || a.other.name.en.localeCompare(b.other.name.en));
+  return scored.slice(0, limit).map((entry) => entry.other);
+}
+
+export function peopleForCompanyList(list: Company[]): Person[] {
+  return peopleForCompanies(people, list);
+}
+
+export type { CityHub, CountryHub };

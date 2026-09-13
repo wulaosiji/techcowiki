@@ -1,0 +1,9 @@
+---
+import CatalogPage from "../../../views/CatalogPage.astro";
+import { allCityHubs } from "../../../data/catalog";
+
+export function getStaticPaths() {
+  return allCityHubs().map((hub) => ({ params: { slug: hub.slug } }));
+}
+---
+<CatalogPage locale="zh" kind="city" slug={Astro.params.slug} />

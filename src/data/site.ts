@@ -197,8 +197,8 @@ export const faqs: FaqItem[] = [
       zh: "TechCo.Wiki 是什么？",
     },
     answer: {
-      en: "TechCo.Wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record.",
-      zh: "TechCo.Wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。",
+      en: "TechCo.Wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record. Start at the [company catalog](/companies), [people](/people), [sector hubs](/sectors), [country hubs](/countries), or [Methodology](/methodology).",
+      zh: "TechCo.Wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。可从[公司目录](/zh/companies)、[人物](/zh/people)、[行业枢纽](/zh/sectors)、[国家枢纽](/zh/countries)或[方法](/zh/methodology)进入。",
     },
   },
   {
@@ -273,6 +273,9 @@ export const ui = {
   navCompanies: { en: "Companies", zh: "公司" },
   navPeople: { en: "People", zh: "人物" },
   navSectors: { en: "Sectors", zh: "行业" },
+  navRegions: { en: "Regions", zh: "地区" },
+  navCountries: { en: "Countries", zh: "国家" },
+  navCities: { en: "Cities", zh: "城市" },
   navAbout: { en: "About", zh: "关于" },
   navMethod: { en: "Methodology", zh: "方法" },
   navFaq: { en: "FAQ", zh: "问答" },

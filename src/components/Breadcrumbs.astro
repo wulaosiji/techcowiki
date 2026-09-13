@@ -1,0 +1,24 @@
+---
+import type { Locale } from "../data/types";
+
+interface Crumb {
+  href?: string;
+  label: string;
+}
+
+interface Props {
+  locale: Locale;
+  items: Crumb[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="breadcrumbs" aria-label={Astro.props.locale === "zh" ? "面包屑" : "Breadcrumb"}>
+  {items.map((item, index) => (
+    <>
+      {index > 0 && " / "}
+      {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+    </>
+  ))}
+</nav>

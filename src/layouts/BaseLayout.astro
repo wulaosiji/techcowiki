@@ -27,7 +27,8 @@ const markdown =
 const nav = [
   { href: localePath(locale, "/companies"), label: t(ui.navCompanies, locale), match: "/companies" },
   { href: localePath(locale, "/people"), label: t(ui.navPeople, locale), match: "/people" },
-  { href: localePath(locale, "/methodology"), label: t(ui.navMethod, locale), match: "/methodology" },
+  { href: localePath(locale, "/sectors"), label: t(ui.navSectors, locale), match: "/sectors" },
+  { href: localePath(locale, "/countries"), label: t(ui.navCountries, locale), match: "/countries" },
   { href: localePath(locale, "/for-models"), label: t(ui.navForModels, locale), match: "/for-models" },
   { href: localePath(locale, "/faq"), label: t(ui.navFaq, locale), match: "/faq" },
   { href: localePath(locale, "/about"), label: t(ui.navAbout, locale), match: "/about" },
@@ -106,21 +107,26 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
           {" · "}
           {t(tagline, locale)}
         </div>
-        <div class="footer-links">
-          <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
-          {" · "}
-          <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
-          {" · "}
-          <a href={localePath(locale, "/license")}>{t(ui.license, locale)}</a>
-          {" · "}
+        <nav class="footer-nav" aria-label={locale === "zh" ? "目录" : "Catalog"}>
+          <a href={localePath(locale, "/companies")}>{t(ui.navCompanies, locale)}</a>
+          <a href={localePath(locale, "/people")}>{t(ui.navPeople, locale)}</a>
+          <a href={localePath(locale, "/sectors")}>{t(ui.navSectors, locale)}</a>
+          <a href={localePath(locale, "/regions")}>{t(ui.navRegions, locale)}</a>
+          <a href={localePath(locale, "/countries")}>{t(ui.navCountries, locale)}</a>
+          <a href={localePath(locale, "/cities")}>{t(ui.navCities, locale)}</a>
           <a href={localePath(locale, "/search")}>{t(ui.navSearch, locale)}</a>
-          {" · "}
+        </nav>
+        <nav class="footer-nav" aria-label={locale === "zh" ? "文档" : "Docs"}>
+          <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
+          <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
+          <a href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
+          <a href={localePath(locale, "/faq")}>{t(ui.navFaq, locale)}</a>
+          <a href={localePath(locale, "/license")}>{t(ui.license, locale)}</a>
+          <a href={localePath(locale, "/about")}>{t(ui.navAbout, locale)}</a>
           <a href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
-          {" · "}
           <a href={`${SITE_ORIGIN}/api/v1/openapi.json`}>API</a>
-          {" · "}
           <a href="https://github.com/wulaosiji/techcowiki">GitHub</a>
-        </div>
+        </nav>
         <div>CC BY-SA 4.0 · {locale === "zh" ? "代码 MIT" : "Code MIT"} · {SITE_ORIGIN}</div>
       </div>
     </footer>

@@ -1,9 +1,9 @@
 ---
+import { citySlug, countrySlug } from "../data/places";
 import { sectors } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
 import { localePath } from "../lib/i18n";
 import { stripCitations } from "../lib/citations";
-
 
 interface Props {
   locale: Locale;
@@ -20,16 +20,25 @@ const sub = company ? company.name[locale === "zh" ? "en" : "zh"] : person!.name
 const text = stripCitations((company ?? person!).definition[locale]);
 ---
 
-<a class="card" href={href}>
-  <div class="name">{name}</div>
-  <div class="sub">{sub}</div>
-  <p>{text}</p>
+<article class="card">
+  <a class="card-main" href={href}>
+    <div class="name">{name}</div>
+    <div class="sub">{sub}</div>
+    <p>{text}</p>
+  </a>
   {company && (
     <div class="chips">
       {company.sectors.slice(0, 2).map((slug) => (
-        <span class="chip">{sectors.find((item) => item.slug === slug)?.name[locale] ?? slug}</span>
+        <a class="chip" href={localePath(locale, `/sectors/${slug}`)}>
+          {sectors.find((item) => item.slug === slug)?.name[locale] ?? slug}
+        </a>
       ))}
-      <span class="chip">{company.headquarters.country[locale]}</span>
+      <a class="chip" href={localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}>
+        {company.headquarters.city[locale]}
+      </a>
+      <a class="chip" href={localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}>
+        {company.headquarters.country[locale]}
+      </a>
     </div>
   )}
-</a>
+</article>

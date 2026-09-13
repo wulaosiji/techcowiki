@@ -1,4 +1,5 @@
-import { getCompany, getPerson, relatedCompanies } from "../data/catalog";
+import { getCompany, getPerson, seeAlsoCompanies } from "../data/catalog";
+import { citySlug, countrySlug } from "../data/places";
 import {
   CONTENT_LICENSE,
   CONTENT_LICENSE_URL,
@@ -154,7 +155,7 @@ export function companyGraph(company: Company, locale: Locale) {
           name: claim.label[locale],
           value: stripCitations(claim.value[locale]),
         })),
-        mentions: relatedCompanies(company, 6).map((other) => ({
+        mentions: seeAlsoCompanies(company, 6).map((other) => ({
           "@type": "Organization",
           name: other.name[locale],
           url: pageUrl(locale, `/companies/${other.slug}`),
@@ -178,6 +179,14 @@ export function companyGraph(company: Company, locale: Locale) {
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
         { name: locale === "zh" ? "公司" : "Companies", url: pageUrl(locale, "/companies") },
+        {
+          name: company.headquarters.country[locale],
+          url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+        },
+        {
+          name: company.headquarters.city[locale],
+          url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
+        },
         { name: company.name[locale], url },
       ]),
     ],
@@ -253,7 +262,7 @@ export function faqGraph(items: FaqItem[], locale: Locale) {
       name: item.question[locale],
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.answer[locale],
+        text: stripCitations(item.answer[locale]),
       },
     })),
   };

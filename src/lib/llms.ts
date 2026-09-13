@@ -1,4 +1,4 @@
-import { companies, people } from "../data/catalog";
+import { allCityHubs, allCountryHubs, companies, people } from "../data/catalog";
 import { regions, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
 import { companyMarkdown, homeMarkdown, personMarkdown } from "./markdown";
 
@@ -25,6 +25,18 @@ export function llmsTxt(): string {
     .map(
       (region) =>
         `- [${region.name.en}](${SITE_ORIGIN}/regions/${region.slug}.md): ${region.definition.en}`,
+    )
+    .join("\n");
+  const countryLinks = allCountryHubs()
+    .map(
+      (hub) =>
+        `- [${hub.name.en}](${SITE_ORIGIN}/countries/${hub.slug}.md): ${hub.count} companies headquartered in ${hub.name.en} (${hub.code})`,
+    )
+    .join("\n");
+  const cityLinks = allCityHubs()
+    .map(
+      (hub) =>
+        `- [${hub.name.en}](${SITE_ORIGIN}/cities/${hub.slug}.md): ${hub.count} companies headquartered in ${hub.name.en}, ${hub.country.en}`,
     )
     .join("\n");
 
@@ -65,11 +77,23 @@ ${peopleLinks}
 
 ## Sectors
 
+- [All sectors](${SITE_ORIGIN}/sectors.md)
 ${sectorLinks}
 
 ## Regions
 
+- [All regions](${SITE_ORIGIN}/regions.md)
 ${regionLinks}
+
+## Countries
+
+- [All countries](${SITE_ORIGIN}/countries.md)
+${countryLinks}
+
+## Cities
+
+- [All cities](${SITE_ORIGIN}/cities.md)
+${cityLinks}
 
 ## Optional
 

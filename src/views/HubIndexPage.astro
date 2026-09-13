@@ -1,0 +1,124 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { allCityHubs, allCountryHubs, companiesByRegion, companiesBySector } from "../data/catalog";
+import { regions, sectors, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, pageUrl, t } from "../lib/i18n";
+import { catalogNav, docNav } from "../lib/nav";
+
+interface Props {
+  locale: Locale;
+  kind: "sectors" | "regions" | "countries" | "cities";
+}
+
+const { locale, kind } = Astro.props;
+const title =
+  kind === "sectors"
+    ? t(ui.navSectors, locale)
+    : kind === "regions"
+      ? t(ui.navRegions, locale)
+      : kind === "countries"
+        ? t(ui.navCountries, locale)
+        : t(ui.navCities, locale);
+const description =
+  kind === "sectors"
+    ? locale === "zh"
+      ? "按已记录产品线浏览 TechCo.Wiki 行业枢纽。行业标签不是国籍。"
+      : "Browse TechCo.Wiki sector hubs by recorded product lines. A sector label is not a nationality."
+    : kind === "regions"
+      ? locale === "zh"
+        ? "按已记录总部宏观地区浏览公司枢纽。"
+        : "Browse company hubs by recorded headquarters macro-region."
+      : kind === "countries"
+        ? locale === "zh"
+          ? "按已记录总部国家浏览公司枢纽。总部国家与华人创始人收录标准相互独立。"
+          : "Browse company hubs by recorded headquarters country. Headquarters country is independent of the Chinese-founder inclusion test."
+        : locale === "zh"
+          ? "按已记录总部城市浏览公司枢纽。"
+          : "Browse company hubs by recorded headquarters city.";
+const path = `/${kind}`;
+const items =
+  kind === "sectors"
+    ? sectors.map((item) => ({
+        href: localePath(locale, `/sectors/${item.slug}`),
+        path: `/sectors/${item.slug}`,
+        name: item.name[locale],
+        detail: item.definition[locale],
+        count: companiesBySector(item.slug).length,
+      }))
+    : kind === "regions"
+      ? regions.map((item) => ({
+          href: localePath(locale, `/regions/${item.slug}`),
+          path: `/regions/${item.slug}`,
+          name: item.name[locale],
+          detail: item.definition[locale],
+          count: companiesByRegion(item.slug).length,
+        }))
+      : kind === "countries"
+        ? allCountryHubs().map((item) => ({
+            href: localePath(locale, `/countries/${item.slug}`),
+            path: `/countries/${item.slug}`,
+            name: item.name[locale],
+            detail: `${item.code}${item.region ? ` · ${item.region.name[locale]}` : ""}`,
+            count: item.count,
+          }))
+        : allCityHubs().map((item) => ({
+            href: localePath(locale, `/cities/${item.slug}`),
+            path: `/cities/${item.slug}`,
+            name: item.name[locale],
+            detail: `${item.country[locale]} (${item.countryCode})`,
+            count: item.count,
+          }));
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: title,
+  description,
+  url: pageUrl(locale, path),
+  isPartOf: { "@id": "https://techco.wiki/#website" },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: pageUrl(locale, item.path),
+    })),
+  },
+};
+---
+
+<BaseLayout locale={locale} title={title} description={description} path={path} jsonLd={jsonLd}>
+  <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: title },
+      ]}
+    />
+    <p class="kicker">{t(ui.catalog, locale)}</p>
+    <h1>{title}</h1>
+    <p class="lede">{description}</p>
+    <p class="meta">{items.length} {title}</p>
+    <div class="hub-list">
+      {items.map((item) => (
+        <a class="card card-main" href={item.href}>
+          <div class="name">{item.name}</div>
+          <div class="sub">{item.count} {locale === "zh" ? "家公司" : "companies"}</div>
+          <p>{item.detail}</p>
+        </a>
+      ))}
+    </div>
+    <SeeAlso
+      locale={locale}
+      groups={[
+        { title: locale === "zh" ? "目录" : "Catalog", links: catalogNav(locale) },
+        { title: locale === "zh" ? "文档" : "Docs", links: docNav(locale).slice(0, 3) },
+      ]}
+    />
+  </div>
+</BaseLayout>
