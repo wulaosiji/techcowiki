@@ -1,3 +1,4 @@
 # Missing Chinese URLs should keep the reader inside the zh locale.
 # Existing static files under /zh/ take precedence over this splat.
-/zh/* /zh/404 404
+# Astro emits the Chinese 404 as /zh/404/index.html, not /zh/404.html.
+/zh/* /zh/404/index.html 404
