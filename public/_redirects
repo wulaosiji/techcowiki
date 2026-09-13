@@ -1,4 +1,2 @@
-# Missing Chinese URLs should keep the reader inside the zh locale.
-# Existing static files under /zh/ take precedence over this splat.
-# Astro emits the Chinese 404 as /zh/404/index.html, not /zh/404.html.
-/zh/* /zh/404/index.html 404
+# Cloudflare Pages _redirects cannot rewrite to a 404 page (status 404 is unsupported).
+# Missing /zh/* URLs are served as the Chinese 404 by public/_worker.js.
