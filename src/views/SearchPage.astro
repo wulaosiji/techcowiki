@@ -7,7 +7,7 @@ import { allCompanies, allPeople, companyHaystack, personHaystack, personRegions
 import { searchGraph } from "../lib/schema";
 import { regions, sectors, ui } from "../data/site";
 import type { Locale } from "../data/types";
-import { localePath, t } from "../lib/i18n";
+import { localePath, pick, t } from "../lib/i18n";
 import { catalogNav } from "../lib/nav";
 
 interface Props {
@@ -41,21 +41,19 @@ const people = allPeople();
       ))}
     </div>
     <p class="meta">
-      {locale === "zh"
-        ? "按名称、别名、产品、创始人、总部或证券代码搜索。可用空格组合关键词，并按行业和地区缩小范围。"
-        : "Search by name, alias, product, founder, headquarters, or ticker. Combine keywords with spaces and narrow results by sector and region."}
+      {pick(locale, "Search by name, alias, product, founder, headquarters, or ticker. Combine keywords with spaces and narrow results by sector and region.", "按名称、别名、产品、创始人、总部或证券代码搜索。可用空格组合关键词，并按行业和地区缩小范围。")}
     </p>
     <form class="search-form" method="get" role="search">
       <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
       <select name="sector" id="sector" aria-label={t(ui.filterSector, locale)}>
         <option value="">{t(ui.filterSector, locale)}</option>
-        {sectors.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+        {sectors.map((item) => <option value={item.slug}>{t(item.name, locale)}</option>)}
       </select>
       <select name="region" id="region" aria-label={t(ui.filterRegion, locale)}>
         <option value="">{t(ui.filterRegion, locale)}</option>
-        {regions.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+        {regions.map((item) => <option value={item.slug}>{t(item.name, locale)}</option>)}
       </select>
-      <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
+      <button type="submit">{pick(locale, "Filter", "筛选")}</button>
     </form>
     <p class="meta" id="result-count" role="status" data-locale={locale}></p>
     <p class="empty-state" id="empty" hidden>{t(ui.noResults, locale)}</p>
@@ -115,7 +113,13 @@ const people = allPeople();
     const count = entities.filter((node) => !node.hidden).length;
     document.querySelector<HTMLElement>("#empty")!.hidden = count > 0;
     const status = document.querySelector<HTMLElement>("#result-count")!;
-    status.textContent = status.dataset.locale === "zh" ? `找到 ${count} 个结果` : `${count} results`;
+    const locale = status.dataset.locale ?? "en";
+    status.textContent =
+      locale === "en"
+        ? `${count} results`
+        : locale === "zht"
+          ? `找到 ${count} 個結果`
+          : `找到 ${count} 个结果`;
     for (const group of document.querySelectorAll<HTMLElement>("[data-results]")) {
       group.hidden = ![...group.querySelectorAll<HTMLElement>(".entity")].some((node) => !node.hidden);
     }

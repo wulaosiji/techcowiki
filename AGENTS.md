@@ -2,7 +2,7 @@
 
 这是本仓库的开发契约。人与代理改代码前先读这一页，再写补丁。
 
-英文是规范文本，简体中文是完整平行版本。出版者写作 **TechCo.Wiki**，主机名永远是小写 `techco.wiki`。
+英文是规范文本；简体中文（`/zh`）与繁体中文（`/zh-hant`）是完整平行版本。出版者写作 **TechCo.Wiki**，主机名永远是小写 `techco.wiki`。
 
 ## 这个项目是什么
 
@@ -43,7 +43,7 @@
 | 1. 源码契约 | `npm test`（含 `tests/harness.test.ts`） | 纯函数、目录完整性、内链保护、源码里 UI 没用错绝对地址 | 构建后的 href、Pages 404 |
 | 2. 构建产物 | `npm run build && npm run harness` | `dist/` 里机器盒、ticker、同站 Markdown、中文 404 文件、worker | JS 语言切换、线上 splat |
 | 3. 浏览器 | `npm run e2e`（自动启动临时 preview） | 真人路径：输入、提交、点击「中文」、地址栏仍带 `?q=` | Pages worker、CDN 缓存 |
-| 4. 托管主机 | `HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host` | 线上 HTML 与中文缺失 URL 的 404 正文 | — |
+| 4. 托管主机 | `HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host` | 线上 HTML 与简体/繁体缺失 URL 的 404 正文 | — |
 
 改 UI / 路由 / 文案 / 内链 / 机器面：**1+2 必过**；涉及交互或 i18n：**再过 3**；声称「已部署」：**再过 4**。
 
@@ -57,7 +57,7 @@
 | `src/lib/i18n.ts` / `BaseLayout.astro` | `tests/i18n.test.ts` + e2e 搜索切语言 | `/search?q=TSM` → 中文后 URL 仍含 `q=TSM` |
 | 公司/人物数据或 `normalize.ts` | `tests/catalog.test.ts` `tests/geo.test.ts` | 该实体英/中页、搜索 haystack（ticker / 别名 / HQ） |
 | 工具栏、首页机器盒、页脚 | `tests/harness.test.ts` + `npm run harness` | 预览站点击 Markdown / llms.txt 仍留在当前主机 |
-| 404 / `_worker.js` / `_redirects` | `tests/redirects.test.ts` + harness | 本地 `/zh/404`；线上 `/zh/this-page-does-not-exist` 标题为「未找到」 |
+| 404 / `_worker.js` / `_redirects` | `tests/redirects.test.ts` + harness | 本地 `/zh/404` 与 `/zh-hant/404`；线上 `/zh/this-page-does-not-exist` 与 `/zh-hant/this-page-does-not-exist` 标题为「未找到」 |
 | 机器面（llms / sitemap / OpenAPI / graph） | `tests/i18n.test.ts` `tests/geo.test.ts` | OpenAPI 路径是 **`/api/v1/openapi.json`**，不是根 `/openapi.json` |
 
 ## 信息架构（不要私自改 URL）
@@ -65,9 +65,11 @@
 - `/companies/{slug}` `/people/{slug}` 实体
 - `/sectors` `/regions` `/countries` `/cities` 枢纽
 - `/zh/...` 简体中文平行版 + hreflang
+- `/zh-hant/...` 繁体中文平行版 + hreflang（`htmlLang=zh-Hant`）。URL 必须先剥 `/zh-hant` 再剥 `/zh`
 - `/search` 是静态 HTML：`?q=` / `?sector=` / `?region=` 只在浏览器筛选，爬虫仍看到全目录
-- 搜索页语言切换的静态 href 没有 query；`BaseLayout` 页尾脚本必须补 `location.search`
-- 中文 404 构建产物是 `dist/zh/404/index.html`，不是 `dist/zh/404.html`
+- 搜索页语言切换的静态 href 没有 query；`BaseLayout` 页尾脚本必须补 `location.search`（含 `/zh-hant/search`）
+- 英文页语言切换第一个链接仍是简体，保证现有 e2e 点第一个 `.lang-switch` 进入 `/zh/search`
+- 中文 404 构建产物是 `dist/zh/404/index.html` 与 `dist/zh-hant/404/index.html`，不是 `dist/zh/404.html`
 
 ## 链接政策
 

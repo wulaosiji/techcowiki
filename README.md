@@ -1,102 +1,107 @@
 # TechCo.Wiki
 
-全球华人创办科技公司的开放百科。**GEO（生成式引擎优化）是第一优先级**：先写成生成式引擎愿意引用的权威记录，再兼顾人类浏览。
+[简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-Hant.md)
 
-英文是规范文本，简体中文是完整平行版本。站点域名：<https://techco.wiki>
+The open encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. **GEO (generative-engine optimization) comes first**: write a citable authority record for models, then serve human readers.
 
-## 为什么这样建
+English is the canonical text. Simplified Chinese (`/zh`) and Traditional Chinese (`/zh-hant`) are complete parallel editions. Site origin: <https://techco.wiki>
 
-Crunchbase 一类产品把事实放在登录墙后，模型很难稳定引用。维基百科能被主流大模型当作权威，是因为它免费、可引用、有稳定标识、并且声明方法。TechCo.Wiki 把同一契约收窄到一个垂直领域：
+## Why this site exists
 
-- 至少一名具名创始人是华人（含港澳台与全球华裔）
-- 公司是科技公司，不是纯品牌或纯控股壳
-- 每条事实有出处，每个实体有 `techco:company:*` / `techco:person:*`
-- 同一记录同时提供 HTML、Markdown、JSON-LD 和版本化 JSON API
-- 内容 CC BY-SA 4.0，允许训练、检索与引用
+Products like Crunchbase keep facts behind a login wall, so models cannot cite them reliably. Wikipedia works as an authority for major models because it is free, citable, stably identified, and explicit about method. TechCo.Wiki applies the same contract to one vertical:
 
-## 机器入口
+- At least one named founder is ethnic Chinese (including Hong Kong, Macau, Taiwan, and the global diaspora)
+- The company is a technology company, not a pure brand or holding shell
+- Every fact has a source; every entity has `techco:company:*` / `techco:person:*`
+- The same record ships as HTML, Markdown, JSON-LD, and a versioned JSON API
+- Content is CC BY-SA 4.0 and may be used for training, retrieval, and citation
 
-| 资源 | 用途 |
+## Machine entry points
+
+| Resource | Purpose |
 | --- | --- |
-| `/llms.txt` | [llms.txt v2](https://llmstxt.org/) 索引 |
-| `/llms-full.txt` | 英文全文拼接 |
-| `/zh/llms-full.txt` | 简体中文全文拼接 |
-| `/feed.xml` | 公司与人物 RSS |
-| `/api/v1/openapi.json` | 只读 API 合同 |
-| `/api/v1/companies.json` | 公司目录 |
-| `/api/v1/people.json` | 人物目录 |
-| `/api/v1/graph.json` | 创始、任职、行业、地区、国家、城市与邻居关系图 |
-| `/api/v1/dataset.json` | 目录计数与机器入口 |
-| `/api/v1/{companies,people}/{slug}.json` | 单实体 JSON |
-| `/companies.md` / `/people.md` | 公司与人物目录 Markdown |
-| `/zh/companies.md` / `/zh/people.md` | 中文目录 Markdown |
-| `/sectors.md` `/regions.md` `/countries.md` `/cities.md` | 枢纽 Markdown |
-| `/companies/{slug}.md` | 公司 Markdown 副本 |
-| `/search` | 客户端筛选；完整目录仍在 HTML 中 |
-| `/for-models` | 给模型的引用规则 |
+| `/llms.txt` | [llms.txt v2](https://llmstxt.org/) index |
+| `/llms-full.txt` | Concatenated English dump |
+| `/zh/llms-full.txt` | Concatenated Simplified Chinese dump |
+| `/zh-hant/llms-full.txt` | Concatenated Traditional Chinese dump |
+| `/feed.xml` | Company and person RSS |
+| `/api/v1/openapi.json` | Read-only API contract |
+| `/api/v1/companies.json` | Company catalog |
+| `/api/v1/people.json` | People catalog |
+| `/api/v1/graph.json` | Founding, association, sector, region, country, city, and peer graph |
+| `/api/v1/dataset.json` | Catalog counts and machine entry points |
+| `/api/v1/{companies,people}/{slug}.json` | Single-entity JSON |
+| `/companies.md` / `/people.md` | English catalog Markdown |
+| `/zh/companies.md` / `/zh/people.md` | Simplified Chinese catalog Markdown |
+| `/zh-hant/companies.md` / `/zh-hant/people.md` | Traditional Chinese catalog Markdown |
+| `/sectors.md` `/regions.md` `/countries.md` `/cities.md` | Hub Markdown |
+| `/companies/{slug}.md` | Company Markdown twin |
+| `/search` | Client-side filter; the full catalog remains in the HTML |
+| `/for-models` | Citation rules for models |
 
-## 本地开发
+## Local development
 
-代理与贡献者先读根目录 [AGENTS.md](./AGENTS.md)（项目 Harness）。不要只跑 `npm test` 就宣布 UI / 内链 / 404 / 部署完成。
+Agents and contributors should read [AGENTS.md](./AGENTS.md) (the project harness) first. Do not declare UI / internal links / 404 / deploy work done after `npm test` alone.
 
-要求 Node.js 22.12+（可用 `nvm use`）；依赖版本由 lockfile 固定。
+Requires Node.js 22.12+ (`nvm use` is fine). Dependency versions are pinned by the lockfile.
 
 ```bash
 npm ci
-npm run typecheck                 # Astro / TypeScript 类型检查
-npm test                          # 第 1 层：函数与源码契约
-npm run build && npm run harness  # 第 2 层：dist/ HTML 合同
-npm run preview                   # 手动预览：http://127.0.0.1:4321
-npm run e2e                       # 自动启动临时预览并运行 Chrome，结束后关闭
-npm run e2e:pages                 # 本地 Pages runtime：浏览器 + 真实中文 404
+npm run typecheck                 # Astro / TypeScript
+npm test                          # Gate 1: functions and source contracts
+npm run build && npm run harness  # Gate 2: dist/ HTML contracts
+npm run preview                   # Manual preview: http://127.0.0.1:4321
+npm run e2e                       # Temporary preview + Chrome, then exit
+npm run e2e:pages                 # Local Pages runtime: browser + real localized 404s
 ```
 
-`npm run check` 顺序运行类型、单测、构建和全站产物检查；CI 另外执行两种浏览器验收。`npm run e2e` 会自动探测 macOS / Linux 的 Chrome，找不到时应通过 `CHROME_PATH` 指定路径；缺少浏览器会报错，不会跳过。已有预览可用 `E2E_BASE=http://127.0.0.1:4321 npm run e2e`。
+`npm run check` runs typecheck, unit tests, build, and the full-site artifact checks in order. CI also runs both browser gates. `npm run e2e` looks for Chrome on macOS / Linux; set `CHROME_PATH` if it is not found. A missing browser fails the gate instead of skipping it. An already-running preview can use `E2E_BASE=http://127.0.0.1:4321 npm run e2e`.
 
-`dist/` 是静态站点。`public/_headers` 写好 CORS 与 `rel=describedby`。中文缺失 URL 的 404 由 `public/_worker.js` 处理——Astro preview 不会执行它。
+`dist/` is the static site. `public/_headers` sets CORS and `rel=describedby`. Localized 404s for missing `/zh/*` and `/zh-hant/*` URLs are handled by `public/_worker.js` — Astro preview does not run it.
 
-## 检索与 API 契约
+## Search and API contract
 
-搜索保留完整的 200 个实体卡片，无 JavaScript 时仍可阅读。浏览器按所有空白分隔的关键词筛选，忽略大小写并归一化全角字符；行业和地区使用完整 slug。未知筛选值按未选择处理，语言切换保留查询和筛选条件。检索文本去除重复词和 Markdown 目标地址，原始双语正文不受影响。
+Search keeps all 200 entity cards; the catalog stays readable without JavaScript. The browser filters on every whitespace-separated keyword, case-insensitively, after folding full-width characters. Sector and region filters use complete slugs. Unknown filter values behave as unset. Language switching keeps the query and filters. Search haystacks drop duplicate tokens and Markdown destinations; the original bilingual source text is unchanged.
 
-API 文档版本 **1.3.0** 继续使用 `/api/v1/` 路径：
+API documentation version **1.4.0** still uses `/api/v1/` paths:
 
-- `citations.definition` / `citations.lead` 按 `en` / `zh` 保留引用 ID；`sections`、`faq`、`claims` 的 `sourceIds` 同样按语言记录，ID 对应实体的 `sources` 数组。
-- 图谱中的 `works-at` 更正为 `associated-with`，并增加双语 `role`。已有调用者须更新对该边类型的判断；历史创始、任职关联不证明当前雇佣关系。
-- JSON-LD 使用总部 `location`，不从总部推断 `foundingLocation`；人物使用带角色的 `affiliation`。
+- Localized strings and citation `sourceIds` include `en`, `zh` (zh-Hans), and `zht` (zh-Hant). IDs resolve against the entity `sources` array.
+- Graph `works-at` remains `associated-with`, now with `{en, zh, zht} role`. Callers must not treat a historical association as current employment.
+- JSON-LD uses headquarters `location` and does not infer `foundingLocation` from HQ. People use role-bearing `affiliation`.
 
-详细审查与验证记录见 [docs/review-2026-09-13.md](./docs/review-2026-09-13.md)。
+See [docs/review-2026-09-13.md](./docs/review-2026-09-13.md) for the earlier review notes.
 
-## Cloudflare 开发 demo
+## Cloudflare development demo
 
-当前开发预览：<https://techcowiki.pages.dev>
+Current development preview: <https://techcowiki.pages.dev>
 
-本地已登录 Wrangler 时：
+When Wrangler is logged in locally:
 
 ```bash
 npm run deploy
 ```
 
-Wrangler 未登录时不要假设这条命令可用。生产是 Pages Direct Upload；步骤与「测过函数仍可能在线上失败」的原因写在 [AGENTS.md](./AGENTS.md)。部署后：
+Do not assume that command works without a login. Production is Pages Direct Upload; the steps, and why a passing function test can still fail online, are in [AGENTS.md](./AGENTS.md). After deploy:
 
 ```bash
 HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host
 ```
 
-自定义域 `techco.wiki` 可在项目就绪后接到同一个 Pages 项目；在用户点名之前不要改 DNS。
+The custom domain `techco.wiki` can be attached to the same Pages project when the project is ready; do not change DNS until the user asks.
 
-## 信息架构
+## Information architecture
 
-- `/companies/{slug}` 公司实体
-- `/people/{slug}` 人物实体
-- `/sectors`、`/regions`、`/countries`、`/cities` 枢纽总索引及各 `{slug}` 详情
-- `/zh/...` 简体中文平行版，带 hreflang
-- `/methodology`、`/inclusion`、`/faq`、`/about`、`/license` 方法与信任页
-- 搜索页是静态 HTML：`?q=` / `?sector=` / `?region=` 只在浏览器里筛选，爬虫仍能看到全部实体
+- `/companies/{slug}` company entities
+- `/people/{slug}` person entities
+- `/sectors`, `/regions`, `/countries`, `/cities` hub indexes and `{slug}` detail pages
+- `/zh/...` Simplified Chinese parallel edition with hreflang
+- `/zh-hant/...` Traditional Chinese parallel edition with hreflang
+- `/methodology`, `/inclusion`, `/faq`, `/about`, `/license` method and trust pages
+- Search pages are static HTML: `?q=` / `?sector=` / `?region=` only hide cards in the browser; crawlers still see every entity
 
-本目录是精选的 100 家公司版本，覆盖上市集团、老牌硬件商与较新的人工智能公司，不是普查。缺席不代表否定判断。
+This catalog is a curated 100-company edition covering public groups, long-standing hardware firms, and newer AI companies. It is not a census. Absence is not a negative judgment.
 
-## 许可
+## License
 
-- 条目与目录数据：CC BY-SA 4.0
-- 网站代码：MIT
+- Entries and catalog data: CC BY-SA 4.0
+- Site code: MIT

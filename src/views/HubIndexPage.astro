@@ -5,7 +5,7 @@ import SeeAlso from "../components/SeeAlso.astro";
 import { allCityHubs, allCountryHubs, companiesByRegion, companiesBySector } from "../data/catalog";
 import { regions, sectors, SITE_ORIGIN, ui } from "../data/site";
 import type { Locale } from "../data/types";
-import { localePath, pageUrl, t } from "../lib/i18n";
+import { localePath, pageUrl, pick, t } from "../lib/i18n";
 import { catalogNav, docNav } from "../lib/nav";
 
 interface Props {
@@ -24,51 +24,40 @@ const title =
         : t(ui.navCities, locale);
 const description =
   kind === "sectors"
-    ? locale === "zh"
-      ? "按已记录产品线浏览 TechCo.Wiki 行业枢纽。行业标签不是国籍。"
-      : "Browse TechCo.Wiki sector hubs by recorded product lines. A sector label is not a nationality."
-    : kind === "regions"
-      ? locale === "zh"
-        ? "按已记录总部宏观地区浏览公司枢纽。"
-        : "Browse company hubs by recorded headquarters macro-region."
-      : kind === "countries"
-        ? locale === "zh"
-          ? "按已记录总部国家浏览公司枢纽。总部国家与华人创始人收录标准相互独立。"
-          : "Browse company hubs by recorded headquarters country. Headquarters country is independent of the Chinese-founder inclusion test."
-        : locale === "zh"
-          ? "按已记录总部城市浏览公司枢纽。"
-          : "Browse company hubs by recorded headquarters city.";
+    ? pick(locale, "Browse TechCo.Wiki sector hubs by recorded product lines. A sector label is not a nationality.", "按已记录产品线浏览 TechCo.Wiki 行业枢纽。行业标签不是国籍。"): kind === "regions"
+      ? pick(locale, "Browse company hubs by recorded headquarters macro-region.", "按已记录总部宏观地区浏览公司枢纽。"): kind === "countries"
+        ? pick(locale, "Browse company hubs by recorded headquarters country. Headquarters country is independent of the Chinese-founder inclusion test.", "按已记录总部国家浏览公司枢纽。总部国家与华人创始人收录标准相互独立。"): pick(locale, "Browse company hubs by recorded headquarters city.", "按已记录总部城市浏览公司枢纽。");
 const path = `/${kind}`;
 const items =
   kind === "sectors"
     ? sectors.map((item) => ({
         href: localePath(locale, `/sectors/${item.slug}`),
         path: `/sectors/${item.slug}`,
-        name: item.name[locale],
-        detail: item.definition[locale],
+        name: t(item.name, locale),
+        detail: t(item.definition, locale),
         count: companiesBySector(item.slug).length,
       }))
     : kind === "regions"
       ? regions.map((item) => ({
           href: localePath(locale, `/regions/${item.slug}`),
           path: `/regions/${item.slug}`,
-          name: item.name[locale],
-          detail: item.definition[locale],
+          name: t(item.name, locale),
+          detail: t(item.definition, locale),
           count: companiesByRegion(item.slug).length,
         }))
       : kind === "countries"
         ? allCountryHubs().map((item) => ({
             href: localePath(locale, `/countries/${item.slug}`),
             path: `/countries/${item.slug}`,
-            name: item.name[locale],
-            detail: `${item.code}${item.region ? ` · ${item.region.name[locale]}` : ""}`,
+            name: t(item.name, locale),
+            detail: `${item.code}${item.region ? ` · ${t(item.region.name, locale)}` : ""}`,
             count: item.count,
           }))
         : allCityHubs().map((item) => ({
             href: localePath(locale, `/cities/${item.slug}`),
             path: `/cities/${item.slug}`,
-            name: item.name[locale],
-            detail: `${item.country[locale]} (${item.countryCode})`,
+            name: t(item.name, locale),
+            detail: `${t(item.country, locale)} (${item.countryCode})`,
             count: item.count,
           }));
 const jsonLd = {
@@ -108,7 +97,7 @@ const jsonLd = {
       {items.map((item) => (
         <a class="card card-main" href={item.href}>
           <div class="name">{item.name}</div>
-          <div class="sub">{item.count} {locale === "zh" ? "家公司" : "companies"}</div>
+          <div class="sub">{item.count} {pick(locale, "companies", "家公司")}</div>
           <p>{item.detail}</p>
         </a>
       ))}
@@ -116,8 +105,8 @@ const jsonLd = {
     <SeeAlso
       locale={locale}
       groups={[
-        { title: locale === "zh" ? "目录" : "Catalog", links: catalogNav(locale) },
-        { title: locale === "zh" ? "文档" : "Docs", links: docNav(locale).slice(0, 3) },
+        { title: pick(locale, "Catalog", "目录"), links: catalogNav(locale) },
+        { title: pick(locale, "Docs", "文档"), links: docNav(locale).slice(0, 3) },
       ]}
     />
   </div>

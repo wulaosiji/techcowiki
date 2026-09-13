@@ -31,6 +31,10 @@ const zhNvidia = await get("/zh/companies/nvidia");
 check("zh nvidia 200", zhNvidia.status === 200);
 contracts.zhNvidia(zhNvidia.text);
 
+const zhtNvidia = await get("/zh-hant/companies/nvidia");
+check("zht nvidia 200", zhtNvidia.status === 200);
+contracts.zhtNvidia(zhtNvidia.text);
+
 const search = await get("/search?q=TSM");
 check("search 200", search.status === 200);
 contracts.search(search.text);
@@ -53,9 +57,14 @@ if (CHECK_ZH_SPLAT) {
     method: "HEAD", signal: AbortSignal.timeout(15000), headers: { "user-agent": BROWSER_UA },
   });
   check("zh missing HEAD is 404 without a body", head.status === 404 && head.body === null);
+  const zhtMissing = await get("/zh-hant/this-page-does-not-exist");
+  check("zht missing URL is 404", zhtMissing.status === 404);
+  contracts.zht404(zhtMissing.text);
 } else {
   const zh404 = await get("/zh/404");
   contracts.zh404(zh404.text);
+  const zht404 = await get("/zh-hant/404");
+  contracts.zht404(zht404.text);
 }
 
 console.log(`\nhost harness passed (${BASE})`);

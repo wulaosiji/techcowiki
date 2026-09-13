@@ -3,7 +3,7 @@ import type { EditorialDoc } from "../data/pages";
 import { faqs } from "../data/site";
 import type { Locale } from "../data/types";
 import { linkCatalogCopy } from "./autolink";
-import { pageUrl } from "./i18n";
+import { pageUrl, pick, t, tList } from "./i18n";
 
 function linkCopy(text: string, locale: Locale): string {
   return linkCatalogCopy(text, locale, allCompanies(), allPeople());
@@ -11,24 +11,24 @@ function linkCopy(text: string, locale: Locale): string {
 
 export function editorialMarkdown(doc: EditorialDoc, locale: Locale): string {
   return [
-    `# ${doc.title[locale]}`,
+    `# ${t(doc.title, locale)}`,
     "",
-    `> ${doc.description[locale]}`,
+    `> ${t(doc.description, locale)}`,
     "",
     `Canonical: ${pageUrl(locale, `/${doc.slug}`)}`,
     "",
     ...doc.blocks.flatMap((block) => [
-      `## ${block.title[locale]}`,
+      `## ${t(block.title, locale)}`,
       "",
-      ...block.body[locale].flatMap((p) => [linkCopy(p, locale), ""]),
+      ...tList(block.body, locale).flatMap((p) => [linkCopy(p, locale), ""]),
     ]),
   ].join("\n");
 }
 
 export function faqMarkdown(locale: Locale): string {
   return [
-    `# ${locale === "zh" ? "常见问题" : "FAQ"}`,
+    `# ${pick(locale, "FAQ", "常见问题")}`,
     "",
-    ...faqs.flatMap((item) => [`## ${item.question[locale]}`, "", linkCopy(item.answer[locale], locale), ""]),
+    ...faqs.flatMap((item) => [`## ${t(item.question, locale)}`, "", linkCopy(t(item.answer, locale), locale), ""]),
   ].join("\n");
 }

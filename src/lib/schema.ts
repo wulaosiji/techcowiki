@@ -11,7 +11,7 @@ import {
   tagline,
 } from "../data/site";
 import type { Company, EntityFaq, FaqItem, Locale, Person } from "../data/types";
-import { pageUrl } from "./i18n";
+import { htmlLang, pageUrl, pick, t, tOpt } from "./i18n";
 import { clipPlain, stripCitations } from "./citations";
 
 function richDescription(text: string, limit = 480): string {
@@ -26,10 +26,10 @@ function entityFaqGraph(url: string, faq: EntityFaq[] | undefined, locale: Local
     url,
     mainEntity: items.map((item) => ({
       "@type": "Question",
-      name: item.question[locale],
+      name: t(item.question, locale),
       acceptedAnswer: {
         "@type": "Answer",
-        text: stripCitations(item.answer[locale]),
+        text: stripCitations(t(item.answer, locale)),
       },
     })),
   };
@@ -45,8 +45,8 @@ export function websiteGraph(locale: Locale) {
         "@id": `${SITE_ORIGIN}/#website`,
         url: pageUrl(locale, "/"),
         name: SITE_NAME,
-        description: tagline[locale],
-        inLanguage: locale === "zh" ? "zh-Hans" : "en",
+        description: t(tagline, locale),
+        inLanguage: htmlLang(locale),
         publisher: { "@id": `${SITE_ORIGIN}/#org` },
         license: CONTENT_LICENSE_URL,
         potentialAction: {
@@ -62,7 +62,7 @@ export function websiteGraph(locale: Locale) {
         "@type": "Dataset",
         "@id": `${SITE_ORIGIN}/#dataset`,
         name: `${SITE_NAME} entity catalog`,
-        description: mission[locale],
+        description: t(mission, locale),
         url: `${SITE_ORIGIN}/api/v1/dataset.json`,
         license: CONTENT_LICENSE_URL,
         creator: { "@id": `${SITE_ORIGIN}/#org` },
@@ -101,12 +101,12 @@ export function companyGraph(company: Company, locale: Locale) {
       {
         "@type": "Organization",
         "@id": `${url}#org`,
-        name: company.name[locale],
+        name: t(company.name, locale),
         alternateName: [company.name.en, company.name.zh, ...company.aliases].filter(
-          (value, index, list) => list.indexOf(value) === index && value !== company.name[locale],
+          (value, index, list) => list.indexOf(value) === index && value !== t(company.name, locale),
         ),
         legalName: company.legalName,
-        description: richDescription(company.definition[locale], 320),
+        description: richDescription(t(company.definition, locale), 320),
         url: company.website,
         foundingDate: company.founded,
         identifier: {
@@ -117,30 +117,33 @@ export function companyGraph(company: Company, locale: Locale) {
         sameAs: Object.values(company.sameAs).filter(Boolean),
         numberOfEmployees: company.employees ? { "@type": "QuantitativeValue", value: company.employees.value } : undefined,
         knowsAbout: company.sectors.map(
-          (slug) => sectors.find((sector) => sector.slug === slug)?.name[locale] ?? slug,
+          (slug) => {
+            const sector = sectors.find((item) => item.slug === slug);
+            return sector ? t(sector.name, locale) : slug;
+          },
         ),
         location: {
           "@type": "Place",
-          name: `${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`,
+          name: `${t(company.headquarters.city, locale)}, ${t(company.headquarters.country, locale)}`,
           url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
           address: {
             "@type": "PostalAddress",
-            addressLocality: company.headquarters.city[locale],
-            addressRegion: company.headquarters.region?.[locale],
+            addressLocality: t(company.headquarters.city, locale),
+            addressRegion: tOpt(company.headquarters.region, locale),
             addressCountry: company.headquarters.countryCode,
           },
         },
         address: {
           "@type": "PostalAddress",
-          addressLocality: company.headquarters.city[locale],
-          addressRegion: company.headquarters.region?.[locale],
+          addressLocality: t(company.headquarters.city, locale),
+          addressRegion: tOpt(company.headquarters.region, locale),
           addressCountry: company.headquarters.countryCode,
         },
         founder: company.founders.map((founder) => {
           const person = getPerson(founder.personSlug);
           return {
             "@type": "Person",
-            name: person ? person.name[locale] : founder.personSlug,
+            name: person ? t(person.name, locale) : founder.personSlug,
             url: pageUrl(locale, `/people/${founder.personSlug}`),
             identifier: person?.id,
           };
@@ -148,7 +151,7 @@ export function companyGraph(company: Company, locale: Locale) {
         brand: company.products.map((product) => ({
           "@type": "Brand",
           name: product.name,
-          description: product.description[locale],
+          description: t(product.description, locale),
         })),
         tickerSymbol: company.stock
           ? [
@@ -163,42 +166,42 @@ export function companyGraph(company: Company, locale: Locale) {
           : undefined,
         additionalProperty: (company.claims ?? []).map((claim) => ({
           "@type": "PropertyValue",
-          name: claim.label[locale],
-          value: stripCitations(claim.value[locale]),
+          name: t(claim.label, locale),
+          value: stripCitations(t(claim.value, locale)),
         })),
         mentions: seeAlsoCompanies(company, 6).map((other) => ({
           "@type": "Organization",
-          name: other.name[locale],
+          name: t(other.name, locale),
           url: pageUrl(locale, `/companies/${other.slug}`),
           identifier: other.id,
         })),
       },
       webPageNode({
         url,
-        name: company.name[locale],
-        description: richDescription(company.lead[locale]),
+        name: t(company.name, locale),
+        description: richDescription(t(company.lead, locale)),
         locale,
         dateModified: company.lastReviewed,
         about: `${url}#org`,
         parts: company.sections.map((section) => ({
           "@type": "WebPageElement",
-          name: section.title[locale],
+          name: t(section.title, locale),
           cssSelector: `#${section.id}`,
         })),
       }),
       entityFaqGraph(url, company.faq, locale),
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
-        { name: locale === "zh" ? "公司" : "Companies", url: pageUrl(locale, "/companies") },
+        { name: pick(locale, "Companies", "公司"), url: pageUrl(locale, "/companies") },
         {
-          name: company.headquarters.country[locale],
+          name: t(company.headquarters.country, locale),
           url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
         },
         {
-          name: company.headquarters.city[locale],
+          name: t(company.headquarters.city, locale),
           url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
         },
-        { name: company.name[locale], url },
+        { name: t(company.name, locale), url },
       ]),
     ],
   };
@@ -213,21 +216,21 @@ export function personGraph(person: Person, locale: Locale) {
       {
         "@type": "Person",
         "@id": `${url}#person`,
-        name: person.name[locale],
+        name: t(person.name, locale),
         alternateName: person.aliases,
-        description: richDescription(person.definition[locale], 320),
-        jobTitle: person.roles.map((role) => role[locale]),
+        description: richDescription(t(person.definition, locale), 320),
+        jobTitle: person.roles.map((role) => t(role, locale)),
         identifier: {
           "@type": "PropertyValue",
           propertyID: "techco",
           value: person.id,
         },
         sameAs: Object.values(person.sameAs).filter(Boolean),
-        birthPlace: person.birthPlace?.[locale],
+        birthPlace: tOpt(person.birthPlace, locale),
         additionalProperty: (person.claims ?? []).map((claim) => ({
           "@type": "PropertyValue",
-          name: claim.label[locale],
-          value: stripCitations(claim.value[locale]),
+          name: t(claim.label, locale),
+          value: stripCitations(t(claim.value, locale)),
         })),
         // The catalog records historical associations as well as current roles.
         // A founder relationship alone does not establish present employment.
@@ -235,10 +238,10 @@ export function personGraph(person: Person, locale: Locale) {
           const company = getCompany(item.companySlug);
           return {
             "@type": "Role",
-            roleName: item.role[locale],
+            roleName: t(item.role, locale),
             affiliation: {
               "@type": "Organization",
-              name: company ? company.name[locale] : item.companySlug,
+              name: company ? t(company.name, locale) : item.companySlug,
               url: pageUrl(locale, `/companies/${item.companySlug}`),
               identifier: company?.id,
             },
@@ -247,36 +250,36 @@ export function personGraph(person: Person, locale: Locale) {
       },
       webPageNode({
         url,
-        name: person.name[locale],
-        description: richDescription(person.lead[locale]),
+        name: t(person.name, locale),
+        description: richDescription(t(person.lead, locale)),
         locale,
         dateModified: person.lastReviewed,
         about: `${url}#person`,
         parts: (person.sections ?? []).map((section) => ({
           "@type": "WebPageElement",
-          name: section.title[locale],
+          name: t(section.title, locale),
           cssSelector: `#${section.id}`,
         })),
       }),
       entityFaqGraph(url, person.faq, locale),
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
-        { name: locale === "zh" ? "人物" : "People", url: pageUrl(locale, "/people") },
+        { name: pick(locale, "People", "人物"), url: pageUrl(locale, "/people") },
         ...(() => {
           const company = getCompany(person.companies[0]?.companySlug ?? "");
           if (!company) return [];
           return [
             {
-              name: company.headquarters.country[locale],
+              name: t(company.headquarters.country, locale),
               url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
             },
             {
-              name: company.headquarters.city[locale],
+              name: t(company.headquarters.city, locale),
               url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
             },
           ];
         })(),
-        { name: person.name[locale], url },
+        { name: t(person.name, locale), url },
       ]),
     ],
   };
@@ -289,10 +292,10 @@ export function faqGraph(items: FaqItem[], locale: Locale) {
     url: pageUrl(locale, "/faq"),
     mainEntity: items.map((item) => ({
       "@type": "Question",
-      name: item.question[locale],
+      name: t(item.question, locale),
       acceptedAnswer: {
         "@type": "Answer",
-        text: stripCitations(item.answer[locale]),
+        text: stripCitations(t(item.answer, locale)),
       },
     })),
   };
@@ -313,7 +316,7 @@ function webPageNode(input: {
     url: input.url,
     name: input.name,
     description: input.description,
-    inLanguage: input.locale === "zh" ? "zh-Hans" : "en",
+    inLanguage: htmlLang(input.locale),
     dateModified: input.dateModified,
     license: CONTENT_LICENSE_URL,
     isAccessibleForFree: true,
@@ -349,7 +352,7 @@ export function editorialGraph(locale: Locale, path: string, name: string, descr
         url,
         name,
         description,
-        inLanguage: locale === "zh" ? "zh-Hans" : "en",
+        inLanguage: htmlLang(locale),
         isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
         publisher: { "@id": `${SITE_ORIGIN}/#org` },
         license: CONTENT_LICENSE_URL,
@@ -369,8 +372,8 @@ export function searchGraph(locale: Locale) {
     "@context": "https://schema.org",
     "@type": "SearchResultsPage",
     url,
-    name: locale === "zh" ? "搜索" : "Search",
-    inLanguage: locale === "zh" ? "zh-Hans" : "en",
+    name: pick(locale, "Search", "搜索"),
+    inLanguage: htmlLang(locale),
     isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
     publisher: { "@id": `${SITE_ORIGIN}/#org` },
     potentialAction: {

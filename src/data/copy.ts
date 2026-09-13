@@ -1,3 +1,4 @@
+import { isZhFamily, pick, t } from "../lib/i18n";
 import { regions, sectors, stageLabel, statusLabel } from "./site";
 import type { Company, Locale, Localized, Person, Source } from "./types";
 
@@ -6,9 +7,9 @@ export function L(en: string, zh: string): Localized {
 }
 
 export function joinList(items: string[], locale: Locale): string {
-  if (items.length === 0) return locale === "zh" ? "未记录" : "none recorded";
+  if (items.length === 0) return pick(locale, "none recorded", "未记录");
   if (items.length === 1) return items[0];
-  if (locale === "zh") return items.join("、");
+  if (isZhFamily(locale)) return items.join("、");
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
   return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
@@ -21,7 +22,7 @@ export function standaloneSentence(name: string, definition: string, locale: Loc
   const lower = def.toLowerCase();
   const lowerName = name.toLowerCase();
   if (lower.startsWith(lowerName)) return def;
-  return locale === "zh" ? `${name}是${def}` : `${name} is ${def}`;
+  return isZhFamily(locale) ? `${name}是${def}` : `${name} is ${def}`;
 }
 
 export function cite(id: string | undefined): string {
@@ -37,35 +38,41 @@ export function companyBySlug(companies: Company[], slug: string): Company | und
 }
 
 export function sectorName(slug: string, locale: Locale): string {
-  return sectors.find((sector) => sector.slug === slug)?.name[locale] ?? slug;
+  const item = sectors.find((sector) => sector.slug === slug);
+  return item ? t(item.name, locale) : slug;
 }
 
 export function sectorDefinition(slug: string, locale: Locale): string {
-  return sectors.find((sector) => sector.slug === slug)?.definition[locale] ?? "";
+  const item = sectors.find((sector) => sector.slug === slug);
+  return item ? t(item.definition, locale) : "";
 }
 
 export function regionName(slug: string, locale: Locale): string {
-  return regions.find((region) => region.slug === slug)?.name[locale] ?? slug;
+  const item = regions.find((region) => region.slug === slug);
+  return item ? t(item.name, locale) : slug;
 }
 
 export function regionDefinition(slug: string, locale: Locale): string {
-  return regions.find((region) => region.slug === slug)?.definition[locale] ?? "";
+  const item = regions.find((region) => region.slug === slug);
+  return item ? t(item.definition, locale) : "";
 }
 
 export function statusName(status: string, locale: Locale): string {
-  return statusLabel[status]?.[locale] ?? status;
+  const label = statusLabel[status];
+  return label ? t(label, locale) : status;
 }
 
 export function stageName(stage: string, locale: Locale): string {
-  return stageLabel[stage]?.[locale] ?? stage;
+  const label = stageLabel[stage];
+  return label ? t(label, locale) : stage;
 }
 
 export function founderLines(company: Company, people: Person[], locale: Locale): string {
   return joinList(
     company.founders.map((founder) => {
       const person = personBySlug(people, founder.personSlug);
-      const name = person ? person.name[locale] : founder.personSlug;
-      return `${name} (${founder.role[locale]})`;
+      const name = person ? t(person.name, locale) : founder.personSlug;
+      return `${name} (${t(founder.role, locale)})`;
     }),
     locale,
   );
@@ -73,7 +80,7 @@ export function founderLines(company: Company, people: Person[], locale: Locale)
 
 export function productLines(company: Company, locale: Locale): string {
   return joinList(
-    company.products.map((product) => `${product.name} (${product.description[locale]})`),
+    company.products.map((product) => `${product.name} (${t(product.description, locale)})`),
     locale,
   );
 }
@@ -101,8 +108,12 @@ export function precisionPhrase(
   precision: Company["foundedPrecision"],
   locale: Locale,
 ): string {
-  if (locale === "zh") {
-    return precision === "day" ? "精确到日" : precision === "month" ? "精确到月" : "精确到年";
+  if (isZhFamily(locale)) {
+    return pick(
+      locale,
+      precision === "day" ? "day-level precision" : precision === "month" ? "month-level precision" : "year-level precision",
+      precision === "day" ? "精确到日" : precision === "month" ? "精确到月" : "精确到年",
+    );
   }
   return precision === "day"
     ? "day-level precision"
@@ -113,21 +124,23 @@ export function precisionPhrase(
 
 export function yearDeltaPhrase(self: Company, other: Company, locale: Locale): string {
   const delta = foundingYear(other) - foundingYear(self);
-  if (delta === 0) return locale === "zh" ? "同一创立年" : "same founding year";
-  if (delta > 0) return locale === "zh" ? `晚 ${delta} 年` : `${delta} years later`;
-  return locale === "zh" ? `早 ${-delta} 年` : `${-delta} years earlier`;
+  if (delta === 0) return pick(locale, "same founding year", "同一创立年");
+  if (delta > 0) return pick(locale, `${delta} years later`, `晚 ${delta} 年`);
+  return pick(locale, `${-delta} years earlier`, `早 ${-delta} 年`);
 }
 
 export function cohortYearSpan(list: Company[], locale: Locale): string {
-  if (list.length === 0) return locale === "zh" ? "无" : "none";
+  if (list.length === 0) return pick(locale, "none", "无");
   const sorted = [...list].sort(
     (a, b) => foundingYear(a) - foundingYear(b) || a.name.en.localeCompare(b.name.en),
   );
   const oldest = sorted[0];
   const newest = sorted[sorted.length - 1];
-  return locale === "zh"
-    ? `创立年从 ${oldest.founded.slice(0, 4)}（${oldest.name.zh}）到 ${newest.founded.slice(0, 4)}（${newest.name.zh}）`
-    : `founding years from ${oldest.founded.slice(0, 4)} (${oldest.name.en}) to ${newest.founded.slice(0, 4)} (${newest.name.en})`;
+  return pick(
+    locale,
+    `founding years from ${oldest.founded.slice(0, 4)} (${oldest.name.en}) to ${newest.founded.slice(0, 4)} (${newest.name.en})`,
+    `创立年从 ${oldest.founded.slice(0, 4)}（${oldest.name.zh}）到 ${newest.founded.slice(0, 4)}（${newest.name.zh}）`,
+  );
 }
 
 export function sourceId(sources: Source[], predicate: (source: Source) => boolean): string | undefined {
@@ -213,26 +226,24 @@ export function listingTickers(company: Company): string[] {
 }
 
 export function tickerText(company: Company, locale: Locale): string {
-  if (!company.stock) return locale === "zh" ? "未记录" : "none recorded";
+  if (!company.stock) return pick(locale, "none recorded", "未记录");
   const parts = [`${company.stock.exchange}:${company.stock.ticker}`];
   if (company.stock.adr) {
     const adr = `${company.stock.adr.exchange}:${company.stock.adr.ticker}`;
-    parts.push(locale === "zh" ? `美国存托凭证 ${adr}` : `ADR ${adr}`);
+    parts.push(pick(locale, `ADR ${adr}`, `美国存托凭证 ${adr}`));
   }
   for (const item of company.stock.secondary ?? []) {
     parts.push(`${item.exchange}:${item.ticker}`);
   }
-  return parts.join(locale === "zh" ? "；" : "; ");
+  return parts.join(isZhFamily(locale) ? "；" : "; ");
 }
 
 export function hqBreakdownText(list: Company[], locale: Locale): string {
   const rows = hqBreakdown(list);
-  if (rows.length === 0) return locale === "zh" ? "无" : "none";
+  if (rows.length === 0) return pick(locale, "none", "无");
   return rows
     .map((row) =>
-      locale === "zh"
-        ? `${row.country.zh}（${row.countryCode}）${row.count}`
-        : `${row.country.en} (${row.countryCode}) ${row.count}`,
+      pick(locale, `${row.country.en} (${row.countryCode}) ${row.count}`, `${row.country.zh}（${row.countryCode}）${row.count}`),
     )
-    .join(locale === "zh" ? "、" : "; ");
+    .join(isZhFamily(locale) ? "、" : "; ");
 }

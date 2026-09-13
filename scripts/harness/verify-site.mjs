@@ -74,7 +74,7 @@ for (const [kind, records] of [["companies", companies], ["people", people]]) {
     const sourceIds = new Set(record.sources.map((source) => source.id));
     const citations = [record.citations.definition, record.citations.lead, ...[...record.claims, ...record.faq, ...record.sections].map((item) => item.sourceIds)];
     for (const cited of citations) {
-      for (const id of [...cited.en, ...cited.zh]) demand(sourceIds.has(id), `${record.id}: unresolved source ${id}`);
+      for (const id of [...cited.en, ...cited.zh, ...(cited.zht ?? [])]) demand(sourceIds.has(id), `${record.id}: unresolved source ${id}`);
     }
     for (const url of Object.values(record.urls)) demand(Boolean(targetFile(join(root, new URL(url).pathname))), `${record.id}: missing twin ${url}`);
   }
@@ -91,7 +91,7 @@ const urls = [...read(join(root, "sitemap.xml")).matchAll(/<loc>([^<]+)<\/loc>/g
 demand(urls.length === new Set(urls).size, "sitemap has duplicate URLs");
 for (const url of urls) demand(Boolean(targetFile(join(root, new URL(url).pathname))), `sitemap points to missing ${url}`);
 
-for (const path of ["search/index.html", "zh/search/index.html"]) {
+for (const path of ["search/index.html", "zh/search/index.html", "zh-hant/search/index.html"]) {
   demand(statSync(join(root, path)).size < 2_000_000, `${path}: search payload exceeds 2 MB`);
 }
 if (errors.length) throw new Error(`${errors.length} site contracts failed:\n${errors.slice(0, 40).join("\n")}`);

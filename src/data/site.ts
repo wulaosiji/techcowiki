@@ -7,7 +7,7 @@ export const CONTENT_LICENSE = "CC BY-SA 4.0";
 export const CONTENT_LICENSE_URL =
   "https://creativecommons.org/licenses/by-sa/4.0/";
 export const REPO_URL = "https://github.com/wulaosiji/techcowiki";
-export const LOCALES: Locale[] = ["en", "zh"];
+export const LOCALES: Locale[] = ["en", "zh", "zht"];
 export const DEFAULT_LOCALE: Locale = "en";
 
 export const tagline: Localized = {
@@ -263,8 +263,8 @@ export const faqs: FaqItem[] = [
       zh: "为什么默认语言是英语？",
     },
     answer: {
-      en: "Global foundation models still retrieve and cite English sources more reliably than Chinese-only pages. TechCo.Wiki is English-canonical with a complete zh-Hans edition and hreflang pairs, so Chinese-language models and readers are first-class, not an afterthought.",
-      zh: "全球基础模型检索和引用英语来源仍比仅中文页面更稳定。TechCo.Wiki 以英语为规范文本，同时提供完整简体中文版和 hreflang 配对，让中文模型与读者处于一等地位，而不是附属。",
+      en: "Global foundation models still retrieve and cite English sources more reliably than Chinese-only pages. TechCo.Wiki is English-canonical with complete zh-Hans and zh-Hant editions and hreflang triples, so Chinese-language models and readers are first-class, not an afterthought.",
+      zh: "全球基础模型检索和引用英语来源仍比仅中文页面更稳定。TechCo.Wiki 以英语为规范文本，同时提供完整简体中文、繁体中文版和 hreflang 三语配对，让中文模型与读者处于一等地位，而不是附属。",
     },
   },
 ];
@@ -309,7 +309,10 @@ export const ui = {
   license: { en: "License", zh: "许可" },
   markdown: { en: "Markdown", zh: "Markdown" },
   json: { en: "JSON", zh: "JSON" },
-  language: { en: "中文", zh: "English" },
+  language: { en: "简体", zh: "English" },
+  langEn: { en: "English", zh: "English" },
+  langZh: { en: "简体", zh: "简体" },
+  langZht: { en: "繁體", zh: "繁體" },
   home: { en: "Home", zh: "首页" },
   catalog: { en: "Catalog", zh: "目录" },
   definition: { en: "Definition", zh: "定义" },

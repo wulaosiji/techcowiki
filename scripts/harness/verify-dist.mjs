@@ -13,10 +13,12 @@ const file = (rel) => join(dist, rel);
 
 mustExist(file("_worker.js"));
 mustExist(file("zh/404/index.html"));
+mustExist(file("zh-hant/404/index.html"));
 mustExist(file("404.html"));
 mustExist(file("api/v1/openapi.json"));
 mustExist(file("companies.md"));
 mustExist(file("zh/companies.md"));
+mustExist(file("zh-hant/companies.md"));
 
 const worker = read(file("_worker.js"));
 check("worker serves zh 404 file", worker.includes("/zh/404/index.html"));
@@ -30,8 +32,10 @@ contracts.home(read(file("index.html")));
 contracts.nvidia(read(file("companies/nvidia/index.html")));
 contracts.tsmc(read(file("companies/tsmc/index.html")));
 contracts.zhNvidia(read(file("zh/companies/nvidia/index.html")));
+contracts.zhtNvidia(read(file("zh-hant/companies/nvidia/index.html")));
 contracts.search(read(file("search/index.html")));
 contracts.zh404(read(file("zh/404/index.html")));
+contracts.zht404(read(file("zh-hant/404/index.html")));
 contracts.en404(read(file("404.html")));
 
 console.log("\ndist harness passed");

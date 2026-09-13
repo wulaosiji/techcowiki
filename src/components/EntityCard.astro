@@ -2,7 +2,7 @@
 import { citySlug, countrySlug } from "../data/places";
 import { sectors } from "../data/site";
 import type { Company, Locale, Person } from "../data/types";
-import { localePath } from "../lib/i18n";
+import { altName, localePath, t } from "../lib/i18n";
 import { stripCitations } from "../lib/citations";
 
 interface Props {
@@ -15,9 +15,10 @@ const { locale, company, person } = Astro.props;
 const href = company
   ? localePath(locale, `/companies/${company.slug}`)
   : localePath(locale, `/people/${person!.slug}`);
-const name = company ? company.name[locale] : person!.name[locale];
-const sub = company ? company.name[locale === "zh" ? "en" : "zh"] : person!.name[locale === "zh" ? "en" : "zh"];
-const text = stripCitations((company ?? person!).definition[locale]);
+const entity = company ?? person!;
+const name = t(entity.name, locale);
+const sub = altName(entity.name, locale);
+const text = stripCitations(t(entity.definition, locale));
 ---
 
 <article class="card">
@@ -30,14 +31,17 @@ const text = stripCitations((company ?? person!).definition[locale]);
     <div class="chips">
       {company.sectors.slice(0, 2).map((slug) => (
         <a class="chip" href={localePath(locale, `/sectors/${slug}`)}>
-          {sectors.find((item) => item.slug === slug)?.name[locale] ?? slug}
+          {(() => {
+            const sector = sectors.find((item) => item.slug === slug);
+            return sector ? t(sector.name, locale) : slug;
+          })()}
         </a>
       ))}
       <a class="chip" href={localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}>
-        {company.headquarters.city[locale]}
+        {t(company.headquarters.city, locale)}
       </a>
       <a class="chip" href={localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}>
-        {company.headquarters.country[locale]}
+        {t(company.headquarters.country, locale)}
       </a>
     </div>
   )}

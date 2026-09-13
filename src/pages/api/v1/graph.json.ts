@@ -9,6 +9,7 @@ import {
 import { citySlug, countrySlug } from "../../../data/places";
 import { regions, sectors } from "../../../data/site";
 import { jsonResponse } from "../../../lib/http";
+import { localizedTriple } from "../../../lib/i18n";
 
 export const GET: APIRoute = () => {
   const nodes = [
@@ -16,37 +17,37 @@ export const GET: APIRoute = () => {
       id: company.id,
       type: "company",
       slug: company.slug,
-      name: company.name,
+      name: localizedTriple(company.name),
     })),
     ...allPeople().map((person) => ({
       id: person.id,
       type: "person",
       slug: person.slug,
-      name: person.name,
+      name: localizedTriple(person.name),
     })),
     ...sectors.map((sector) => ({
       id: `techco:sector:${sector.slug}`,
       type: "sector",
       slug: sector.slug,
-      name: sector.name,
+      name: localizedTriple(sector.name),
     })),
     ...regions.map((region) => ({
       id: `techco:region:${region.slug}`,
       type: "region",
       slug: region.slug,
-      name: region.name,
+      name: localizedTriple(region.name),
     })),
     ...allCountryHubs().map((hub) => ({
       id: `techco:country:${hub.slug}`,
       type: "country",
       slug: hub.slug,
-      name: hub.name,
+      name: localizedTriple(hub.name),
     })),
     ...allCityHubs().map((hub) => ({
       id: `techco:city:${hub.slug}`,
       type: "city",
       slug: hub.slug,
-      name: hub.name,
+      name: localizedTriple(hub.name),
     })),
   ];
   const founded = allCompanies().flatMap((company) =>
@@ -61,7 +62,7 @@ export const GET: APIRoute = () => {
       from: person.id,
       to: `techco:company:${item.companySlug}`,
       type: "associated-with",
-      role: item.role,
+      role: localizedTriple(item.role),
     })),
   );
   const memberships = allCompanies().flatMap((company) => [

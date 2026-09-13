@@ -178,6 +178,7 @@ describe("internal linking", () => {
     expect(text).toContain("https://techco.wiki/llms-full.txt");
     expect(text).toContain("https://techco.wiki/api/v1/graph.json");
     expect(text).toContain('hreflang="zh-Hans"');
+    expect(text).toContain('hreflang="zh-Hant"');
     expect(text).toContain("xmlns:xhtml");
   });
 
