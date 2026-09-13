@@ -189,6 +189,37 @@ await check("cuda-gpus-product-page", async (page) => {
   };
 });
 
+await check("wechat-product-name-localizes", async (page) => {
+  await page.goto(`${BASE}/products/wechat`, { waitUntil: "domcontentloaded" });
+  const english = await page.$eval("h1", (el) => el.textContent ?? "");
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "domcontentloaded" }),
+    page.click(".lang-switch"),
+  ]);
+  const zhUrl = new URL(page.url());
+  const simplified = await page.$eval("h1", (el) => el.textContent ?? "");
+  await page.goto(`${BASE}/zh-hant/products/wechat`, { waitUntil: "domcontentloaded" });
+  const traditional = await page.$eval("h1", (el) => el.textContent ?? "");
+  await page.goto(`${BASE}/zh/companies/tencent`, { waitUntil: "domcontentloaded" });
+  const companyLabel = await page.evaluate(() => {
+    const link = document.querySelector('h2#products + ul a[href="/zh/products/wechat"]');
+    return link?.textContent?.trim() ?? "";
+  });
+  return {
+    ok:
+      english === "WeChat" &&
+      zhUrl.pathname.replace(/\/$/, "") === "/zh/products/wechat" &&
+      simplified === "微信" &&
+      traditional === "微信" &&
+      companyLabel === "微信",
+    english,
+    zhPath: zhUrl.pathname,
+    simplified,
+    traditional,
+    companyLabel,
+  };
+});
+
 await check("zh-nvidia-markdown-twin", async (page) => {
   await page.goto(`${BASE}/zh/companies/nvidia`, { waitUntil: "domcontentloaded" });
   const md = await page.evaluate(() =>

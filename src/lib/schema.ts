@@ -152,7 +152,7 @@ export function companyGraph(company: Company, locale: Locale) {
           const entity = productForLine(company.slug, product.name);
           return {
             "@type": "Brand",
-            name: product.name,
+            name: entity ? t(entity.name, locale) : product.name,
             description: t(product.description, locale),
             url: entity ? pageUrl(locale, `/products/${entity.slug}`) : undefined,
             identifier: entity?.id,

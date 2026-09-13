@@ -1,8 +1,10 @@
+import { localizedProductName } from "./product-names";
 import type { Company, Localized, Product } from "./types";
 
 export interface ProductStub {
   slug: string;
   name: string;
+  nameZh: string;
   description: Localized;
   companySlug: string;
 }
@@ -50,6 +52,7 @@ export function stubFromLine(companySlug: string, product: Product, used: Set<st
   return {
     slug,
     name: product.name,
+    nameZh: localizedProductName(product.name).zh,
     description: product.description,
     companySlug,
   };

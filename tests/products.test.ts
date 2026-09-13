@@ -6,7 +6,9 @@ import {
   productForLine,
   productHaystack,
 } from "../src/data/catalog";
+import { PRODUCT_NAME_ZH, localizedProductName } from "../src/data/product-names";
 import { usedSourceIds } from "../src/lib/citations";
+import { t, toTraditional } from "../src/lib/i18n";
 import { productMarkdown } from "../src/lib/markdown";
 import { productGraph } from "../src/lib/schema";
 import { productRecord } from "../src/lib/serialize";
@@ -24,7 +26,9 @@ describe("first-class products", () => {
     for (const product of products) {
       expect(product.id).toBe(`techco:product:${product.slug}`);
       expect(product.slug.length).toBeGreaterThan(1);
-      expect(product.name.en).toBe(product.name.zh);
+      expect(product.name.en.length).toBeGreaterThan(1);
+      expect(product.name.zh.length).toBeGreaterThan(0);
+      expect(product.name.zh).toBe(localizedProductName(product.name.en).zh);
     }
     for (const company of allCompanies()) {
       for (const line of company.products) {
@@ -114,6 +118,28 @@ describe("first-class products", () => {
       for (const id of used) {
         expect(ids.has(id), `${product.slug} missing ${id}`).toBe(true);
       }
+    }
+  });
+
+  test("display names localize from the recorded English label", () => {
+    const wechat = getProduct("wechat");
+    const douyin = getProduct("tiktok-douyin");
+    const cuda = getProduct("cuda-gpus");
+    const mail = getProduct("yahoo-mail");
+    const nodes = getProduct("foundry-process-nodes");
+    expect(wechat?.name).toEqual({ en: "WeChat", zh: "微信" });
+    expect(t(wechat!.name, "zh")).toBe("微信");
+    expect(t(wechat!.name, "zht")).toBe(toTraditional("微信"));
+    expect(wechat?.definition.zh.startsWith("微信是")).toBe(true);
+    expect(douyin?.name.zh).toBe("TikTok / 抖音");
+    expect(t(douyin!.name, "zht")).toContain(toTraditional("抖音"));
+    expect(cuda?.name).toEqual({ en: "CUDA GPUs", zh: "CUDA GPUs" });
+    expect(mail?.name.zh).toBe("雅虎邮箱");
+    expect(nodes?.name.zh).toBe("晶圆代工制程节点");
+    expect(productHaystack(wechat!)).toContain("微信");
+    const recorded = new Set(allCompanies().flatMap((company) => company.products.map((line) => line.name)));
+    for (const name of recorded) {
+      expect(PRODUCT_NAME_ZH[name], `missing zh display name for ${name}`).toBeTypeOf("string");
     }
   });
 

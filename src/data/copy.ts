@@ -1,4 +1,5 @@
 import { isZhFamily, pick, t } from "../lib/i18n";
+import { localizedProductName } from "./product-names";
 import { regions, sectors, stageLabel, statusLabel } from "./site";
 import type { Company, Locale, Localized, Person, Source } from "./types";
 
@@ -80,14 +81,16 @@ export function founderLines(company: Company, people: Person[], locale: Locale)
 
 export function productLines(company: Company, locale: Locale): string {
   return joinList(
-    company.products.map((product) => `${product.name} (${t(product.description, locale)})`),
+    company.products.map(
+      (product) => `${t(localizedProductName(product.name), locale)} (${t(product.description, locale)})`,
+    ),
     locale,
   );
 }
 
 export function productNames(company: Company, locale: Locale): string {
   return joinList(
-    company.products.map((product) => product.name),
+    company.products.map((product) => t(localizedProductName(product.name), locale)),
     locale,
   );
 }
