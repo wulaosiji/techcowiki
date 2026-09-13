@@ -10,8 +10,10 @@ import { matchWikiRecord } from "../src/data/wiki-match";
 describe("GEO surfaces", () => {
   test("llms.txt lists every company and person markdown twin", () => {
     const text = llmsTxt();
-    expect(text.startsWith("# TechCo.wiki")).toBe(true);
+    expect(text.startsWith("# TechCo.Wiki")).toBe(true);
+    expect(text).toContain("The publisher is written TechCo.Wiki");
     expect(text).toContain("https://techco.wiki/for-models.md");
+    expect(text).not.toContain("https://TechCo.Wiki");
     for (const company of allCompanies()) {
       expect(text).toContain(`/companies/${company.slug}.md`);
     }

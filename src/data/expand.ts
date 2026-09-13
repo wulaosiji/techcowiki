@@ -169,7 +169,7 @@ export function expandPerson(row: CompactPerson): Person {
       {
         id: "s1",
         title: row.wiki ?? row.name.en,
-        publisher: wiki ? "Wikipedia" : "TechCo.wiki",
+        publisher: wiki ? "Wikipedia" : "TechCo.Wiki",
         url: wiki ?? `https://en.wikipedia.org/wiki/${row.name.en.replaceAll(" ", "_")}`,
         accessed,
         type: wiki ? "encyclopedia" : "encyclopedia",

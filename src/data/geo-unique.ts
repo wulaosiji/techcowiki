@@ -30,9 +30,9 @@ function officialCite(sources: Source[]): string {
 }
 
 const DISCLAIMER_EN =
-  "This paragraph is a third-party Wikipedia extract (CC BY-SA), not a TechCo.wiki original narrative. Dated fields, headquarters, and model-description rules on this page take precedence when they disagree. Do not treat Wikipedia valuations, rankings, headcount, or net-worth figures as TechCo.wiki facts.";
+  "This paragraph is a third-party Wikipedia extract (CC BY-SA), not a TechCo.Wiki original narrative. Dated fields, headquarters, and model-description rules on this page take precedence when they disagree. Do not treat Wikipedia valuations, rankings, headcount, or net-worth figures as TechCo.Wiki facts.";
 const DISCLAIMER_ZH =
-  "本段是第三方维基百科摘录（CC BY-SA），不是 TechCo.wiki 的原创叙述。若与本页带日期字段、总部或模型表述规则冲突，以本页为准。不要把维基百科中的估值、排名、人数或净资产数字当成 TechCo.wiki 事实。";
+  "本段是第三方维基百科摘录（CC BY-SA），不是 TechCo.Wiki 的原创叙述。若与本页带日期字段、总部或模型表述规则冲突，以本页为准。不要把维基百科中的估值、排名、人数或净资产数字当成 TechCo.Wiki 事实。";
 
 function quoteGloss(gloss: WikiGloss, citeToken: string): { en: string; zh: string } {
   const descEn = gloss.description ? ` Wikipedia's short description is “${gloss.description}”.` : "";
@@ -365,8 +365,8 @@ export function encyclopediaClaims(subject: WikiSubject, sources: Source[]): Ent
       id: "wikipedia-description",
       label: L("Wikipedia short description", "维基百科短描述"),
       value: L(
-        `${record.en.description} (third-party; not a TechCo.wiki nationality ruling).${cite(wikiEnId(sources)) || wikiCite(sources)}`,
-        `${record.zh?.description ?? record.en.description}（第三方；不是 TechCo.wiki 的国籍裁定）。${cite(wikiZhId(sources)) || wikiCite(sources)}`,
+        `${record.en.description} (third-party; not a TechCo.Wiki nationality ruling).${cite(wikiEnId(sources)) || wikiCite(sources)}`,
+        `${record.zh?.description ?? record.en.description}（第三方；不是 TechCo.Wiki 的国籍裁定）。${cite(wikiZhId(sources)) || wikiCite(sources)}`,
       ),
     });
   }

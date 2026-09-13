@@ -1,5 +1,5 @@
 /* TEAM */
-Project: TechCo.wiki
+Project: TechCo.Wiki
 Site: https://techco.wiki
 Repository: https://github.com/wulaosiji/techcowiki
 

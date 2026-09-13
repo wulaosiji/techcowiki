@@ -14,7 +14,7 @@ const { locale } = Astro.props;
 <BaseLayout
   locale={locale}
   title={locale === "zh" ? "常见问题" : "FAQ"}
-  description={locale === "zh" ? "关于 TechCo.wiki 的常见问题。" : "Frequently asked questions about TechCo.wiki."}
+  description={locale === "zh" ? "关于 TechCo.Wiki 的常见问题。" : "Frequently asked questions about TechCo.Wiki."}
   path="/faq"
   jsonLd={faqGraph(faqs, locale)}
 >

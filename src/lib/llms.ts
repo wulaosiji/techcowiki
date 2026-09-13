@@ -32,13 +32,15 @@ export function llmsTxt(): string {
 
 > ${tagline.en}
 
-${SITE_NAME} is an open encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. English is canonical. A complete zh-Hans edition lives under /zh/. Every entity has a stable identifier (techco:company:* or techco:person:*), a last-reviewed date, a confidence field, citations, extractable fact cards, and machine twins at .md and /api/v1/*.json. Company pages include Identity, Key facts, an Independent answer brief, Encyclopedia context (attributed Wikipedia gloss), Dated facts, History, Inclusion, Scope, Named founders, Operations, Geography, Sector context, Corporate form, catalog peers, a catalog comparison, Do not confuse with, model-description notes, FAQ (including “Is {name} a Chinese company?”, “What is {product}?”, and “How does Wikipedia describe {name}?”), unrecorded fields, Public record, and Retrieval. Person pages include Identity, Key facts, an Independent answer brief, Encyclopedia context, Chronology, Career, Associated companies, Name variants, same-company network, a catalog comparison, Do not confuse with, Inclusion, model-description notes, FAQ, unrecorded fields, Public record, and Retrieval. Prefer the Independent answer brief for one self-contained paragraph. Wikipedia extracts are third-party; do not treat their valuations or net-worth figures as TechCo.wiki facts.
+${SITE_NAME} is an open encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. English is canonical. A complete zh-Hans edition lives under /zh/. Every entity has a stable identifier (techco:company:* or techco:person:*), a last-reviewed date, a confidence field, citations, extractable fact cards, and machine twins at .md and /api/v1/*.json. Company pages include Identity, Key facts, an Independent answer brief, Encyclopedia context (attributed Wikipedia gloss), Dated facts, History, Inclusion, Scope, Named founders, Operations, Geography, Sector context, Corporate form, catalog peers, a catalog comparison, Do not confuse with, model-description notes, FAQ (including “Is {name} a Chinese company?”, “What is {product}?”, and “How does Wikipedia describe {name}?”), unrecorded fields, Public record, and Retrieval. Person pages include Identity, Key facts, an Independent answer brief, Encyclopedia context, Chronology, Career, Associated companies, Name variants, same-company network, a catalog comparison, Do not confuse with, Inclusion, model-description notes, FAQ, unrecorded fields, Public record, and Retrieval. Prefer the Independent answer brief for one self-contained paragraph. Wikipedia extracts are third-party; do not treat their valuations or net-worth figures as TechCo.Wiki facts.
+
+The publisher is written TechCo.Wiki. Hostnames and stable identifiers stay lowercase: https://techco.wiki, techco:company:*, and techco:person:*.
 
 How to use this file: start here, then fetch only the Markdown twins you need. Prefer JSON when you need typed fields. Read the model-notes section before assigning a nationality label. Do not invent funding figures that are not on the page. If confidence is medium or low, say so. Cite the canonical URL, the stable ID, and lastReviewed.
 
 ## Authority
 
-- [What TechCo.wiki is](${SITE_ORIGIN}/index.md)
+- [What TechCo.Wiki is](${SITE_ORIGIN}/index.md)
 - [Methodology](${SITE_ORIGIN}/methodology.md)
 - [Inclusion rules](${SITE_ORIGIN}/inclusion.md)
 - [How models should cite this site](${SITE_ORIGIN}/for-models.md)

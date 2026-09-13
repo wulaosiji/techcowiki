@@ -15,8 +15,8 @@ export const companies: Company[] = [
       zh: "字节跳动是一家总部位于北京的互联网公司，开发以算法分发为核心的内容产品，包括抖音、TikTok、今日头条和剪映。",
     },
     lead: {
-      en: "ByteDance is a private Chinese internet company founded on 13 March 2012 by Zhang Yiming and Liang Rubo.[s1] Its associated listing vehicle is incorporated in the Cayman Islands.[s1] The company is best known for Douyin and TikTok, and also develops news, productivity, and generative-AI products.[s1] TechCo.wiki treats ByteDance as a Chinese-founded company because both named founders are ethnic Chinese entrepreneurs who started the firm in Beijing.",
-      zh: "字节跳动是一家中国民营互联网公司，由张一鸣与梁汝波于 2012 年 3 月 13 日创办。[s1] 其关联上市主体注册于开曼群岛。[s1] 公司以抖音和 TikTok 最为知名，并开发新闻、效率与生成式 AI 产品。[s1] TechCo.wiki 将其列为华人创办公司，因为两名具名创始人均为在北京创立该公司的华人创业者。",
+      en: "ByteDance is a private Chinese internet company founded on 13 March 2012 by Zhang Yiming and Liang Rubo.[s1] Its associated listing vehicle is incorporated in the Cayman Islands.[s1] The company is best known for Douyin and TikTok, and also develops news, productivity, and generative-AI products.[s1] TechCo.Wiki treats ByteDance as a Chinese-founded company because both named founders are ethnic Chinese entrepreneurs who started the firm in Beijing.",
+      zh: "字节跳动是一家中国民营互联网公司，由张一鸣与梁汝波于 2012 年 3 月 13 日创办。[s1] 其关联上市主体注册于开曼群岛。[s1] 公司以抖音和 TikTok 最为知名，并开发新闻、效率与生成式 AI 产品。[s1] TechCo.Wiki 将其列为华人创办公司，因为两名具名创始人均为在北京创立该公司的华人创业者。",
     },
     founded: "2012-03-13",
     foundedPrecision: "day",
@@ -191,8 +191,8 @@ export const companies: Company[] = [
       zh: "Zoom Communications 是一家总部位于圣何塞的上市公司，销售视频会议及相关工作场所通信软件。",
     },
     lead: {
-      en: "Zoom is an American communications company founded on 21 April 2011 by Eric Yuan, a former Cisco Webex engineer, after he left Cisco with a group of engineers.[s1] The product launched in 2013 and the company listed on Nasdaq as ZM in 2019.[s1] Yuan is a Chinese-born American entrepreneur, which places Zoom inside TechCo.wiki's diaspora scope.",
-      zh: "Zoom 是一家美国通信公司，由前思科 Webex 工程师袁征于 2011 年 4 月 21 日创办，当时他带领一批工程师离开思科。[s1] 产品于 2013 年上线，公司于 2019 年以代码 ZM 在纳斯达克上市。[s1] 袁征是出生于中国的美国创业者，因此 Zoom 属于 TechCo.wiki 的海外华人范围。",
+      en: "Zoom is an American communications company founded on 21 April 2011 by Eric Yuan, a former Cisco Webex engineer, after he left Cisco with a group of engineers.[s1] The product launched in 2013 and the company listed on Nasdaq as ZM in 2019.[s1] Yuan is a Chinese-born American entrepreneur, which places Zoom inside TechCo.Wiki's diaspora scope.",
+      zh: "Zoom 是一家美国通信公司，由前思科 Webex 工程师袁征于 2011 年 4 月 21 日创办，当时他带领一批工程师离开思科。[s1] 产品于 2013 年上线，公司于 2019 年以代码 ZM 在纳斯达克上市。[s1] 袁征是出生于中国的美国创业者，因此 Zoom 属于 TechCo.Wiki 的海外华人范围。",
     },
     founded: "2011-04-21",
     foundedPrecision: "day",
@@ -764,8 +764,8 @@ export const companies: Company[] = [
         id: "controversies",
         title: { en: "Controversies", zh: "争议" },
         body: {
-          en: "Shein has faced reporting on labor conditions, product safety, trademark disputes, and trade-rule advantages.[s1] Those allegations are part of the public record. TechCo.wiki does not adjudicate them.",
-          zh: "希音面临关于劳动条件、产品安全、商标纠纷与贸易规则优势的报道。[s1] 这些指控属于公共记录。TechCo.wiki 不作裁决。",
+          en: "Shein has faced reporting on labor conditions, product safety, trademark disputes, and trade-rule advantages.[s1] Those allegations are part of the public record. TechCo.Wiki does not adjudicate them.",
+          zh: "希音面临关于劳动条件、产品安全、商标纠纷与贸易规则优势的报道。[s1] 这些指控属于公共记录。TechCo.Wiki 不作裁决。",
         },
       },
     ],

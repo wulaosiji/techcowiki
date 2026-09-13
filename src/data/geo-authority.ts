@@ -436,8 +436,8 @@ export function authorityCompanyFaqs(
     {
       id: "catalog-position",
       question: L(
-        `Where does ${company.name.en} sit among TechCo.wiki catalog peers?`,
-        `${company.name.zh}在 TechCo.wiki 目录同伴中处于什么位置？`,
+        `Where does ${company.name.en} sit among TechCo.Wiki catalog peers?`,
+        `${company.name.zh}在 TechCo.Wiki 目录同伴中处于什么位置？`,
       ),
       answer: L(
         `In this ${allCompanies.length}-company catalog, ${company.name.en} is the ${ordinal(sectorRank)} oldest of ${sectors.length} firms sharing a recorded sector, and one of ${countries.length} with headquarters in ${company.headquarters.country.en}.${earlier ? ` Next-earlier same-sector neighbor: ${earlier.name.en} (${earlier.founded.slice(0, 4)}).` : ""}${later ? ` Next-later: ${later.name.en} (${later.founded.slice(0, 4)}).` : ""} This is a catalog-order fact, not a market-share ranking.${method}`,

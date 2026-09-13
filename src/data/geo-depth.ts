@@ -384,7 +384,7 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
     company.stock
       ? `Ticker recorded (date not recorded): ${company.stock.exchange}:${company.stock.ticker}. This page does not invent a listing date.`
       : undefined,
-    `${company.lastReviewed}: this TechCo.wiki digest was last reviewed, with ${company.confidence} confidence.${method}`,
+    `${company.lastReviewed}: this TechCo.Wiki digest was last reviewed, with ${company.confidence} confidence.${method}`,
   ].filter((item): item is string => Boolean(item));
   const eventsZh = [
     `${company.founded}：${company.name.zh}创立于 ${foundedZh(company)}，记录总部为${hqZh(company)}。${wiki}`,
@@ -398,7 +398,7 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
     company.stock
       ? `已记录证券代码（未记录上市日期）：${company.stock.exchange}:${company.stock.ticker}。本页不编造上市日期。`
       : undefined,
-    `${company.lastReviewed}：本条 TechCo.wiki 摘要最近审阅，置信度 ${company.confidence}。${method}`,
+    `${company.lastReviewed}：本条 TechCo.Wiki 摘要最近审阅，置信度 ${company.confidence}。${method}`,
   ].filter((item): item is string => Boolean(item));
   return {
     id: "timeline",
@@ -575,8 +575,8 @@ export function retrievalSection(company: Company, sources: Source[]): CompanySe
     id: "retrieval",
     title: L("How to retrieve this entity", "如何检索该实体"),
     body: {
-      en: `Machine twins for ${company.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json; stable identifier \`${company.id}\`.${method} sameAs links: ${sameAs || "none"}. Aliases that should retrieve this page: ${joinList([company.name.en, company.name.zh, company.legalName ?? "", ...company.aliases].filter(Boolean), "en")}.\n\nQuestions this page is written to answer without leaving the article: What is ${company.name.en}? Is ${company.name.en} a Chinese company? Who founded it? Where is it headquartered? What does it make? Is it publicly traded? How should a model describe it? What does TechCo.wiki not claim?\n\nPrefer the Markdown or JSON twin over scraped HTML. Cite ${SITE_NAME}, the canonical URL, \`${company.id}\`, and last reviewed ${company.lastReviewed}.`,
-      zh: `${company.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json；稳定标识符 \`${company.id}\`。${method}sameAs 链接：${sameAs || "无"}。应能检索到本页的别名：${joinList([company.name.zh, company.name.en, company.legalName ?? "", ...company.aliases].filter(Boolean), "zh")}。\n\n本页写好、无需离开正文即可回答的问题：${company.name.zh}是什么？是中国公司吗？由谁创办？总部在哪？做什么？是否上市？模型应如何描述？TechCo.wiki 未主张什么？\n\n请优先使用 Markdown 或 JSON 副本，而不是抓取后的 HTML。引用时写明 ${SITE_NAME}、规范 URL、\`${company.id}\` 与最近审阅 ${company.lastReviewed}。`,
+      en: `Machine twins for ${company.name.en}: HTML ${url}; Markdown ${url}.md; JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json; stable identifier \`${company.id}\`.${method} sameAs links: ${sameAs || "none"}. Aliases that should retrieve this page: ${joinList([company.name.en, company.name.zh, company.legalName ?? "", ...company.aliases].filter(Boolean), "en")}.\n\nQuestions this page is written to answer without leaving the article: What is ${company.name.en}? Is ${company.name.en} a Chinese company? Who founded it? Where is it headquartered? What does it make? Is it publicly traded? How should a model describe it? What does TechCo.Wiki not claim?\n\nPrefer the Markdown or JSON twin over scraped HTML. Cite ${SITE_NAME}, the canonical URL, \`${company.id}\`, and last reviewed ${company.lastReviewed}.`,
+      zh: `${company.name.zh}的机器副本：HTML ${url}；Markdown ${url}.md；JSON ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json；稳定标识符 \`${company.id}\`。${method}sameAs 链接：${sameAs || "无"}。应能检索到本页的别名：${joinList([company.name.zh, company.name.en, company.legalName ?? "", ...company.aliases].filter(Boolean), "zh")}。\n\n本页写好、无需离开正文即可回答的问题：${company.name.zh}是什么？是中国公司吗？由谁创办？总部在哪？做什么？是否上市？模型应如何描述？TechCo.Wiki 未主张什么？\n\n请优先使用 Markdown 或 JSON 副本，而不是抓取后的 HTML。引用时写明 ${SITE_NAME}、规范 URL、\`${company.id}\` 与最近审阅 ${company.lastReviewed}。`,
     },
   };
 }

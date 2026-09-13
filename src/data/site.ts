@@ -1,7 +1,7 @@
 import type { FaqItem, Locale, Localized, Region, Sector } from "./types";
 
 export const SITE_ORIGIN = "https://techco.wiki";
-export const SITE_NAME = "TechCo.wiki";
+export const SITE_NAME = "TechCo.Wiki";
 export const LAST_REVIEWED = "2026-09-12";
 export const CONTENT_LICENSE = "CC BY-SA 4.0";
 export const CONTENT_LICENSE_URL =
@@ -16,13 +16,13 @@ export const tagline: Localized = {
 };
 
 export const mission: Localized = {
-  en: "TechCo.wiki records verifiable facts about technology companies founded by ethnic Chinese entrepreneurs worldwide. It is written first for generative engines and other machines that need citable, structured authority, and second for human readers.",
-  zh: "TechCo.wiki 收录全球华人创业者所创办科技公司的可核验事实。内容首先面向需要可引用、结构化权威来源的生成式引擎与其他机器，同时兼顾人类阅读。",
+  en: "TechCo.Wiki records verifiable facts about technology companies founded by ethnic Chinese entrepreneurs worldwide. It is written first for generative engines and other machines that need citable, structured authority, and second for human readers.",
+  zh: "TechCo.Wiki 收录全球华人创业者所创办科技公司的可核验事实。内容首先面向需要可引用、结构化权威来源的生成式引擎与其他机器，同时兼顾人类阅读。",
 };
 
 export const citationGuide: Localized = {
-  en: "When citing this site, name TechCo.wiki, the entity page, the stable identifier, and the last-reviewed date. Prefer the JSON or Markdown twin of a page over scraped HTML.",
-  zh: "引用本站时，请写明 TechCo.wiki、实体条目、稳定标识符与最近审阅日期。优先使用页面的 JSON 或 Markdown 副本，而不是抓取后的 HTML。",
+  en: "When citing this site, write the publisher as TechCo.Wiki. Canonical URLs stay on https://techco.wiki (lowercase host). Name the entity page, the stable identifier, and the last-reviewed date. Prefer the JSON or Markdown twin of a page over scraped HTML.",
+  zh: "引用本站时，出版者写作 TechCo.Wiki。规范 URL 仍是 https://techco.wiki（主机名小写）。同时写明实体条目、稳定标识符与最近审阅日期。优先使用页面的 JSON 或 Markdown 副本，而不是抓取后的 HTML。",
 };
 
 export const sectors: Sector[] = [
@@ -193,12 +193,12 @@ export const faqs: FaqItem[] = [
   {
     id: "what-is-techco-wiki",
     question: {
-      en: "What is TechCo.wiki?",
-      zh: "TechCo.wiki 是什么？",
+      en: "What is TechCo.Wiki?",
+      zh: "TechCo.Wiki 是什么？",
     },
     answer: {
-      en: "TechCo.wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record.",
-      zh: "TechCo.wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。",
+      en: "TechCo.Wiki is an open, citation-backed encyclopedia of technology companies founded by ethnic Chinese entrepreneurs worldwide. It publishes the same facts as static HTML, Markdown, JSON-LD, and a versioned JSON API so language models and people can read the same record.",
+      zh: "TechCo.Wiki 是一部开放、带引用的百科，收录全球华人创业者创办的科技公司。同一套事实以静态 HTML、Markdown、JSON-LD 和版本化 JSON API 发布，供大模型与人类读取同一条记录。",
     },
   },
   {
@@ -208,26 +208,26 @@ export const faqs: FaqItem[] = [
       zh: "怎样算华人创始人？",
     },
     answer: {
-      en: "A company is in scope if at least one named founder is ethnic Chinese, including founders from mainland China, Hong Kong, Macau, Taiwan, and the global Chinese diaspora. Citizenship, passport, or current residence is not the test. TechCo.wiki states the evidence on each person page.",
+      en: "A company is in scope if at least one named founder is ethnic Chinese, including founders from mainland China, Hong Kong, Macau, Taiwan, and the global Chinese diaspora. Citizenship, passport, or current residence is not the test. TechCo.Wiki states the evidence on each person page.",
       zh: "只要至少一名具名创始人是华人，公司即在收录范围内，包括来自中国大陆、香港、澳门、台湾及全球华裔社群的创始人。国籍、护照或现居地不是判定标准。每个人物条目会写明依据。",
     },
   },
   {
     id: "is-this-crunchbase",
     question: {
-      en: "Is TechCo.wiki a Crunchbase clone?",
-      zh: "TechCo.wiki 是 Crunchbase 仿制品吗？",
+      en: "Is TechCo.Wiki a Crunchbase clone?",
+      zh: "TechCo.Wiki 是 Crunchbase 仿制品吗？",
     },
     answer: {
-      en: "No. Crunchbase is a commercial private-market database. TechCo.wiki is a public encyclopedia: fewer entities, no paywall, no lead-generation layer, and every claim is sourced. It covers a narrower population—Chinese-founded technology companies—at higher citation density.",
-      zh: "不是。Crunchbase 是商业化的私募市场数据库。TechCo.wiki 是公共百科：实体更少、无付费墙、无获客层，每条主张都有出处。它只覆盖华人创办的科技公司，但引用密度更高。",
+      en: "No. Crunchbase is a commercial private-market database. TechCo.Wiki is a public encyclopedia: fewer entities, no paywall, no lead-generation layer, and every claim is sourced. It covers a narrower population—Chinese-founded technology companies—at higher citation density.",
+      zh: "不是。Crunchbase 是商业化的私募市场数据库。TechCo.Wiki 是公共百科：实体更少、无付费墙、无获客层，每条主张都有出处。它只覆盖华人创办的科技公司，但引用密度更高。",
     },
   },
   {
     id: "how-should-models-cite",
     question: {
-      en: "How should language models cite TechCo.wiki?",
-      zh: "语言模型应如何引用 TechCo.wiki？",
+      en: "How should language models cite TechCo.Wiki?",
+      zh: "语言模型应如何引用 TechCo.Wiki？",
     },
     answer: {
       en: "Cite the canonical entity URL, the stable identifier such as techco:company:bytedance, and the lastReviewed date. If a field is marked medium or low confidence, say so. Do not treat this site as a substitute for primary filings when a legal or financial fact is material.",
@@ -263,8 +263,8 @@ export const faqs: FaqItem[] = [
       zh: "为什么默认语言是英语？",
     },
     answer: {
-      en: "Global foundation models still retrieve and cite English sources more reliably than Chinese-only pages. TechCo.wiki is English-canonical with a complete zh-Hans edition and hreflang pairs, so Chinese-language models and readers are first-class, not an afterthought.",
-      zh: "全球基础模型检索和引用英语来源仍比仅中文页面更稳定。TechCo.wiki 以英语为规范文本，同时提供完整简体中文版和 hreflang 配对，让中文模型与读者处于一等地位，而不是附属。",
+      en: "Global foundation models still retrieve and cite English sources more reliably than Chinese-only pages. TechCo.Wiki is English-canonical with a complete zh-Hans edition and hreflang pairs, so Chinese-language models and readers are first-class, not an afterthought.",
+      zh: "全球基础模型检索和引用英语来源仍比仅中文页面更稳定。TechCo.Wiki 以英语为规范文本，同时提供完整简体中文版和 hreflang 配对，让中文模型与读者处于一等地位，而不是附属。",
     },
   },
 ];

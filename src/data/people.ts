@@ -427,8 +427,8 @@ export const people: Person[] = [
       zh: "黄仁勋是台裔美国工程师，联合创办英伟达并担任总裁兼首席执行官。",
     },
     lead: {
-      en: "Jensen Huang (Jen-Hsun Huang) was born in Tainan, Taiwan, and co-founded NVIDIA in 1993.[s1] He has been the company's only chief executive. TechCo.wiki includes him as a Chinese-heritage founder of a U.S. semiconductor company, not as the founder of a Chinese firm.",
-      zh: "黄仁勋出生于台湾台南，1993 年联合创办英伟达。[s1] 他一直是公司唯一的首席执行官。TechCo.wiki 将其列为美国半导体公司的华裔创始人，而不是中国公司创始人。",
+      en: "Jensen Huang (Jen-Hsun Huang) was born in Tainan, Taiwan, and co-founded NVIDIA in 1993.[s1] He has been the company's only chief executive. TechCo.Wiki includes him as a Chinese-heritage founder of a U.S. semiconductor company, not as the founder of a Chinese firm.",
+      zh: "黄仁勋出生于台湾台南，1993 年联合创办英伟达。[s1] 他一直是公司唯一的首席执行官。TechCo.Wiki 将其列为美国半导体公司的华裔创始人，而不是中国公司创始人。",
     },
     birthPlace: { en: "Tainan, Taiwan", zh: "台湾台南" },
     roles: [{ en: "Engineer and chief executive", zh: "工程师与首席执行官" }],
