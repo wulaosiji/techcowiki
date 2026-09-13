@@ -1,0 +1,12 @@
+---
+import PersonPage from "../../../views/PersonPage.astro";
+import { allPeople, getPerson } from "../../../data/catalog";
+
+export function getStaticPaths() {
+  return allPeople().map((person) => ({ params: { slug: person.slug } }));
+}
+
+const person = getPerson(Astro.params.slug!);
+if (!person) throw new Error("Missing person");
+---
+<PersonPage locale="zh" person={person} />

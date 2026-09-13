@@ -1,0 +1,123 @@
+---
+import { compactSearchText } from "../lib/search";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import EntityCard from "../components/EntityCard.astro";
+import { allCompanies, allPeople, companyHaystack, personHaystack, personRegions, personSectors } from "../data/catalog";
+import { searchGraph } from "../lib/schema";
+import { regions, sectors, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, t } from "../lib/i18n";
+import { catalogNav } from "../lib/nav";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const companies = allCompanies();
+const people = allPeople();
+---
+
+<BaseLayout
+  locale={locale}
+  title={t(ui.search, locale)}
+  description={t(ui.search, locale)}
+  path="/search"
+  jsonLd={searchGraph(locale)}
+>
+  <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: t(ui.navSearch, locale) },
+      ]}
+    />
+    <h1>{t(ui.search, locale)}</h1>
+    <div class="chips">
+      {catalogNav(locale).map((link) => (
+        <a class="chip" href={link.href}>{link.label}</a>
+      ))}
+    </div>
+    <p class="meta">
+      {locale === "zh"
+        ? "按名称、别名、产品、创始人、总部或证券代码搜索。可用空格组合关键词，并按行业和地区缩小范围。"
+        : "Search by name, alias, product, founder, headquarters, or ticker. Combine keywords with spaces and narrow results by sector and region."}
+    </p>
+    <form class="search-form" method="get" role="search">
+      <input type="search" name="q" id="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
+      <select name="sector" id="sector" aria-label={t(ui.filterSector, locale)}>
+        <option value="">{t(ui.filterSector, locale)}</option>
+        {sectors.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+      </select>
+      <select name="region" id="region" aria-label={t(ui.filterRegion, locale)}>
+        <option value="">{t(ui.filterRegion, locale)}</option>
+        {regions.map((item) => <option value={item.slug}>{item.name[locale]}</option>)}
+      </select>
+      <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
+    </form>
+    <p class="meta" id="result-count" role="status" data-locale={locale}></p>
+    <p class="empty-state" id="empty" hidden>{t(ui.noResults, locale)}</p>
+    <section class="result-group" data-results>
+    <h2>{t(ui.navCompanies, locale)}</h2>
+    <div class="grid" id="company-grid">
+      {companies.map((company) => (
+        <div
+          class="entity"
+          data-kind="company"
+          data-haystack={compactSearchText(companyHaystack(company))}
+          data-sector={company.sectors.join(" ")}
+          data-region={company.regions.join(" ")}
+        >
+          <EntityCard locale={locale} company={company} />
+        </div>
+      ))}
+    </div>
+    </section>
+    <section class="result-group" data-results>
+    <h2>{t(ui.navPeople, locale)}</h2>
+    <div class="grid" id="people-grid">
+      {people.map((person) => (
+        <div
+          class="entity"
+          data-kind="person"
+          data-haystack={compactSearchText(personHaystack(person))}
+          data-sector={personSectors(person).join(" ")}
+          data-region={personRegions(person).join(" ")}
+        >
+          <EntityCard locale={locale} person={person} />
+        </div>
+      ))}
+    </div>
+    </section>
+  </div>
+  <script>
+    import { matchesSearch } from "../lib/search";
+
+    const params = new URLSearchParams(window.location.search);
+    const qInput = document.querySelector<HTMLInputElement>("#q")!;
+    const sectorInput = document.querySelector<HTMLSelectElement>("#sector")!;
+    const regionInput = document.querySelector<HTMLSelectElement>("#region")!;
+    qInput.value = params.get("q") ?? "";
+    sectorInput.value = params.get("sector") ?? "";
+    regionInput.value = params.get("region") ?? "";
+    // Unknown URL filters resolve to the empty selection, just like the form.
+    const filters = { query: qInput.value, sector: sectorInput.value, region: regionInput.value };
+    const entities = [...document.querySelectorAll<HTMLElement>(".entity")];
+    for (const node of entities) {
+      node.hidden = !matchesSearch({
+        text: node.dataset.haystack ?? "",
+        sectors: (node.dataset.sector ?? "").split(" "),
+        regions: (node.dataset.region ?? "").split(" "),
+      }, filters);
+    }
+    const count = entities.filter((node) => !node.hidden).length;
+    document.querySelector<HTMLElement>("#empty")!.hidden = count > 0;
+    const status = document.querySelector<HTMLElement>("#result-count")!;
+    status.textContent = status.dataset.locale === "zh" ? `找到 ${count} 个结果` : `${count} results`;
+    for (const group of document.querySelectorAll<HTMLElement>("[data-results]")) {
+      group.hidden = ![...group.querySelectorAll<HTMLElement>(".entity")].some((node) => !node.hidden);
+    }
+  </script>
+</BaseLayout>

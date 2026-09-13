@@ -1,0 +1,9 @@
+---
+import CatalogPage from "../../../views/CatalogPage.astro";
+import { sectors } from "../../../data/site";
+
+export function getStaticPaths() {
+  return sectors.map((sector) => ({ params: { slug: sector.slug } }));
+}
+---
+<CatalogPage locale="zh" kind="sector" slug={Astro.params.slug} />

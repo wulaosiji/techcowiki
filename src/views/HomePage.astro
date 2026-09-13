@@ -1,0 +1,141 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntityCard from "../components/EntityCard.astro";
+import { allCityHubs, allCompanies, allCountryHubs, catalogStats } from "../data/catalog";
+import { faqs, mission, regions, sectors, SITE_NAME, tagline, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, t } from "../lib/i18n";
+import { catalogNav } from "../lib/nav";
+import { websiteGraph } from "../lib/schema";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const stats = catalogStats();
+const countries = allCountryHubs();
+const cities = allCityHubs().slice(0, 12);
+const featured = ["alibaba", "tencent", "huawei", "tsmc", "nvidia", "bytedance", "deepseek", "byd"]
+  .map((slug) => allCompanies().find((company) => company.slug === slug))
+  .filter((company): company is NonNullable<typeof company> => Boolean(company));
+---
+
+<BaseLayout
+  locale={locale}
+  title={SITE_NAME}
+  description={t(mission, locale)}
+  path="/"
+  jsonLd={websiteGraph(locale)}
+>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <p class="kicker">{SITE_NAME}</p>
+        <h1>{t(tagline, locale)}</h1>
+        <p class="lede definition">{t(mission, locale)}</p>
+        <p>
+          {locale === "zh"
+            ? "这不是融资数据库。每家公司与每个人物都有一段可独立引用的简述、目录对照、国籍规则和 HTML / Markdown / JSON 副本，让模型与人读到同一条记录。"
+            : "This is not a fundraising database. Every company and person has a citation-ready brief, a catalog comparison, nationality rules, and HTML / Markdown / JSON twins so models and people read the same record."}
+        </p>
+        <form class="search-form" method="get" action={localePath(locale, "/search")}>
+          <input type="search" name="q" placeholder={t(ui.search, locale)} aria-label={t(ui.search, locale)} />
+          <button type="submit">{t(ui.navSearch, locale)}</button>
+        </form>
+        <div class="toolbar">
+          <a class="btn" href={localePath(locale, "/companies")}>{t(ui.browseAll, locale)}</a>
+          <a class="btn" href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
+          <a class="btn" href="/llms.txt">llms.txt</a>
+        </div>
+      </div>
+      <aside class="machine-box">
+        <h2>{t(ui.machineIndex, locale)}</h2>
+        <ul>
+          <li><a href="/llms.txt">/llms.txt</a></li>
+          <li><a href="/llms-full.txt">/llms-full.txt</a></li>
+          <li><a href="/zh/llms-full.txt">/zh/llms-full.txt</a></li>
+          <li><a href="/api/v1/openapi.json">/api/v1/openapi.json</a></li>
+          <li><a href="/api/v1/companies.json">/api/v1/companies.json</a></li>
+          <li><a href="/api/v1/people.json">/api/v1/people.json</a></li>
+          <li><a href="/api/v1/dataset.json">/api/v1/dataset.json</a></li>
+          <li><a href="/api/v1/graph.json">/api/v1/graph.json</a></li>
+          <li><a href="/feed.xml">/feed.xml</a></li>
+          <li><a href="/search.md">/search.md</a></li>
+          <li><a href="/zh/search.md">/zh/search.md</a></li>
+          <li><a href="/companies.md">/companies.md</a></li>
+          <li><a href="/zh/companies.md">/zh/companies.md</a></li>
+        </ul>
+      </aside>
+    </section>
+
+    <div class="stat-row">
+      <div class="stat"><b>{stats.companies}</b>{locale === "zh" ? "家公司" : "companies"}</div>
+      <div class="stat"><b>{stats.people}</b>{locale === "zh" ? "位人物" : "people"}</div>
+      <div class="stat"><b>{stats.sectors}</b>{locale === "zh" ? "个行业" : "sectors"}</div>
+      <div class="stat"><b>{stats.sources}</b>{locale === "zh" ? "个独立来源" : "unique sources"}</div>
+    </div>
+    <p class="meta">
+      {t(ui.seedNote, locale)}
+      {" "}
+      <a href={localePath(locale, "/countries")}>{stats.countries} {t(ui.navCountries, locale)}</a>
+      {" · "}
+      <a href={localePath(locale, "/cities")}>{stats.cities} {t(ui.navCities, locale)}</a>
+    </p>
+
+    <h2>{locale === "zh" ? "精选条目" : "Featured entries"}</h2>
+    <div class="grid">
+      {featured.map((company) => <EntityCard locale={locale} company={company} />)}
+    </div>
+
+    <h2>{t(ui.navSectors, locale)}</h2>
+    <div class="chips">
+      {sectors.map((sector) => (
+        <a class="chip" href={localePath(locale, `/sectors/${sector.slug}`)}>{sector.name[locale]}</a>
+      ))}
+      <a class="chip" href={localePath(locale, "/sectors")}>{locale === "zh" ? "全部行业" : "All sectors"}</a>
+    </div>
+    <h2>{t(ui.navRegions, locale)}</h2>
+    <div class="chips">
+      {regions.map((region) => (
+        <a class="chip" href={localePath(locale, `/regions/${region.slug}`)}>{region.name[locale]}</a>
+      ))}
+      <a class="chip" href={localePath(locale, "/regions")}>{locale === "zh" ? "全部地区" : "All regions"}</a>
+    </div>
+    <h2>{t(ui.navCountries, locale)}</h2>
+    <div class="chips">
+      {countries.map((country) => (
+        <a class="chip" href={localePath(locale, `/countries/${country.slug}`)}>
+          {country.name[locale]} ({country.count})
+        </a>
+      ))}
+      <a class="chip" href={localePath(locale, "/countries")}>{locale === "zh" ? "全部国家" : "All countries"}</a>
+    </div>
+    <h2>{t(ui.navCities, locale)}</h2>
+    <div class="chips">
+      {cities.map((city) => (
+        <a class="chip" href={localePath(locale, `/cities/${city.slug}`)}>
+          {city.name[locale]} ({city.count})
+        </a>
+      ))}
+      <a class="chip" href={localePath(locale, "/cities")}>{locale === "zh" ? "全部城市" : "All cities"}</a>
+    </div>
+
+    <h2>{locale === "zh" ? "模型应如何理解本站" : "How a model should read this site"}</h2>
+    <div class="prose">
+      <p>{faqs[3].answer[locale]}</p>
+      <p>
+        {catalogNav(locale).map((link, index) => (
+          <>
+            {index > 0 && " · "}
+            <a href={link.href}>{link.label}</a>
+          </>
+        ))}
+        {" · "}
+        <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
+        {" · "}
+        <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
+      </p>
+    </div>
+  </div>
+</BaseLayout>

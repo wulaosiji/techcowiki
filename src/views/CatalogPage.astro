@@ -1,0 +1,293 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import EntityCard from "../components/EntityCard.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import {
+  allCityHubs,
+  allCompanies,
+  allCountryHubs,
+  allPeople,
+  companiesByRegion,
+  companiesBySector,
+  companiesInCity,
+  companiesInCountry,
+  headquartersBreakdown,
+  peopleForCompanyList,
+} from "../data/catalog";
+import { countrySlug, regionForCountry } from "../data/places";
+import { regions, sectors, SITE_ORIGIN, ui } from "../data/site";
+import type { Locale } from "../data/types";
+import { localePath, pageUrl, t } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  kind: "companies" | "people" | "sector" | "region" | "country" | "city";
+  slug?: string;
+}
+
+const { locale, kind, slug } = Astro.props;
+const companies =
+  kind === "sector" && slug
+    ? companiesBySector(slug)
+    : kind === "region" && slug
+      ? companiesByRegion(slug)
+      : kind === "country" && slug
+        ? companiesInCountry(slug)
+        : kind === "city" && slug
+          ? companiesInCity(slug)
+          : allCompanies();
+const people = kind === "people" ? allPeople() : peopleForCompanyList(companies);
+const sector = sectors.find((item) => item.slug === slug);
+const region = regions.find((item) => item.slug === slug);
+const country = allCountryHubs().find((item) => item.slug === slug);
+const city = allCityHubs().find((item) => item.slug === slug);
+const title =
+  kind === "people"
+    ? t(ui.navPeople, locale)
+    : kind === "sector" && sector
+      ? sector.name[locale]
+      : kind === "region" && region
+        ? region.name[locale]
+        : kind === "country" && country
+          ? country.name[locale]
+          : kind === "city" && city
+            ? city.name[locale]
+            : t(ui.navCompanies, locale);
+const description =
+  kind === "sector" && sector
+    ? sector.definition[locale]
+    : kind === "region" && region
+      ? region.definition[locale]
+      : kind === "country" && country
+        ? locale === "zh"
+          ? `总部位于${country.name.zh}（${country.code}）的已记录公司。总部国家与华人创始人收录标准相互独立。`
+          : `Companies recorded with headquarters in ${country.name.en} (${country.code}). Headquarters country is independent of the Chinese-founder inclusion test.`
+        : kind === "city" && city
+          ? locale === "zh"
+            ? `总部位于${city.name.zh}、${city.country.zh}的已记录公司。`
+            : `Companies recorded with headquarters in ${city.name.en}, ${city.country.en}.`
+          : kind === "people"
+            ? locale === "zh"
+              ? "TechCo.Wiki 收录的华人科技创业者。"
+              : "Chinese-heritage technology founders recorded by TechCo.Wiki."
+            : locale === "zh"
+              ? "华人创办科技公司的开放目录。"
+              : "Open catalog of Chinese-founded technology companies.";
+const path =
+  kind === "people"
+    ? "/people"
+    : kind === "sector"
+      ? `/sectors/${slug}`
+      : kind === "region"
+        ? `/regions/${slug}`
+        : kind === "country"
+          ? `/countries/${slug}`
+          : kind === "city"
+            ? `/cities/${slug}`
+            : "/companies";
+const listed = kind === "people" ? people : companies;
+const crumbs = [
+  { href: localePath(locale, "/"), label: t(ui.home, locale) },
+  kind === "people"
+    ? { href: localePath(locale, "/people"), label: t(ui.navPeople, locale) }
+    : kind === "sector"
+      ? { href: localePath(locale, "/sectors"), label: t(ui.navSectors, locale) }
+      : kind === "region"
+        ? { href: localePath(locale, "/regions"), label: t(ui.navRegions, locale) }
+        : kind === "country"
+          ? { href: localePath(locale, "/countries"), label: t(ui.navCountries, locale) }
+          : kind === "city"
+            ? { href: localePath(locale, "/cities"), label: t(ui.navCities, locale) }
+            : { href: localePath(locale, "/companies"), label: t(ui.navCompanies, locale) },
+  kind === "companies" || kind === "people" ? undefined : { label: title },
+].filter((item): item is { href?: string; label: string } => Boolean(item));
+const siblingHubs =
+  kind === "sector"
+    ? sectors
+        .filter((item) => item.slug !== slug)
+        .map((item) => ({ href: localePath(locale, `/sectors/${item.slug}`), label: item.name[locale] }))
+    : kind === "region"
+      ? regions
+          .filter((item) => item.slug !== slug)
+          .map((item) => ({ href: localePath(locale, `/regions/${item.slug}`), label: item.name[locale] }))
+      : kind === "country"
+        ? allCountryHubs()
+            .filter((item) => item.slug !== slug)
+            .slice(0, 8)
+            .map((item) => ({ href: localePath(locale, `/countries/${item.slug}`), label: item.name[locale] }))
+        : kind === "city"
+          ? allCityHubs()
+              .filter((item) => item.slug !== slug && item.countryCode === city?.countryCode)
+              .map((item) => ({ href: localePath(locale, `/cities/${item.slug}`), label: item.name[locale] }))
+          : [];
+const placeLinks = headquartersBreakdown(kind === "people" ? [] : companies).map((row) => ({
+  href: localePath(locale, `/countries/${countrySlug(row.countryCode)}`),
+  label: `${row.country[locale]} (${row.count})`,
+}));
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: title,
+  description,
+  url: pageUrl(locale, path),
+  isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+  about: { "@id": `${SITE_ORIGIN}/#org` },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: listed.length,
+    itemListElement: listed.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name[locale],
+      url:
+        kind === "people"
+          ? pageUrl(locale, `/people/${item.slug}`)
+          : pageUrl(locale, `/companies/${item.slug}`),
+    })),
+  },
+};
+---
+
+<BaseLayout locale={locale} title={title} description={description} path={path} jsonLd={jsonLd}>
+  <div class="wrap">
+    <Breadcrumbs locale={locale} items={crumbs} />
+    <p class="kicker">{t(ui.catalog, locale)}</p>
+    <h1>{title}</h1>
+    <p class="lede">{description}</p>
+    {kind === "sector" && sector && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本行业索引按已记录产品线归类，不按创始人国籍归类。下列 ${companies.length} 家公司进入「${sector.name.zh}」。总部国家与行业彼此独立；海外或台湾公司不应仅因出现在本表就被写成中国公司。总部分布：${headquartersBreakdown(companies).map((row) => `${row.country.zh} ${row.count}`).join("、")}。`
+          : `This sector index files companies by recorded product lines, not by founder nationality. ${companies.length} companies are in ${sector.name.en}. Headquarters country is independent of sector; a US- or Taiwan-headquartered firm listed here is not a Chinese company. Headquarters split: ${headquartersBreakdown(companies).map((row) => `${row.country.en} ${row.count}`).join(", ")}.`}
+      </p>
+    )}
+    {kind === "region" && region && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本地区索引按已记录总部归类。ISO 代码：${region.countryCodes.join("、") || "无"}。下列 ${companies.length} 家公司总部位于此。收录依据仍是具名华人创始人，不是总部国家。总部分布：${headquartersBreakdown(companies).map((row) => `${row.country.zh} ${row.count}`).join("、")}。`
+          : `This region index groups companies by recorded headquarters. ISO codes: ${region.countryCodes.join(", ") || "none"}. ${companies.length} companies are filed here. Inclusion is still the named Chinese-founder test, not headquarters country. Headquarters split: ${headquartersBreakdown(companies).map((row) => `${row.country.en} ${row.count}`).join(", ")}.`}
+      </p>
+    )}
+    {kind === "country" && country && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本国家枢纽只收录记录总部在${country.name.zh}的公司，不是“该国全部华人企业”普查。ISO 3166-1 alpha-2：${country.code}。${country.region ? `宏观地区见${country.region.name.zh}。` : ""}收录测试仍是具名华人创始人。`
+          : `This country hub lists firms whose recorded headquarters country is ${country.name.en}, not a census of every Chinese-founded firm in the country. ISO 3166-1 alpha-2: ${country.code}. ${country.region ? `The macro-region hub is ${country.region.name.en}.` : ""} Inclusion is still the named Chinese-founder test.`}
+      </p>
+    )}
+    {kind === "city" && city && (
+      <p class="lead">
+        {locale === "zh"
+          ? `本城市枢纽列出记录总部在${city.name.zh}的公司。总部国家是${city.country.zh}（${city.countryCode}）。同城不等于同一国籍标签。`
+          : `This city hub lists firms whose recorded headquarters city is ${city.name.en}. The headquarters country is ${city.country.en} (${city.countryCode}). Sharing a city is not a shared nationality label.`}
+      </p>
+    )}
+    {kind === "people" && (
+      <p class="lead">
+        {locale === "zh"
+          ? "每个人物条目都有可独立引用的简述、可抽取事实卡、身份消解、关联公司日期、履历、姓名变体、关联公司（含总部国家）、同公司人物、目录对照、收录说明、模型表述说明、问答、未记录字段、公共记录与检索说明。描述其创办的公司时，使用该公司条目上的总部国家，而不是用创始人族群身份改写公司国籍。"
+          : "Each person page has a citation-ready brief, extractable fact cards, identity notes, associated-company dates, career, name variants, associated companies with headquarters countries, a same-company network, a catalog comparison, inclusion notes, model-description rules, FAQ, unrecorded fields, a public-record close, and retrieval instructions. When describing companies they founded, use the headquarters country on the company page."}
+      </p>
+    )}
+    {kind === "companies" && (
+      <p class="lead">
+        {locale === "zh"
+          ? "每家公司条目都有可独立引用的简述、可抽取事实卡、身份消解、时间线、地理与行业语境、具名创始人、业务、公司形式、相关公司、目录对照、模型表述说明、问答、未记录字段、公共记录与检索说明。HTML、Markdown 与 JSON 复述同一套事实。"
+          : "Each company page has a citation-ready brief, extractable fact cards, identity notes, a dated-facts list, geography and sector context, named founders, operations, corporate form, catalog peers, a catalog comparison, model-description notes, FAQ, unrecorded fields, a public-record close, and retrieval instructions. HTML, Markdown, and JSON reprint the same facts."}
+      </p>
+    )}
+    {kind !== "people" && (
+      <form class="filters" method="get" action={localePath(locale, "/search")}>
+        <input type="search" name="q" aria-label={t(ui.search, locale)} placeholder={t(ui.search, locale)} />
+        <select name="sector" aria-label={t(ui.filterSector, locale)}>
+          <option value="">{t(ui.filterSector, locale)}</option>
+          {sectors.map((item) => (
+            <option value={item.slug} selected={kind === "sector" && item.slug === slug}>
+              {item.name[locale]}
+            </option>
+          ))}
+        </select>
+        <select name="region" aria-label={t(ui.filterRegion, locale)}>
+          <option value="">{t(ui.filterRegion, locale)}</option>
+          {regions.map((item) => (
+            <option value={item.slug} selected={kind === "region" && item.slug === slug}>
+              {item.name[locale]}
+            </option>
+          ))}
+        </select>
+        <button type="submit">{locale === "zh" ? "筛选" : "Filter"}</button>
+      </form>
+    )}
+    {placeLinks.length > 0 && kind !== "people" && (
+      <div class="chips">
+        {placeLinks.map((link) => (
+          <a class="chip" href={link.href}>{link.label}</a>
+        ))}
+      </div>
+    )}
+    <p class="meta">{kind === "people" ? people.length : companies.length} {kind === "people" ? t(ui.navPeople, locale) : t(ui.navCompanies, locale)}</p>
+    <div class="grid">
+      {kind === "people"
+        ? people.map((person) => <EntityCard locale={locale} person={person} />)
+        : companies.map((company) => <EntityCard locale={locale} company={company} />)}
+    </div>
+    {kind !== "people" && people.length > 0 && (
+      <>
+        <h2>{t(ui.navPeople, locale)}</h2>
+        <p class="meta">
+          {locale === "zh"
+            ? "下列人物与本枢纽中的公司有记录关联。"
+            : "People recorded as linked to companies in this hub."}
+        </p>
+        <div class="grid">
+          {people.slice(0, 24).map((person) => <EntityCard locale={locale} person={person} />)}
+        </div>
+      </>
+    )}
+    <SeeAlso
+      locale={locale}
+      groups={[
+        {
+          title: locale === "zh" ? "相邻枢纽" : "Nearby hubs",
+          links: siblingHubs.slice(0, 12),
+        },
+        {
+          title: locale === "zh" ? "地点" : "Places",
+          links: [
+            country?.region
+              ? { href: localePath(locale, `/regions/${country.region.slug}`), label: country.region.name[locale] }
+              : undefined,
+            city
+              ? { href: localePath(locale, `/countries/${countrySlug(city.countryCode)}`), label: city.country[locale] }
+              : undefined,
+            city && regionForCountry(city.countryCode)
+              ? {
+                  href: localePath(locale, `/regions/${regionForCountry(city.countryCode)!.slug}`),
+                  label: regionForCountry(city.countryCode)!.name[locale],
+                }
+              : undefined,
+            ...(kind === "country" && country
+              ? allCityHubs()
+                  .filter((item) => item.countryCode === country.code)
+                  .map((item) => ({ href: localePath(locale, `/cities/${item.slug}`), label: item.name[locale] }))
+              : []),
+          ].filter((item): item is { href: string; label: string } => Boolean(item)),
+        },
+        {
+          title: locale === "zh" ? "目录" : "Catalog",
+          links: [
+            { href: localePath(locale, "/companies"), label: t(ui.navCompanies, locale) },
+            { href: localePath(locale, "/people"), label: t(ui.navPeople, locale) },
+            { href: localePath(locale, "/sectors"), label: t(ui.navSectors, locale) },
+            { href: localePath(locale, "/regions"), label: t(ui.navRegions, locale) },
+            { href: localePath(locale, "/countries"), label: t(ui.navCountries, locale) },
+            { href: localePath(locale, "/cities"), label: t(ui.navCities, locale) },
+            { href: localePath(locale, "/methodology"), label: t(ui.navMethod, locale) },
+            { href: localePath(locale, "/for-models"), label: t(ui.navForModels, locale) },
+          ],
+        },
+      ]}
+    />
+  </div>
+</BaseLayout>

@@ -1,0 +1,39 @@
+{
+  "name": "techcowiki",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "GEO-first open encyclopedia of Chinese-founded technology companies.",
+  "homepage": "https://techco.wiki",
+  "license": "MIT AND CC-BY-SA-4.0",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1 --port 4321",
+    "build": "astro build",
+    "preview": "astro preview --host 127.0.0.1 --port 4321",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test && npm run build && npm run harness",
+    "harness": "node scripts/harness/verify-dist.mjs && node scripts/harness/verify-site.mjs",
+    "harness:host": "node scripts/harness/verify-host.mjs",
+    "e2e": "node scripts/harness/run-e2e.mjs",
+    "pages:upload": "node scripts/harness/pages-upload.mjs",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name=techcowiki --commit-dirty=true",
+    "typecheck": "astro check",
+    "preview:pages": "wrangler pages dev dist --ip 127.0.0.1 --port 8788",
+    "e2e:pages": "node scripts/harness/run-e2e.mjs --pages"
+  },
+  "dependencies": {
+    "astro": "7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.20.2",
+    "parse5": "^8.0.1",
+    "puppeteer-core": "^25.10.0",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.34.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

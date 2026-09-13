@@ -1,0 +1,264 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import CitedBody from "../components/CitedBody.astro";
+import OnThisPage from "../components/OnThisPage.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { getCompany, relatedPeople } from "../data/catalog";
+import { citySlug, countrySlug } from "../data/places";
+import { confidenceLabel, sectors, SITE_NAME, ui } from "../data/site";
+import type { Locale, Person } from "../data/types";
+import { clipPlain, renderCitedHtml, splitParagraphs } from "../lib/citations";
+import { formatDate, localePath, markdownPath, pageUrl, t } from "../lib/i18n";
+import { docNav } from "../lib/nav";
+import { personGraph } from "../lib/schema";
+
+interface Props {
+  locale: Locale;
+  person: Person;
+}
+
+const { locale, person } = Astro.props;
+const related = relatedPeople(person, 6);
+const linkedCompanies = person.companies
+  .map((item) => getCompany(item.companySlug))
+  .filter((item): item is NonNullable<typeof item> => Boolean(item));
+const placeLinks = [
+  ...new Map(
+    linkedCompanies.flatMap((company) => [
+      ...company.sectors.map((slug) => [
+        slug,
+        { href: localePath(locale, `/sectors/${slug}`), label: sectors.find((item) => item.slug === slug)?.name[locale] ?? slug },
+      ] as const),
+      [
+        `country:${company.headquarters.countryCode}`,
+        {
+          href: localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+          label: company.headquarters.country[locale],
+        },
+      ] as const,
+      [
+        `city:${citySlug(company.headquarters.city.en)}`,
+        {
+          href: localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
+          label: company.headquarters.city[locale],
+        },
+      ] as const,
+    ]),
+  ).values(),
+];
+const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${person.slug}`)}, last reviewed ${person.lastReviewed}, ${person.id}.`;
+const toc = [
+  (person.claims ?? []).length > 0
+    ? { id: "recorded-facts", title: t(ui.claims, locale) }
+    : undefined,
+  ...(person.sections ?? [])
+    .filter((section) => section.id !== "faq")
+    .map((section) => ({ id: section.id, title: t(section.title, locale) })),
+  (person.faq ?? []).length > 0 ? { id: "faq", title: t(ui.faq, locale) } : undefined,
+  { id: "company-links", title: t(ui.navCompanies, locale) },
+  { id: "see-also", title: t(ui.related, locale) },
+  { id: "sources", title: t(ui.sources, locale) },
+].filter((item): item is { id: string; title: string } => Boolean(item));
+---
+
+<BaseLayout
+  locale={locale}
+  title={person.name[locale]}
+  description={clipPlain(person.definition[locale], 220)}
+  path={`/people/${person.slug}`}
+  jsonLd={personGraph(person, locale)}
+  lastModified={person.lastReviewed}
+>
+  <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { href: localePath(locale, "/people"), label: t(ui.navPeople, locale) },
+        ...(linkedCompanies[0]
+          ? [
+              {
+                href: localePath(locale, `/countries/${countrySlug(linkedCompanies[0].headquarters.countryCode)}`),
+                label: linkedCompanies[0].headquarters.country[locale],
+              },
+              {
+                href: localePath(locale, `/cities/${citySlug(linkedCompanies[0].headquarters.city.en)}`),
+                label: linkedCompanies[0].headquarters.city[locale],
+              },
+            ]
+          : []),
+        { label: person.name[locale] },
+      ]}
+    />
+    <div class="article-layout">
+      <article>
+        <p class="entity-id">{person.id}</p>
+        <h1>{person.name[locale]}</h1>
+        <p class="aliases">{person.name[locale === "zh" ? "en" : "zh"]}</p>
+        <p class="definition" set:html={renderCitedHtml(person.definition[locale], person.sources)} />
+        {splitParagraphs(person.lead[locale]).map((paragraph) => (
+          <p class="lead" set:html={renderCitedHtml(paragraph, person.sources)} />
+        ))}
+        <div class="toolbar">
+          <span>{t(ui.lastReviewed, locale)}: {formatDate(person.lastReviewed, locale)}</span>
+          <span>
+            {t(ui.confidence, locale)}:
+            <b class={`conf-${person.confidence}`}>{t(confidenceLabel[person.confidence], locale)}</b>
+          </span>
+          <a href={markdownPath(locale, `/people/${person.slug}`)}>{t(ui.markdown, locale)}</a>
+          <a href={`/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
+        </div>
+        <OnThisPage locale={locale} items={toc} />
+        {(person.claims ?? []).length > 0 && (
+          <section id="recorded-facts">
+            <h2>{t(ui.claims, locale)}</h2>
+            <dl class="claims">
+              {person.claims!.map((item) => (
+                <div>
+                  <dt>{item.label[locale]}</dt>
+                  <dd set:html={renderCitedHtml(item.value[locale], person.sources)} />
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+        {
+          (person.sections ?? [])
+            .filter((section) => section.id !== "faq")
+            .map((section) => (
+              <section id={section.id}>
+                <h2>{t(section.title, locale)}</h2>
+                <CitedBody text={section.body[locale]} sources={person.sources} />
+              </section>
+            ))
+        }
+        {(person.faq ?? []).length > 0 && (
+          <section id="faq">
+            <h2>{t(ui.faq, locale)}</h2>
+            {person.faq!.map((item) => (
+              <div class="faq-item" id={`faq-${item.id}`}>
+                <h3>{item.question[locale]}</h3>
+                <CitedBody text={item.answer[locale]} sources={person.sources} />
+              </div>
+            ))}
+          </section>
+        )}
+        <h2 id="company-links">{t(ui.navCompanies, locale)}</h2>
+        <ul>
+          {person.companies.map((item) => {
+            const company = getCompany(item.companySlug);
+            return (
+              <li>
+                {company ? (
+                  <a href={localePath(locale, `/companies/${company.slug}`)}>{company.name[locale]}</a>
+                ) : (
+                  item.companySlug
+                )}
+                {" — "}
+                {t(item.role, locale)}
+                {company ? (
+                  <>
+                    {" · "}
+                    <a href={localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}>
+                      {company.headquarters.city[locale]}
+                    </a>
+                    {", "}
+                    <a href={localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}>
+                      {company.headquarters.country[locale]}
+                    </a>
+                  </>
+                ) : (
+                  ""
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        <SeeAlso
+          locale={locale}
+          groups={[
+            {
+              title: t(ui.navCompanies, locale),
+              links: linkedCompanies.map((company) => ({
+                href: localePath(locale, `/companies/${company.slug}`),
+                label: company.name[locale],
+              })),
+            },
+            {
+              title: t(ui.navPeople, locale),
+              links: related.map((item) => ({
+                href: localePath(locale, `/people/${item.slug}`),
+                label: item.name[locale],
+              })),
+            },
+            {
+              title: locale === "zh" ? "地点与行业" : "Places and sectors",
+              links: placeLinks,
+            },
+            {
+              title: locale === "zh" ? "文档" : "Docs",
+              links: docNav(locale).slice(0, 3),
+            },
+          ]}
+        />
+        <h2 id="sources">{t(ui.sources, locale)}</h2>
+        <ol class="sources">
+          {person.sources.map((source) => (
+            <li id={`source-${source.id}`}>
+              <a href={source.url} rel="nofollow noopener">{source.title}</a>
+              {`. ${source.publisher}. `}
+              {t(ui.accessed, locale)} {source.accessed}.
+            </li>
+          ))}
+        </ol>
+        <aside class="cite-box">
+          <h2>{t(ui.citeThis, locale)}</h2>
+          <p class="mono">{cite}</p>
+        </aside>
+      </article>
+      <aside class="infobox">
+        <h2>{t(ui.infobox, locale)}</h2>
+        <dl>
+          {person.birthYear && (
+            <div>
+              <dt>{t(ui.born, locale)}</dt>
+              <dd>{person.birthYear}</dd>
+            </div>
+          )}
+          {person.birthPlace && (
+            <div>
+              <dt>{t(ui.birthplace, locale)}</dt>
+              <dd>{person.birthPlace[locale]}</dd>
+            </div>
+          )}
+          <div>
+            <dt>{t(ui.roles, locale)}</dt>
+            <dd>{person.roles.map((role) => t(role, locale)).join(locale === "zh" ? "、" : ", ")}</dd>
+          </div>
+          <div>
+            <dt>{t(ui.navCompanies, locale)}</dt>
+            <dd class="sameas">
+              {linkedCompanies.map((company) => (
+                <a href={localePath(locale, `/companies/${company.slug}`)}>{company.name[locale]}</a>
+              ))}
+            </dd>
+          </div>
+          <div>
+            <dt>{t(ui.identifiers, locale)}</dt>
+            <dd class="mono">{person.id}</dd>
+          </div>
+          <div>
+            <dt>{t(ui.sameAs, locale)}</dt>
+            <dd class="sameas">
+              {person.sameAs.wikipedia && <a href={person.sameAs.wikipedia}>Wikipedia</a>}
+              {person.sameAs.wikipediaZh && <a href={person.sameAs.wikipediaZh}>维基百科</a>}
+              {person.sameAs.wikidata && <a href={person.sameAs.wikidata}>Wikidata</a>}
+              {!person.sameAs.wikipedia && !person.sameAs.wikipediaZh && !person.sameAs.wikidata && "—"}
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

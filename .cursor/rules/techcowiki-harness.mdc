@@ -1,0 +1,35 @@
+---
+description: TechCo.Wiki development harness — editorial hard stops, four acceptance gates, and Pages gotchas
+alwaysApply: true
+---
+
+# TechCo.Wiki harness
+
+Read `AGENTS.md` before changing this repo. GEO is first: one citable record in HTML, Markdown, JSON-LD, and `/api/v1`.
+
+## Hard stops
+
+- Do not invent funding, valuation, headcount, or tickers that are not already on the record.
+- Ethnic Chinese identity explains inclusion only. Do not call NVIDIA, Yahoo, or Fremont-headquartered Pony.ai Chinese companies. Do not call TSMC / UMC / MediaTek mainland Chinese companies.
+- Publisher wordmark is `TechCo.Wiki`. Canonical host is lowercase `techco.wiki`.
+- Do not expand the catalog, add UGC, wire custom DNS, or submit IndexNow/Google/Bing unless the user asked.
+
+## Acceptance (in order)
+
+1. `npm run typecheck` and `npm test` — functions and source contracts (`tests/harness.test.ts` is file-based; do not import `catalog` for new harness asserts).
+2. `npm run build && npm run harness` — built HTML in `dist/`.
+3. `npm run e2e` (starts and stops its own preview) — click/type; screenshots are not enough. Language switch on `/search?q=TSM` must keep `?q=TSM`.
+   `npm run e2e:pages` also exercises the local Pages runtime and true localized 404s. Missing Chrome must fail.
+4. After deploy: `HARNESS_BASE=https://techcowiki.pages.dev npm run harness:host`.
+
+`switchLocale()` being correct does not mean the static HTML has the query. Astro preview does not run `_worker.js`. Cloudflare `_redirects` cannot rewrite 404s; locale 404s are `public/_worker.js`.
+
+## Links
+
+- Clickable UI (toolbar, machine box, footer): same-origin (`markdownPath`, `/llms.txt`).
+- Citations, sitemap, llms, API: absolute `https://techco.wiki` (`markdownUrl`).
+- OpenAPI lives at `/api/v1/openapi.json`, not `/openapi.json`.
+
+## Autolink
+
+Protect `https?://…`, `中国大陆`, `Chinese mainland` / `mainland Chinese`, and hyphenated nationality (`United States-headquartered`) before matching.
