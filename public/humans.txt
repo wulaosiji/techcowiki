@@ -1,7 +1,7 @@
 /* TEAM */
 Project: TechCo.Wiki
 Site: https://techco.wiki
-Repository: https://github.com/wulaosiji/techcowiki
+Repository: https://github.com/aaron-he-zhu/techcowiki
 
 /* SITE */
 Standards: HTML5, schema.org JSON-LD, llms.txt v2, OpenAPI 3.1
