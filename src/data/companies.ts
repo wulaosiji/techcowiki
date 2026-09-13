@@ -9,7 +9,7 @@ export const companies: Company[] = [
     slug: "bytedance",
     name: { en: "ByteDance", zh: "字节跳动" },
     legalName: "ByteDance Ltd.",
-    aliases: ["字节跳动", "Toutiao", "TikTok parent"],
+    aliases: ["字节跳动", "Toutiao", "TikTok", "Douyin", "CapCut", "TikTok parent"],
     definition: {
       en: "ByteDance is a Beijing-headquartered internet company that builds algorithm-ranked content products, including Douyin, TikTok, Toutiao, and CapCut.",
       zh: "字节跳动是一家总部位于北京的互联网公司，开发以算法分发为核心的内容产品，包括抖音、TikTok、今日头条和剪映。",
@@ -185,7 +185,7 @@ export const companies: Company[] = [
     slug: "zoom",
     name: { en: "Zoom Communications", zh: "Zoom" },
     legalName: "Zoom Communications, Inc.",
-    aliases: ["Zoom Video Communications", "ZM", "Saasbee"],
+    aliases: ["Zoom", "Zoom Video Communications", "ZM", "Saasbee"],
     definition: {
       en: "Zoom Communications is a San Jose public company that sells videoconferencing and related workplace communication software.",
       zh: "Zoom Communications 是一家总部位于圣何塞的上市公司，销售视频会议及相关工作场所通信软件。",

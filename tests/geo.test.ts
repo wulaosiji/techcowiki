@@ -13,6 +13,8 @@ describe("GEO surfaces", () => {
     expect(text.startsWith("# TechCo.Wiki")).toBe(true);
     expect(text).toContain("The publisher is written TechCo.Wiki");
     expect(text).toContain("https://techco.wiki/for-models.md");
+    expect(text).toContain("https://techco.wiki/companies.md");
+    expect(text).toContain("https://techco.wiki/people.md");
     expect(text).not.toContain("https://TechCo.Wiki");
     for (const company of allCompanies()) {
       expect(text).toContain(`/companies/${company.slug}.md`);
@@ -95,6 +97,8 @@ describe("GEO surfaces", () => {
     expect(person.claims.length).toBeGreaterThanOrEqual(6);
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
+    expect(datasetRecord(catalogStats()).endpoints.companiesMarkdown).toBe("https://techco.wiki/companies.md");
+    expect(datasetRecord(catalogStats()).counts.countries).toBeGreaterThanOrEqual(8);
   });
 
   test("wiki matching keeps attributed extracts and drops crossed Wikidata labels", () => {

@@ -23,6 +23,14 @@ export function pageUrl(locale: Locale, path = "/"): string {
   return local === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${local}`;
 }
 
+export function markdownUrl(locale: Locale, path: string): string {
+  const clean = path === "/" ? "/" : path.startsWith("/") ? path : `/${path}`;
+  if (locale === "zh") {
+    return clean === "/" ? `${SITE_ORIGIN}/zh/index.md` : `${SITE_ORIGIN}/zh${clean}.md`;
+  }
+  return clean === "/" ? `${SITE_ORIGIN}/index.md` : `${SITE_ORIGIN}${clean}.md`;
+}
+
 export function otherLocale(locale: Locale): Locale {
   return locale === "en" ? "zh" : "en";
 }

@@ -86,7 +86,11 @@ export interface Company {
   products: Product[];
   founders: FounderRef[];
   employees?: { value: number; asOf: string; sourceIds: string[] };
-  stock?: { exchange: string; ticker: string };
+  stock?: {
+    exchange: string;
+    ticker: string;
+    adr?: { exchange: string; ticker: string };
+  };
   website: string;
   sameAs: SameAs;
   sections: CompanySection[];

@@ -123,6 +123,8 @@ export function datasetRecord(stats: {
   people: number;
   sectors: number;
   regions: number;
+  countries?: number;
+  cities?: number;
   sources: number;
 }) {
   return {
@@ -141,6 +143,8 @@ export function datasetRecord(stats: {
       companies: `${SITE_ORIGIN}/api/v1/companies.json`,
       people: `${SITE_ORIGIN}/api/v1/people.json`,
       graph: `${SITE_ORIGIN}/api/v1/graph.json`,
+      companiesMarkdown: `${SITE_ORIGIN}/companies.md`,
+      peopleMarkdown: `${SITE_ORIGIN}/people.md`,
     },
   };
 }

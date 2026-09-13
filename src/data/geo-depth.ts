@@ -18,6 +18,7 @@ import {
   sourceId,
   stageName,
   statusName,
+  tickerText,
   wikiId,
   yearsInText,
 } from "./copy";
@@ -175,8 +176,8 @@ export function companyClaims(
       id: "ticker",
       label: L("Ticker", "证券代码"),
       value: L(
-        `${company.stock.exchange}:${company.stock.ticker}. Confirm the share class on the exchange before treating this as a legal fact.`,
-        `${company.stock.exchange}:${company.stock.ticker}。当作法律事实之前，请对照交易所确认股份类别。`,
+        `${tickerText(company, "en")}. Confirm the share class on the exchange before treating this as a legal fact.`,
+        `${tickerText(company, "zh")}。当作法律事实之前，请对照交易所确认股份类别。`,
       ),
     });
   }
@@ -300,10 +301,10 @@ export function keyFactsSection(company: Company, people: Person[], sources: Sou
   const aliasesEn = company.aliases.length ? joinList(company.aliases, "en") : "no extra aliases";
   const aliasesZh = company.aliases.length ? joinList(company.aliases, "zh") : "无额外别名";
   const tickerEn = company.stock
-    ? ` A capital-markets ticker ${company.stock.exchange}:${company.stock.ticker} is recorded; it is not a headquarters country.`
+    ? ` A capital-markets ticker ${tickerText(company, "en")} is recorded; it is not a headquarters country.`
     : " No exchange ticker is recorded.";
   const tickerZh = company.stock
-    ? ` 已记录资本市场代码 ${company.stock.exchange}:${company.stock.ticker}；这不是总部国家。`
+    ? ` 已记录资本市场代码 ${tickerText(company, "zh")}；这不是总部国家。`
     : " 未记录交易所代码。";
   return {
     id: "key-facts",
@@ -383,7 +384,7 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
       ? `${company.employees.asOf}: a dated headcount of ${company.employees.value.toLocaleString("en-US")} is recorded. Treat it as historical.`
       : undefined,
     company.stock
-      ? `Ticker recorded (date not recorded): ${company.stock.exchange}:${company.stock.ticker}. This page does not invent a listing date.`
+      ? `Ticker recorded (date not recorded): ${tickerText(company, "en")}. This page does not invent a listing date.`
       : undefined,
     `${company.lastReviewed}: this TechCo.Wiki digest was last reviewed, with ${company.confidence} confidence.${method}`,
   ].filter((item): item is string => Boolean(item));
@@ -397,7 +398,7 @@ export function timelineSection(company: Company, sources: Source[]): CompanySec
       ? `${company.employees.asOf}：记录员工数 ${company.employees.value.toLocaleString("zh-CN")}。应视为历史数字。`
       : undefined,
     company.stock
-      ? `已记录证券代码（未记录上市日期）：${company.stock.exchange}:${company.stock.ticker}。本页不编造上市日期。`
+      ? `已记录证券代码（未记录上市日期）：${tickerText(company, "zh")}。本页不编造上市日期。`
       : undefined,
     `${company.lastReviewed}：本条 TechCo.Wiki 摘要最近审阅，置信度 ${company.confidence}。${method}`,
   ].filter((item): item is string => Boolean(item));
@@ -460,10 +461,10 @@ export function geographySection(
     })
     .join("；");
   const listingEn = company.stock
-    ? ` A ticker ${company.stock.exchange}:${company.stock.ticker} is a capital-markets identifier. Do not treat the exchange's country as headquarters unless this page says the headquarters are there.`
+    ? ` A ticker ${tickerText(company, "en")} is a capital-markets identifier. Do not treat the exchange's country as headquarters unless this page says the headquarters are there.`
     : " No listing venue is recorded, so do not invent one.";
   const listingZh = company.stock
-    ? ` 证券代码 ${company.stock.exchange}:${company.stock.ticker} 是资本市场标识。除非本页写明总部在那里，否则不要把交易所国家当成总部。`
+    ? ` 证券代码 ${tickerText(company, "zh")} 是资本市场标识。除非本页写明总部在那里，否则不要把交易所国家当成总部。`
     : " 未记录上市地，不要编造。";
   return {
     id: "geography",
@@ -696,8 +697,8 @@ export function extraCompanyFaqs(
       id: "identifiers-q",
       question: L(`What identifiers does ${company.name.en} have?`, `${company.name.zh}有哪些标识符？`),
       answer: L(
-        `Stable identifier \`${company.id}\`.${company.sameAs.wikidata ? ` Wikidata: ${company.sameAs.wikidata}.` : " No Wikidata QID is recorded."}${company.sameAs.wikipedia ? ` Wikipedia: ${company.sameAs.wikipedia}.` : ""}${company.stock ? ` Ticker ${company.stock.exchange}:${company.stock.ticker}.` : ""}${method}`,
-        `稳定标识符 \`${company.id}\`。${company.sameAs.wikidata ? ` 维基数据：${company.sameAs.wikidata}。` : " 未记录维基数据 QID。"}${company.sameAs.wikipedia ? ` 维基百科：${company.sameAs.wikipedia}。` : ""}${company.stock ? ` 证券代码 ${company.stock.exchange}:${company.stock.ticker}。` : ""}${method}`,
+        `Stable identifier \`${company.id}\`.${company.sameAs.wikidata ? ` Wikidata: ${company.sameAs.wikidata}.` : " No Wikidata QID is recorded."}${company.sameAs.wikipedia ? ` Wikipedia: ${company.sameAs.wikipedia}.` : ""}${company.stock ? ` Ticker ${tickerText(company, "en")}.` : ""}${method}`,
+        `稳定标识符 \`${company.id}\`。${company.sameAs.wikidata ? ` 维基数据：${company.sameAs.wikidata}。` : " 未记录维基数据 QID。"}${company.sameAs.wikipedia ? ` 维基百科：${company.sameAs.wikipedia}。` : ""}${company.stock ? ` 证券代码 ${tickerText(company, "zh")}。` : ""}${method}`,
       ),
     },
     {
@@ -739,8 +740,8 @@ export function extraCompanyFaqs(
         `上市主体会改变${company.name.zh}的总部吗？`,
       ),
       answer: L(
-        `No. Headquarters on this page are ${hqEn(company)}. A Cayman or other offshore listing vehicle is not the headquarters country unless this page says so.${company.stock ? ` The recorded ticker is ${company.stock.exchange}:${company.stock.ticker}.` : ""}${method}`,
-        `不会。本页总部为${hqZh(company)}。除非本页写明，否则开曼或其他境外上市主体不是总部国家。${company.stock ? `已记录证券代码 ${company.stock.exchange}:${company.stock.ticker}。` : ""}${method}`,
+        `No. Headquarters on this page are ${hqEn(company)}. A Cayman or other offshore listing vehicle is not the headquarters country unless this page says so.${company.stock ? ` The recorded ticker is ${tickerText(company, "en")}.` : ""}${method}`,
+        `不会。本页总部为${hqZh(company)}。除非本页写明，否则开曼或其他境外上市主体不是总部国家。${company.stock ? `已记录证券代码 ${tickerText(company, "zh")}。` : ""}${method}`,
       ),
     },
     {

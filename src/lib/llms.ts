@@ -69,10 +69,12 @@ How to use this file: start here, then fetch only the Markdown twins you need. P
 
 ## Companies
 
+- [All companies](${SITE_ORIGIN}/companies.md)
 ${companyLinks}
 
 ## People
 
+- [All people](${SITE_ORIGIN}/people.md)
 ${peopleLinks}
 
 ## Sectors

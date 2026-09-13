@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import EntityCard from "../components/EntityCard.astro";
-import { allCompanies, allPeople } from "../data/catalog";
+import { allCompanies, allPeople, companyHaystack, personHaystack } from "../data/catalog";
 import { regions, sectors, ui } from "../data/site";
 import type { Locale } from "../data/types";
 import { localePath, t } from "../lib/i18n";
@@ -62,7 +62,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="company"
-          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.legalName ?? ""} ${company.definition.en} ${company.definition.zh} ${company.products.map((product) => product.name).join(" ")} ${company.founders.map((founder) => founder.personSlug).join(" ")}`}
+          data-haystack={companyHaystack(company)}
           data-sector={company.sectors.join(" ")}
           data-region={company.regions.join(" ")}
         >
@@ -78,7 +78,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="person"
-          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.definition.en} ${person.definition.zh} ${person.companies.map((item) => item.companySlug).join(" ")}`}
+          data-haystack={personHaystack(person)}
           data-sector=""
           data-region=""
         >

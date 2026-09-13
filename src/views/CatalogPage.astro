@@ -130,6 +130,7 @@ const jsonLd = {
   "@type": "CollectionPage",
   name: title,
   description,
+  url: pageUrl(locale, path),
   isPartOf: { "@id": "https://techco.wiki/#website" },
   about: { "@id": "https://techco.wiki/#org" },
   mainEntity: {

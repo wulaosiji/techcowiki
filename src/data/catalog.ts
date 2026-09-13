@@ -73,46 +73,51 @@ export function relatedCompanies(company: Company, limit = 4): Company[] {
     .map((entry) => entry.other);
 }
 
+export function companyHaystack(company: Company): string {
+  return [
+    company.slug,
+    company.id,
+    company.name.en,
+    company.name.zh,
+    company.legalName ?? "",
+    ...company.aliases,
+    company.definition.en,
+    company.definition.zh,
+    company.lead.en,
+    company.lead.zh,
+    company.headquarters.city.en,
+    company.headquarters.city.zh,
+    company.headquarters.country.en,
+    company.headquarters.country.zh,
+    company.headquarters.countryCode,
+    company.stock ? `${company.stock.exchange} ${company.stock.ticker}` : "",
+    company.stock?.adr ? `${company.stock.adr.exchange} ${company.stock.adr.ticker}` : "",
+    ...company.products.map((product) => `${product.name} ${product.description.en} ${product.description.zh}`),
+    ...company.founders.map((founder) => founder.personSlug),
+  ].join(" ");
+}
+
+export function personHaystack(person: Person): string {
+  return [
+    person.slug,
+    person.id,
+    person.name.en,
+    person.name.zh,
+    ...person.aliases,
+    person.definition.en,
+    person.definition.zh,
+    person.lead.en,
+    person.lead.zh,
+    ...person.companies.map((item) => item.companySlug),
+  ].join(" ");
+}
+
 export function searchEntities(query: string): { companies: Company[]; people: Person[] } {
   const needle = query.trim().toLowerCase();
   if (!needle) return { companies, people };
-  const match = (values: string[]) => values.some((value) => value.toLowerCase().includes(needle));
   return {
-    companies: companies.filter((company) =>
-      match([
-        company.slug,
-        company.id,
-        company.name.en,
-        company.name.zh,
-        company.legalName ?? "",
-        ...company.aliases,
-        company.definition.en,
-        company.definition.zh,
-        company.lead.en,
-        company.legalName ?? "",
-        ...company.products.map((product) => `${product.name} ${product.description.en}`),
-        ...company.founders.map((founder) => founder.personSlug),
-        ...(company.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
-        ...(company.claims ?? []).flatMap((item) => [item.label.en, item.value.en]),
-        ...company.sections.flatMap((section) => [section.title.en, section.body.en]),
-      ]),
-    ),
-    people: people.filter((person) =>
-      match([
-        person.slug,
-        person.id,
-        person.name.en,
-        person.name.zh,
-        ...person.aliases,
-        person.definition.en,
-        person.definition.zh,
-        person.lead.en,
-        ...person.companies.map((item) => item.companySlug),
-        ...(person.faq ?? []).flatMap((item) => [item.question.en, item.answer.en]),
-        ...(person.claims ?? []).flatMap((item) => [item.label.en, item.value.en]),
-        ...(person.sections ?? []).flatMap((section) => [section.title.en, section.body.en]),
-      ]),
-    ),
+    companies: companies.filter((company) => companyHaystack(company).toLowerCase().includes(needle)),
+    people: people.filter((person) => personHaystack(person).toLowerCase().includes(needle)),
   };
 }
 

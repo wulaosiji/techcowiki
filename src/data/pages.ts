@@ -120,7 +120,7 @@ export const editorialDocs: EditorialDoc[] = [
   },
   {
     slug: "inclusion",
-    title: { en: "Inclusion", zh: "收录标准" },
+    title: { en: "Inclusion rules", zh: "收录标准" },
     description: {
       en: "Who counts as a Chinese founder and which companies enter the catalog.",
       zh: "谁算华人创始人，哪些公司进入目录。",

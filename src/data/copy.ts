@@ -203,6 +203,14 @@ export function hqBreakdown(
     .sort((a, b) => b.count - a.count || a.countryCode.localeCompare(b.countryCode));
 }
 
+export function tickerText(company: Company, locale: Locale): string {
+  if (!company.stock) return locale === "zh" ? "未记录" : "none recorded";
+  const primary = `${company.stock.exchange}:${company.stock.ticker}`;
+  if (!company.stock.adr) return primary;
+  const adr = `${company.stock.adr.exchange}:${company.stock.adr.ticker}`;
+  return locale === "zh" ? `${primary}；美国存托凭证 ${adr}` : `${primary}; ADR ${adr}`;
+}
+
 export function hqBreakdownText(list: Company[], locale: Locale): string {
   const rows = hqBreakdown(list);
   if (rows.length === 0) return locale === "zh" ? "无" : "none";

@@ -1,9 +1,10 @@
 import { getCompany, getPerson } from "../data/catalog";
+import { regionName, sectorName, tickerText } from "../data/copy";
 import { CONTENT_LICENSE, CONTENT_LICENSE_URL, SITE_NAME, SITE_ORIGIN } from "../data/site";
 import type { Company, EntityClaim, EntityFaq, Locale, Person } from "../data/types";
 import { citySlug, countrySlug } from "../data/places";
 import { stripCiteMarks } from "./citations";
-import { formatFounded, pageUrl, t } from "./i18n";
+import { formatFounded, markdownUrl, pageUrl, t } from "./i18n";
 import { companyMdLink, personMdLink } from "./links";
 
 function claimsMarkdown(claims: EntityClaim[] | undefined, locale: Locale): string[] {
@@ -49,7 +50,7 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     "",
     `- Stable ID: \`${company.id}\``,
     `- Canonical URL: ${url}`,
-    `- Markdown twin: ${url}.md`,
+    `- Markdown twin: ${markdownUrl(locale, `/companies/${company.slug}`)}`,
     `- JSON: ${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`,
     `- Last reviewed: ${company.lastReviewed}`,
     `- Confidence: ${company.confidence}`,
@@ -58,13 +59,13 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     `- Headquarters: [${company.headquarters.city[locale]}](${pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}), [${company.headquarters.country[locale]}](${pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}) (${company.headquarters.countryCode})`,
     `- Status: ${company.status}`,
     `- Stage: ${company.stage}`,
-    `- Sectors: ${company.sectors.map((slug) => `[${slug}](${pageUrl(locale, `/sectors/${slug}`)})`).join(", ")}`,
-    `- Regions: ${company.regions.map((slug) => `[${slug}](${pageUrl(locale, `/regions/${slug}`)})`).join(", ")}`,
+    `- Sectors: ${company.sectors.map((slug) => `[${sectorName(slug, locale)}](${pageUrl(locale, `/sectors/${slug}`)})`).join(", ")}`,
+    `- Regions: ${company.regions.map((slug) => `[${regionName(slug, locale)}](${pageUrl(locale, `/regions/${slug}`)})`).join(", ")}`,
     `- Website: ${company.website}`,
     `- Founders: ${founders.join("; ")}`,
     `- Products: ${products.join("; ")}`,
     company.legalName ? `- Legal name: ${company.legalName}` : undefined,
-    company.stock ? `- Ticker: ${company.stock.exchange}:${company.stock.ticker}` : undefined,
+    company.stock ? `- Ticker: ${tickerText(company, locale)}` : undefined,
     `- sameAs: ${Object.values(company.sameAs).filter(Boolean).join(" ")}`,
     "",
     ...claimsMarkdown(company.claims, locale),
@@ -90,8 +91,8 @@ export function companyMarkdown(company: Company, locale: Locale): string {
     "",
     locale === "zh" ? "## 参见" : "## See also",
     "",
-    ...company.sectors.map((slug) => `- [${slug}](${pageUrl(locale, `/sectors/${slug}`)})`),
-    ...company.regions.map((slug) => `- [${slug}](${pageUrl(locale, `/regions/${slug}`)})`),
+    ...company.sectors.map((slug) => `- [${sectorName(slug, locale)}](${pageUrl(locale, `/sectors/${slug}`)})`),
+    ...company.regions.map((slug) => `- [${regionName(slug, locale)}](${pageUrl(locale, `/regions/${slug}`)})`),
     `- [${company.headquarters.country[locale]}](${pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)})`,
     `- [${company.headquarters.city[locale]}](${pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`)})`,
     ...company.founders.map((founder) => {
@@ -122,7 +123,7 @@ export function personMarkdown(person: Person, locale: Locale): string {
     "",
     `- Stable ID: \`${person.id}\``,
     `- Canonical URL: ${url}`,
-    `- Markdown twin: ${url}.md`,
+    `- Markdown twin: ${markdownUrl(locale, `/people/${person.slug}`)}`,
     `- JSON: ${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     `- Last reviewed: ${person.lastReviewed}`,
     `- Confidence: ${person.confidence}`,
@@ -154,6 +155,30 @@ export function personMarkdown(person: Person, locale: Locale): string {
         `${index + 1}. ${source.title}. ${source.publisher}. ${source.url} (accessed ${source.accessed}).`,
     ),
     "",
+    locale === "zh" ? "## 参见" : "## See also",
+    "",
+    ...person.companies.map((item) => {
+      const company = getCompany(item.companySlug);
+      return `- ${company ? companyMdLink(company, locale) : item.companySlug}`;
+    }),
+    ...[
+      ...new Map(
+        person.companies
+          .map((item) => getCompany(item.companySlug))
+          .filter((company): company is NonNullable<typeof company> => Boolean(company))
+          .flatMap((company) => [
+            [
+              `country:${company.headquarters.countryCode}`,
+              `- [${company.headquarters.country[locale]}](${pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)})`,
+            ],
+            [
+              `city:${citySlug(company.headquarters.city.en)}`,
+              `- [${company.headquarters.city[locale]}](${pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`)})`,
+            ],
+          ] as const),
+      ).values(),
+    ],
+    "",
     `How to cite: ${SITE_NAME}, "${person.name.en}," ${url}, last reviewed ${person.lastReviewed}, ${person.id}.`,
     "",
   ]
@@ -181,6 +206,7 @@ export function homeMarkdown(locale: Locale): string {
     `- [Dataset](${SITE_ORIGIN}/api/v1/dataset.json)`,
     `- [Companies JSON](${SITE_ORIGIN}/api/v1/companies.json)`,
     `- [People JSON](${SITE_ORIGIN}/api/v1/people.json)`,
+    `- [Entity graph](${SITE_ORIGIN}/api/v1/graph.json)`,
     "",
     "## Editorial",
     "",

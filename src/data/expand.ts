@@ -103,7 +103,12 @@ export function expandCompany(row: CompactCompany): Company {
     employees: row.employees
       ? { value: row.employees.value, asOf: row.employees.asOf, sourceIds: ["s1"] }
       : undefined,
-    stock: row.stock,
+    stock: row.stock
+      ? {
+          ...row.stock,
+          exchange: row.stock.exchange === "NASDAQ" ? "Nasdaq" : row.stock.exchange,
+        }
+      : undefined,
     website: row.website,
     sameAs: {
       wikipedia: wiki,

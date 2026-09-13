@@ -336,6 +336,21 @@ a.chip:hover { color: var(--accent); }
   margin-bottom: 0.8rem;
 }
 
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li:not(:last-child)::after {
+  content: "/";
+  margin: 0 0.4rem;
+  color: var(--rule);
+}
+
 .aliases { color: var(--muted); margin: 0 0 0.8rem; }
 
 .cite { font-size: 0.7em; }

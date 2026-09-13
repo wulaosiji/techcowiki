@@ -23,7 +23,8 @@ Crunchbase 一类产品把事实放在登录墙后，模型很难稳定引用。
 | `/api/v1/openapi.json` | 只读 API 合同 |
 | `/api/v1/companies.json` | 公司目录 |
 | `/api/v1/people.json` | 人物目录 |
-| `/api/v1/graph.json` | 创始关系图 |
+| `/api/v1/graph.json` | 创始、任职、行业、地区、国家、城市与邻居关系图 |
+| `/companies.md` / `/people.md` | 公司与人物目录 Markdown |
 | `/companies/{slug}.md` | 公司 Markdown 副本 |
 | `/for-models` | 给模型的引用规则 |
 
@@ -60,7 +61,7 @@ npm run deploy
 
 - `/companies/{slug}` 公司实体
 - `/people/{slug}` 人物实体
-- `/sectors/{slug}` 与 `/regions/{slug}` 枢纽页
+- `/sectors`、`/regions`、`/countries`、`/cities` 枢纽总索引及各 `{slug}` 详情
 - `/zh/...` 简体中文平行版，带 hreflang
 - `/methodology`、`/inclusion`、`/faq`、`/about` 方法与信任页
 

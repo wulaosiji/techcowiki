@@ -11,7 +11,9 @@ import {
   getCompany,
   getPerson,
 } from "../src/data/catalog";
+import { catalogIndexMarkdown } from "../src/lib/hub-markdown";
 import { citySlug, countrySlug } from "../src/data/places";
+import { editorialDocs, getEditorial } from "../src/data/pages";
 import { faqs } from "../src/data/site";
 import { linkCatalogCopy } from "../src/lib/autolink";
 import { companyMarkdown, personMarkdown } from "../src/lib/markdown";
@@ -96,8 +98,10 @@ describe("internal linking", () => {
     expect(md).toContain("/countries/us");
     expect(md).toContain("/cities/santa-clara");
     expect(md).toContain("## See also");
+    expect(md).toContain("[Semiconductors](https://techco.wiki/sectors/semiconductors)");
     const personMd = personMarkdown(getPerson("jensen-huang")!, "zh");
     expect(personMd).toContain("/zh/companies/nvidia");
+    expect(personMd).toContain("## 参见");
   });
 
   test("autolink converts catalog URLs and skips generic words", () => {
@@ -117,5 +121,53 @@ describe("internal linking", () => {
       linkCatalogCopy("Grab and Nothing are catalog companies.", "en", companies, people),
     ).toMatch(/\[Grab\]\(\/companies\/grab\)/);
     expect(faqs[0].answer.en).toContain("](/companies)");
+  });
+
+  test("autolink covers legal names, products, and tickers without grabbing verbs", () => {
+    const companies = allCompanies();
+    const people = allPeople();
+    expect(linkCatalogCopy("NVIDIA Corporation makes GPUs.", "en", companies, people)).toContain(
+      "[NVIDIA Corporation](/companies/nvidia)",
+    );
+    expect(linkCatalogCopy("TikTok is a ByteDance product.", "en", companies, people)).toContain(
+      "[TikTok](/companies/bytedance)",
+    );
+    expect(linkCatalogCopy("The ADR trades as TSM.", "en", companies, people)).toContain(
+      "[TSM](/companies/tsmc)",
+    );
+    expect(linkCatalogCopy("Please zoom in on the chart.", "en", companies, people)).not.toContain("[zoom](");
+    expect(linkCatalogCopy("Zoom is in the catalog.", "en", companies, people)).toContain(
+      "[Zoom](/companies/zoom)",
+    );
+    expect(linkCatalogCopy("Foundry process nodes are generic.", "en", companies, people)).not.toContain(
+      "[Foundry process nodes](",
+    );
+    expect(
+      linkCatalogCopy("Shares trade on the New York Stock Exchange as TSM.", "en", companies, people),
+    ).not.toContain("[the](");
+  });
+
+  test("catalog markdown twins list every company and person", () => {
+    const companiesMd = catalogIndexMarkdown("companies", "en");
+    const peopleMd = catalogIndexMarkdown("people", "zh");
+    expect(companiesMd).toContain("# Companies");
+    expect(companiesMd).toContain("/companies/nvidia");
+    expect(peopleMd).toContain("# 人物");
+    expect(peopleMd).toContain("/zh/people/jensen-huang");
+  });
+
+  test("sitemap lists markdown twins, hreflang, and machine files", async () => {
+    const text = await (await sitemapGet({} as never)).text();
+    expect(text).toContain("https://techco.wiki/companies.md");
+    expect(text).toContain("https://techco.wiki/zh/people.md");
+    expect(text).toContain("https://techco.wiki/llms-full.txt");
+    expect(text).toContain("https://techco.wiki/api/v1/graph.json");
+    expect(text).toContain('hreflang="zh-Hans"');
+    expect(text).toContain("xmlns:xhtml");
+  });
+
+  test("inclusion editorial title is Inclusion rules", () => {
+    expect(getEditorial("inclusion")?.title.en).toBe("Inclusion rules");
+    expect(editorialDocs.some((doc) => doc.slug === "inclusion")).toBe(true);
   });
 });

@@ -1,17 +1,22 @@
 import {
   allCityHubs,
+  allCompanies,
   allCountryHubs,
+  allPeople,
   companiesByRegion,
   companiesBySector,
   companiesInCity,
   companiesInCountry,
+  getPerson,
   headquartersBreakdown,
 } from "../data/catalog";
+import { sectorName } from "../data/copy";
 import { citySlug, countrySlug, type CityHub, type CountryHub } from "../data/places";
 import { regions, sectors, SITE_ORIGIN } from "../data/site";
-import type { Company, Locale, Region, Sector } from "../data/types";
+import type { Company, Locale, Person, Region, Sector } from "../data/types";
 import { stripCiteMarks } from "./citations";
 import { pageUrl } from "./i18n";
+import { companyMdLink, personMdLink } from "./links";
 
 function hqLine(company: Company, locale: Locale): string {
   const cityPath = `/cities/${citySlug(company.headquarters.city.en)}`;
@@ -28,8 +33,15 @@ function companyEntries(companies: Company[], locale: Locale): string[] {
     hqLine(company, locale),
     `- Founded: ${company.founded}`,
     `- Status / stage: ${company.status} / ${company.stage}`,
-    `- Sectors: ${company.sectors.map((slug) => `[${slug}](${pageUrl(locale, `/sectors/${slug}`)})`).join(", ")}`,
-    `- Founders: ${company.founders.map((founder) => `[${founder.personSlug}](${pageUrl(locale, `/people/${founder.personSlug}`)})`).join(", ")}`,
+    `- Sectors: ${company.sectors.map((slug) => `[${sectorName(slug, locale)}](${pageUrl(locale, `/sectors/${slug}`)})`).join(", ")}`,
+    `- Founders: ${company.founders
+      .map((founder) => {
+        const person = getPerson(founder.personSlug);
+        return person
+          ? personMdLink(person, locale)
+          : `[${founder.personSlug}](${pageUrl(locale, `/people/${founder.personSlug}`)})`;
+      })
+      .join(", ")}`,
     `- Products: ${company.products.map((product) => product.name).join("; ")}`,
     `- Stable ID: \`${company.id}\``,
     `- Markdown: ${pageUrl(locale, `/companies/${company.slug}`)}.md`,
@@ -246,6 +258,64 @@ export function hubIndexMarkdown(
     `- [${locale === "zh" ? "地区" : "Regions"}](${pageUrl(locale, "/regions")})`,
     `- [${locale === "zh" ? "国家" : "Countries"}](${pageUrl(locale, "/countries")})`,
     `- [${locale === "zh" ? "城市" : "Cities"}](${pageUrl(locale, "/cities")})`,
+    "",
+  ].join("\n");
+}
+
+export function catalogIndexMarkdown(kind: "companies" | "people", locale: Locale): string {
+  if (kind === "people") {
+    const people = allPeople();
+    return [
+      `# ${locale === "zh" ? "人物" : "People"}`,
+      "",
+      locale === "zh"
+        ? "> TechCo.Wiki 收录的华人科技创业者。描述其创办的公司时，使用该公司条目上的总部国家。"
+        : "> Chinese-heritage technology founders recorded by TechCo.Wiki. When describing companies they founded, use the headquarters country on the company page.",
+      "",
+      `Canonical: ${pageUrl(locale, "/people")}`,
+      locale === "zh" ? `人物数：${people.length}。` : `People: ${people.length}.`,
+      "",
+      ...people.flatMap((person: Person) => [
+        `### [${person.name[locale]}](${pageUrl(locale, `/people/${person.slug}`)})`,
+        "",
+        stripCiteMarks(person.definition[locale]),
+        "",
+        `- Companies: ${person.companies
+          .map((item) => {
+            const company = allCompanies().find((row) => row.slug === item.companySlug);
+            return company ? companyMdLink(company, locale) : item.companySlug;
+          })
+          .join(", ")}`,
+        `- Stable ID: \`${person.id}\``,
+        `- Markdown: ${pageUrl(locale, `/people/${person.slug}`)}.md`,
+        "",
+      ]),
+      locale === "zh" ? "## 参见" : "## See also",
+      "",
+      `- [${locale === "zh" ? "公司" : "Companies"}](${pageUrl(locale, "/companies")})`,
+      `- [${locale === "zh" ? "国家枢纽" : "Country hubs"}](${pageUrl(locale, "/countries")})`,
+      `- [${locale === "zh" ? "方法" : "Methodology"}](${pageUrl(locale, "/methodology")})`,
+      "",
+    ].join("\n");
+  }
+  const companies = allCompanies();
+  return [
+    `# ${locale === "zh" ? "公司" : "Companies"}`,
+    "",
+    locale === "zh"
+      ? "> 华人创办科技公司的开放目录。每家公司都有 HTML、Markdown 与 JSON 副本。"
+      : "> Open catalog of Chinese-founded technology companies. Each firm has HTML, Markdown, and JSON twins.",
+    "",
+    `Canonical: ${pageUrl(locale, "/companies")}`,
+    locale === "zh" ? `公司数：${companies.length}。` : `Companies: ${companies.length}.`,
+    "",
+    ...companyEntries(companies, locale),
+    locale === "zh" ? "## 参见" : "## See also",
+    "",
+    `- [${locale === "zh" ? "人物" : "People"}](${pageUrl(locale, "/people")})`,
+    `- [${locale === "zh" ? "行业" : "Sectors"}](${pageUrl(locale, "/sectors")})`,
+    `- [${locale === "zh" ? "国家枢纽" : "Country hubs"}](${pageUrl(locale, "/countries")})`,
+    `- [${locale === "zh" ? "方法" : "Methodology"}](${pageUrl(locale, "/methodology")})`,
     "",
   ].join("\n");
 }

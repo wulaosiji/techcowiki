@@ -182,6 +182,25 @@ describe("catalog integrity", () => {
     );
   });
 
+  test("TSMC records both the TWSE listing and the NYSE ADR", () => {
+    const tsmc = getCompany("tsmc");
+    expect(tsmc?.stock).toEqual({
+      exchange: "TWSE",
+      ticker: "2330",
+      adr: { exchange: "NYSE", ticker: "TSM" },
+    });
+    expect(tsmc?.lead.en).toMatch(/founding chairman \[Morris Chang\]\(\/people\/morris-chang\)/);
+    expect(tsmc?.lead.en).not.toMatch(/associated with Founding chairman/);
+    expect(tsmc?.lead.en).not.toContain("[the](");
+    expect(tsmc?.claims?.find((claim) => claim.id === "ticker")?.value.en).toMatch(/ADR NYSE:TSM/);
+    expect(tsmc?.aliases).toContain("TSM");
+  });
+
+  test("NASDAQ listings are normalized to Nasdaq", () => {
+    expect(getCompany("baidu")?.stock?.exchange).toBe("Nasdaq");
+    expect(getCompany("jd-com")?.stock?.exchange).toBe("Nasdaq");
+  });
+
   test("generated sections keep complementary jobs instead of restating the dossier", () => {
     const nvidia = getCompany("nvidia");
     expect(nvidia).toBeTruthy();

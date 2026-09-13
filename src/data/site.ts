@@ -2,7 +2,7 @@ import type { FaqItem, Locale, Localized, Region, Sector } from "./types";
 
 export const SITE_ORIGIN = "https://techco.wiki";
 export const SITE_NAME = "TechCo.Wiki";
-export const LAST_REVIEWED = "2026-09-12";
+export const LAST_REVIEWED = "2026-09-13";
 export const CONTENT_LICENSE = "CC BY-SA 4.0";
 export const CONTENT_LICENSE_URL =
   "https://creativecommons.org/licenses/by-sa/4.0/";
@@ -313,7 +313,7 @@ export const ui = {
   home: { en: "Home", zh: "首页" },
   catalog: { en: "Catalog", zh: "目录" },
   definition: { en: "Definition", zh: "定义" },
-  inclusion: { en: "Inclusion", zh: "收录标准" },
+  inclusion: { en: "Inclusion rules", zh: "收录标准" },
   openData: { en: "Open data", zh: "开放数据" },
   noResults: { en: "No matching entities.", zh: "没有匹配的实体。" },
   filterSector: { en: "All sectors", zh: "全部行业" },

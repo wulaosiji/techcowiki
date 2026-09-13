@@ -36,6 +36,49 @@ const EXACT_CASE_LATIN = new Set([
   "horizon",
   "moonshot",
   "fireworks",
+  "zoom",
+  "realme",
+  "oneplus",
+  "kingsoft",
+  "webull",
+]);
+
+const GENERIC_PRODUCT = /\b(process|platform|nodes|software|services|operating system|contract manufacturing|super-app|super app)\b/i;
+
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "of",
+  "in",
+  "on",
+  "to",
+  "a",
+  "an",
+  "inc",
+  "ltd",
+  "llc",
+  "co",
+  "corp",
+  "pte",
+  "pty",
+  "group",
+  "holdings",
+  "limited",
+  "company",
+  "technology",
+  "technologies",
+  "international",
+  "new",
+  "york",
+  "lab",
+  "labs",
+  "auto",
+  "ai",
+  "app",
+  "open",
+  "plus",
+  "sense",
 ]);
 
 const CATALOG_URL =
@@ -52,10 +95,11 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function addTerm(target: Term[], seen: Set<string>, term: string, href: string) {
+function addTerm(target: Term[], seen: Set<string>, term: string, href: string, exactCase = false) {
   const trimmed = term.trim();
   if (trimmed.length < 2) return;
   if (isLatin(trimmed) && trimmed.length < 3) return;
+  if (isLatin(trimmed) && STOP_WORDS.has(trimmed.toLowerCase())) return;
   const key = `${trimmed.toLowerCase()}::${href}`;
   const label = trimmed.toLowerCase();
   if (seen.has(label) || seen.has(key)) return;
@@ -66,8 +110,40 @@ function addTerm(target: Term[], seen: Set<string>, term: string, href: string) 
     term: trimmed,
     href,
     latin,
-    exactCase: latin && EXACT_CASE_LATIN.has(trimmed.toLowerCase()),
+    exactCase: exactCase || (latin && EXACT_CASE_LATIN.has(trimmed.toLowerCase())),
   });
+}
+
+function isLinkableProduct(name: string): boolean {
+  const trimmed = name.trim();
+  if (trimmed.length < 3) return false;
+  if (GENERIC_PRODUCT.test(trimmed)) return false;
+  if (trimmed.split(/\s+/).length >= 4) return false;
+  return true;
+}
+
+function productTerms(name: string): string[] {
+  if (GENERIC_PRODUCT.test(name)) return [];
+  const parts = name
+    .split(/\s*[/|,·]\s*|\s+and\s+/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const terms: string[] = [];
+  for (const part of parts) {
+    if (isLinkableProduct(part)) terms.push(part);
+    const words = part.split(/\s+/);
+    const first = words[0];
+    if (
+      words.length > 1 &&
+      first &&
+      /^[A-Z][A-Za-z0-9+]{2,}$/.test(first) &&
+      !STOP_WORDS.has(first.toLowerCase()) &&
+      !GENERIC_PRODUCT.test(first)
+    ) {
+      terms.push(first);
+    }
+  }
+  return terms;
 }
 
 function termsForLocale(
@@ -86,10 +162,15 @@ function termsForLocale(
     const href = companyHref(company.slug, locale);
     addTerm(terms, seen, company.name[locale], href);
     if (locale === "zh") addTerm(terms, seen, company.name.en, href);
-    if (locale === "en") {
-      for (const alias of company.aliases) {
-        if (alias.length >= 4) addTerm(terms, seen, alias, href);
-      }
+    if (company.legalName) addTerm(terms, seen, company.legalName, href);
+    for (const alias of company.aliases) {
+      if (alias.length >= 3) addTerm(terms, seen, alias, href);
+    }
+    if (company.stock?.ticker && company.stock.ticker.length >= 3) {
+      addTerm(terms, seen, company.stock.ticker, href, true);
+    }
+    if (company.stock?.adr?.ticker && company.stock.adr.ticker.length >= 3) {
+      addTerm(terms, seen, company.stock.adr.ticker, href, true);
     }
   }
   for (const person of people) {
@@ -97,30 +178,39 @@ function termsForLocale(
     const href = personHref(person.slug, locale);
     addTerm(terms, seen, person.name[locale], href);
     if (locale === "zh") addTerm(terms, seen, person.name.en, href);
-    if (locale === "en") {
-      for (const alias of person.aliases) {
-        if (alias.length >= 4) addTerm(terms, seen, alias, href);
+    for (const alias of person.aliases) {
+      if (alias.length >= 3) addTerm(terms, seen, alias, href);
+    }
+  }
+  for (const company of companies) {
+    if (skipCompanies.has(company.slug)) continue;
+    const href = companyHref(company.slug, locale);
+    for (const product of company.products) {
+      for (const name of productTerms(product.name)) {
+        addTerm(terms, seen, name, href);
       }
     }
   }
   for (const sector of sectors) {
     addTerm(terms, seen, sector.name[locale], sectorHref(sector.slug, locale));
   }
+  const cities = new Map<string, { name: Company["headquarters"]["city"] }>();
+  const countries = new Map<string, { name: Company["headquarters"]["country"]; code: string }>();
   for (const company of companies) {
-    addTerm(
-      terms,
-      seen,
-      company.headquarters.city[locale],
-      cityHref(citySlug(company.headquarters.city.en), locale),
-    );
+    const city = citySlug(company.headquarters.city.en);
+    if (!cities.has(city)) cities.set(city, { name: company.headquarters.city });
+    const code = countrySlug(company.headquarters.countryCode);
+    if (!countries.has(code)) {
+      countries.set(code, { name: company.headquarters.country, code: company.headquarters.countryCode });
+    }
   }
-  for (const company of companies) {
-    addTerm(
-      terms,
-      seen,
-      company.headquarters.country[locale],
-      countryHref(countrySlug(company.headquarters.countryCode), locale),
-    );
+  for (const [slug, city] of cities) {
+    addTerm(terms, seen, city.name[locale], cityHref(slug, locale));
+    if (locale === "zh") addTerm(terms, seen, city.name.en, cityHref(slug, locale));
+  }
+  for (const [slug, country] of countries) {
+    addTerm(terms, seen, country.name[locale], countryHref(slug, locale));
+    if (locale === "zh") addTerm(terms, seen, country.name.en, countryHref(slug, locale));
   }
   for (const region of regions) {
     addTerm(terms, seen, region.name[locale], regionHref(region.slug, locale));
@@ -132,6 +222,7 @@ function termsForLocale(
   } else {
     addTerm(terms, seen, "收录标准", docHref("inclusion", locale));
     addTerm(terms, seen, "给模型", docHref("for-models", locale));
+    addTerm(terms, seen, "方法", docHref("methodology", locale));
   }
 
   return terms.sort((a, b) => b.term.length - a.term.length);
