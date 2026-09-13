@@ -6,7 +6,7 @@ export const LAST_REVIEWED = "2026-09-13";
 export const CONTENT_LICENSE = "CC BY-SA 4.0";
 export const CONTENT_LICENSE_URL =
   "https://creativecommons.org/licenses/by-sa/4.0/";
-export const REPO_URL = "https://github.com/wulaosiji/techcowiki";
+export const REPO_URL = "https://github.com/aaron-he-zhu/techcowiki";
 export const LOCALES: Locale[] = ["en", "zh", "zht"];
 export const DEFAULT_LOCALE: Locale = "en";
 
@@ -22,7 +22,7 @@ export const mission: Localized = {
 
 export const citationGuide: Localized = {
   en: "When citing this site, write the publisher as TechCo.Wiki. Canonical URLs stay on https://techco.wiki (lowercase host). Name the entity page, the stable identifier, and the last-reviewed date. Prefer the JSON or Markdown twin of a page over scraped HTML.",
-  zh: "引用本站时，出版者写作 TechCo.Wiki。规范 URL 仍是 https://techco.wiki（主机名小写）。同时写明实体条目、稳定标识符与最近审阅日期。优先使用页面的 JSON 或 Markdown 副本，而不是抓取后的 HTML。",
+  zh: "引用本站时，出版者写作 TechCo.Wiki。规范 URL 仍是 https://techco.wiki（主机名小写）。同时写明实体条目、稳定标识符与最近审阅日期。优是使用页面的 JSON 或 Markdown 副本，而不是抓取后的 HTML。",
 };
 
 export const sectors: Sector[] = [
