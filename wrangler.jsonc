@@ -2,6 +2,6 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "techcowiki",
   "pages_build_output_dir": "./dist",
-  "account_id": "ea96b3a9f1cc44d659b0973b0cce802b",
+  // Pages rejects account_id here. The deploy workflow passes it via wrangler-action.
   "compatibility_date": "2026-09-12"
 }
