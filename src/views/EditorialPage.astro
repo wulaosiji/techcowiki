@@ -1,9 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { allCompanies, allPeople } from "../data/catalog";
 import type { EditorialDoc } from "../data/pages";
 import type { Locale } from "../data/types";
 import { headingId, localePath, t } from "../lib/i18n";
 import { ui } from "../data/site";
+import { linkCatalogCopy } from "../lib/autolink";
+import { renderCitedHtml } from "../lib/citations";
+import { catalogNav, docNav } from "../lib/nav";
+import { editorialGraph } from "../lib/schema";
 
 interface Props {
   locale: Locale;
@@ -11,6 +18,8 @@ interface Props {
 }
 
 const { locale, doc } = Astro.props;
+const companies = allCompanies();
+const people = allPeople();
 ---
 
 <BaseLayout
@@ -18,22 +27,34 @@ const { locale, doc } = Astro.props;
   title={t(doc.title, locale)}
   description={t(doc.description, locale)}
   path={`/${doc.slug}`}
+  jsonLd={editorialGraph(locale, `/${doc.slug}`, t(doc.title, locale), t(doc.description, locale))}
 >
   <div class="wrap">
-    <nav class="breadcrumbs">
-      <a href={localePath(locale, "/")}>{t(ui.home, locale)}</a>
-      {" / "}
-      {t(doc.title, locale)}
-    </nav>
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: t(doc.title, locale) },
+      ]}
+    />
     <h1>{t(doc.title, locale)}</h1>
     <p class="lede">{t(doc.description, locale)}</p>
     <div class="prose">
       {doc.blocks.map((block) => (
         <section id={headingId(block.title.en)}>
           <h2>{t(block.title, locale)}</h2>
-          {block.body[locale].map((paragraph) => <p>{paragraph}</p>)}
+          {block.body[locale].map((paragraph) => (
+            <p set:html={renderCitedHtml(linkCatalogCopy(paragraph, locale, companies, people), [])} />
+          ))}
         </section>
       ))}
     </div>
+    <SeeAlso
+      locale={locale}
+      groups={[
+        { title: locale === "zh" ? "目录" : "Catalog", links: catalogNav(locale) },
+        { title: locale === "zh" ? "文档" : "Docs", links: docNav(locale).filter((item) => item.href !== localePath(locale, `/${doc.slug}`)) },
+      ]}
+    />
   </div>
 </BaseLayout>

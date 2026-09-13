@@ -12,9 +12,10 @@ interface Props {
   jsonLd?: unknown;
   markdownHref?: string;
   lastModified?: string;
+  robots?: string;
 }
 
-const { locale, title, description, path, jsonLd, markdownHref, lastModified } = Astro.props;
+const { locale, title, description, path, jsonLd, markdownHref, lastModified, robots } = Astro.props;
 const canonical = pageUrl(locale, path);
 const alternate = pageUrl(otherLocale(locale), path);
 const markdown =
@@ -27,10 +28,12 @@ const markdown =
 const nav = [
   { href: localePath(locale, "/companies"), label: t(ui.navCompanies, locale), match: "/companies" },
   { href: localePath(locale, "/people"), label: t(ui.navPeople, locale), match: "/people" },
-  { href: localePath(locale, "/methodology"), label: t(ui.navMethod, locale), match: "/methodology" },
+  { href: localePath(locale, "/sectors"), label: t(ui.navSectors, locale), match: "/sectors" },
+  { href: localePath(locale, "/regions"), label: t(ui.navRegions, locale), match: "/regions" },
+  { href: localePath(locale, "/countries"), label: t(ui.navCountries, locale), match: "/countries" },
+  { href: localePath(locale, "/cities"), label: t(ui.navCities, locale), match: "/cities" },
   { href: localePath(locale, "/for-models"), label: t(ui.navForModels, locale), match: "/for-models" },
   { href: localePath(locale, "/faq"), label: t(ui.navFaq, locale), match: "/faq" },
-  { href: localePath(locale, "/about"), label: t(ui.navAbout, locale), match: "/about" },
 ];
 const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
 ---
@@ -42,7 +45,7 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="robots" content={robots ?? "index, follow, max-snippet:-1, max-image-preview:large"} />
     <meta name="license" content="CC BY-SA 4.0" />
     <meta name="theme-color" content="#f3efe4" />
     <meta name="color-scheme" content="light" />
@@ -92,7 +95,7 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
               {item.label}
             </a>
           ))}
-          <a class="lang-switch" href={switchLocale(locale, path)}>{t(ui.language, locale)}</a>
+          <a class="lang-switch" href={switchLocale(locale, path, Astro.url.search)}>{t(ui.language, locale)}</a>
         </nav>
       </div>
     </header>
@@ -106,23 +109,51 @@ const pageTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
           {" · "}
           {t(tagline, locale)}
         </div>
-        <div class="footer-links">
-          <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
-          {" · "}
-          <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
-          {" · "}
-          <a href={localePath(locale, "/license")}>{t(ui.license, locale)}</a>
-          {" · "}
+        <nav class="footer-nav" aria-label={locale === "zh" ? "目录" : "Catalog"}>
+          <a href={localePath(locale, "/companies")}>{t(ui.navCompanies, locale)}</a>
+          <a href={localePath(locale, "/people")}>{t(ui.navPeople, locale)}</a>
+          <a href={localePath(locale, "/sectors")}>{t(ui.navSectors, locale)}</a>
+          <a href={localePath(locale, "/regions")}>{t(ui.navRegions, locale)}</a>
+          <a href={localePath(locale, "/countries")}>{t(ui.navCountries, locale)}</a>
+          <a href={localePath(locale, "/cities")}>{t(ui.navCities, locale)}</a>
           <a href={localePath(locale, "/search")}>{t(ui.navSearch, locale)}</a>
-          {" · "}
-          <a href={`${SITE_ORIGIN}/llms.txt`}>llms.txt</a>
-          {" · "}
-          <a href={`${SITE_ORIGIN}/api/v1/openapi.json`}>API</a>
-          {" · "}
+        </nav>
+        <nav class="footer-nav" aria-label={locale === "zh" ? "文档" : "Docs"}>
+          <a href={localePath(locale, "/methodology")}>{t(ui.navMethod, locale)}</a>
+          <a href={localePath(locale, "/inclusion")}>{t(ui.inclusion, locale)}</a>
+          <a href={localePath(locale, "/for-models")}>{t(ui.navForModels, locale)}</a>
+          <a href={localePath(locale, "/faq")}>{t(ui.navFaq, locale)}</a>
+          <a href={localePath(locale, "/license")}>{t(ui.license, locale)}</a>
+          <a href={localePath(locale, "/about")}>{t(ui.navAbout, locale)}</a>
+          <a href="/llms.txt">llms.txt</a>
+          <a href="/api/v1/openapi.json">API</a>
           <a href="https://github.com/wulaosiji/techcowiki">GitHub</a>
-        </div>
+        </nav>
         <div>CC BY-SA 4.0 · {locale === "zh" ? "代码 MIT" : "Code MIT"} · {SITE_ORIGIN}</div>
       </div>
     </footer>
+    <script is:inline>
+      (function () {
+        var search = location.search;
+        if (search && search !== "?") {
+          document.querySelectorAll("a.lang-switch").forEach(function (node) {
+            var href = node.getAttribute("href");
+            if (!href || href.indexOf("?") !== -1) return;
+            node.setAttribute("href", href + search);
+          });
+          document.querySelectorAll('link[rel="alternate"]').forEach(function (node) {
+            var href = node.getAttribute("href");
+            if (!href || href.indexOf("?") !== -1) return;
+            try {
+              var path = new URL(href, location.origin).pathname.replace(/\/$/, "");
+              if (path === "/search" || path === "/zh/search") node.setAttribute("href", href + search);
+            } catch (error) {}
+          });
+        }
+        var query = new URLSearchParams(search).get("q");
+        var header = document.querySelector('.nav-search input[name="q"]');
+        if (header && query && !header.value) header.value = query;
+      })();
+    </script>
   </body>
 </html>

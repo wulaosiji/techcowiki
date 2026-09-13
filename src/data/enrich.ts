@@ -17,6 +17,7 @@ import {
   stageName,
   standaloneSentence,
   statusName,
+  tickerText,
   wikiId,
   yearDeltaPhrase,
 } from "./copy";
@@ -73,6 +74,7 @@ import {
 import { pickPeers } from "./peers";
 import { LAST_REVIEWED, SITE_NAME, SITE_ORIGIN } from "./site";
 import type { Company, CompanySection, EntityFaq, Localized, Person, Source } from "./types";
+import { linkLocalized } from "../lib/autolink";
 
 export { nationalityRule, pickPeers };
 
@@ -316,6 +318,7 @@ function historySection(company: Company, people: Person[], sources: Source[]): 
 function namedFoundersSection(
   company: Company,
   people: Person[],
+  allCompanies: Company[],
   sources: Source[],
 ): CompanySection {
   const wiki = cite(wikiId(sources));
@@ -333,13 +336,17 @@ function namedFoundersSection(
       .join(" ");
     const otherCompanies = person.companies
       .filter((item) => item.companySlug !== company.slug)
-      .map((item) => `${item.companySlug} (${item.role.en})`);
+      .map((item) => {
+        const other = companyBySlug(allCompanies, item.companySlug);
+        const name = other ? other.name.en : item.companySlug;
+        return `${name} (${item.role.en})`;
+      });
     const other =
       otherCompanies.length > 0
         ? ` Other catalog companies linked to this person: ${joinList(otherCompanies, "en")}.`
         : " This catalog build links this person only to this company page.";
     const aliases = person.aliases.length ? ` Aliases: ${joinList(person.aliases, "en")}.` : "";
-    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${aliases}${other} Person page: ${SITE_ORIGIN}/people/${person.slug}.`;
+    return `${person.name.en} (${founder.role.en}; \`${person.id}\`) — ${person.definition.en} ${birth}${aliases}${other} [${person.name.en}](/people/${person.slug}).`;
   });
   const blocksZh = company.founders.map((founder) => {
     const person = personBySlug(people, founder.personSlug);
@@ -354,13 +361,17 @@ function namedFoundersSection(
       .join("");
     const otherCompanies = person.companies
       .filter((item) => item.companySlug !== company.slug)
-      .map((item) => `${item.companySlug}（${item.role.zh}）`);
+      .map((item) => {
+        const other = companyBySlug(allCompanies, item.companySlug);
+        const name = other ? other.name.zh : item.companySlug;
+        return `${name}（${item.role.zh}）`;
+      });
     const other =
       otherCompanies.length > 0
         ? `本目录中与该人关联的其他公司：${joinList(otherCompanies, "zh")}。`
         : "本构建仅将该人关联到本公司条目。";
     const aliases = person.aliases.length ? `别名：${joinList(person.aliases, "zh")}。` : "";
-    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${aliases}${other} 人物页：${SITE_ORIGIN}/people/${person.slug}。`;
+    return `${person.name.zh}（${founder.role.zh}；\`${person.id}\`）— ${person.definition.zh}${birth}${aliases}${other} [${person.name.zh}](/zh/people/${person.slug})。`;
   });
   return {
     id: "named-founders",
@@ -424,10 +435,10 @@ function corporateSection(company: Company, sources: Source[]): CompanySection {
     ? `本页记录的法律名称为 ${company.legalName}。`
     : `除常用名${company.name.zh}外，本页未另记法律名称。`;
   const tickerEn = company.stock
-    ? `A ticker is recorded as ${company.stock.exchange}:${company.stock.ticker}. Confirm the share class against the exchange before treating this as a legal fact.`
+    ? `A ticker is recorded as ${tickerText(company, "en")}. Confirm the share class against the exchange before treating this as a legal fact.`
     : "No exchange ticker is recorded on this page.";
   const tickerZh = company.stock
-    ? `已记录证券代码 ${company.stock.exchange}:${company.stock.ticker}。在将其当作法律事实之前，请对照交易所确认股份类别。`
+    ? `已记录证券代码 ${tickerText(company, "zh")}。在将其当作法律事实之前，请对照交易所确认股份类别。`
     : "本页未记录交易所代码。";
   const employeesEn = company.employees
     ? ` A dated headcount of ${company.employees.value.toLocaleString("en-US")} is recorded as of ${company.employees.asOf}; treat it as historical, not current.`
@@ -573,10 +584,10 @@ function companyFaq(
   const peers = pickPeers(company, allCompanies, 4);
   const url = `${SITE_ORIGIN}/companies/${company.slug}`;
   const tickerEn = company.stock
-    ? `Yes. This page records the ticker ${company.stock.exchange}:${company.stock.ticker}. Confirm the share class on the exchange before treating it as a legal fact.`
+    ? `Yes. This page records the ticker ${tickerText(company, "en")}. Confirm the share class on the exchange before treating it as a legal fact.`
     : `No ticker is recorded on this page for ${company.name.en}. Do not invent one. The operating status is ${statusName(company.status, "en")} and the stage label is ${stageName(company.stage, "en")}.`;
   const tickerZh = company.stock
-    ? `是。本页记录证券代码 ${company.stock.exchange}:${company.stock.ticker}。当作法律事实之前，请对照交易所确认股份类别。`
+    ? `是。本页记录证券代码 ${tickerText(company, "zh")}。当作法律事实之前，请对照交易所确认股份类别。`
     : `本页未记录${company.name.zh}的证券代码。不要编造。运营状态为${statusName(company.status, "zh")}，阶段标签为${stageName(company.stage, "zh")}。`;
   return [
     {
@@ -739,7 +750,7 @@ export function enrichCompany(
     historySection(withWiki, people, sources),
     inclusionSection(withWiki, people, sources),
     scopeSection(withWiki, sources),
-    namedFoundersSection(withWiki, people, sources),
+    namedFoundersSection(withWiki, people, pool, sources),
     operationsSection(withWiki, sources),
     geographySection(withWiki, pool, sources),
     sectorContextSection(withWiki, pool, sources),
@@ -753,21 +764,33 @@ export function enrichCompany(
     companyPublicRecord(withWiki, sources),
     retrievalSection(withWiki, sources),
   ]);
+  const exclude = { companySlugs: [withWiki.slug] };
+  const claims = [
+    ...companyClaims(withWiki, people, sources),
+    ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
+    ...authorityCompanyClaims(withWiki, pool, sources),
+  ];
   return {
     ...withWiki,
-    lead: thickenCompanyLead(withWiki, sources, pool),
+    definition: linkLocalized(withWiki.definition, pool, people, exclude),
+    lead: linkLocalized(thickenCompanyLead(withWiki, sources, pool), pool, people, exclude),
     sameAs: {
       ...withWiki.sameAs,
       official: withWiki.sameAs.official ?? withWiki.website,
     },
     sources,
-    sections,
-    faq,
-    claims: [
-      ...companyClaims(withWiki, people, sources),
-      ...encyclopediaClaims(companyWikiSubject(withWiki), sources),
-      ...authorityCompanyClaims(withWiki, pool, sources),
-    ],
+    sections: sections.map((section) => ({
+      ...section,
+      body: linkLocalized(section.body, pool, people, exclude),
+    })),
+    faq: faq.map((item) => ({
+      ...item,
+      answer: linkLocalized(item.answer, pool, people, exclude),
+    })),
+    claims: claims.map((item) => ({
+      ...item,
+      value: linkLocalized(item.value, pool, people, exclude),
+    })),
   };
 }
 
@@ -1079,12 +1102,12 @@ function personFaq(person: Person, companies: Company[], sources: Source[]): Ent
       answer: L(
         `${standaloneSentence(person.name.en, person.definition.en, "en")} First recorded company link: ${
           person.companies[0]
-            ? `${person.companies[0].role.en} (${person.companies[0].companySlug})`
+            ? `${person.companies[0].role.en} (${companyBySlug(companies, person.companies[0].companySlug)?.name.en ?? person.companies[0].companySlug})`
             : "none"
         }.${wiki}`,
         `${standaloneSentence(person.name.zh, person.definition.zh, "zh")}首个已记录公司关联：${
           person.companies[0]
-            ? `${person.companies[0].role.zh}（${person.companies[0].companySlug}）`
+            ? `${person.companies[0].role.zh}（${companyBySlug(companies, person.companies[0].companySlug)?.name.zh ?? person.companies[0].companySlug}）`
             : "无"
         }。${wiki}`,
       ),
@@ -1192,17 +1215,29 @@ export function enrichPerson(
     personRetrievalSection(withWiki, sources),
   ];
   const sections = mergeSections(withWiki.sections ?? [], generated);
+  const exclude = { personSlugs: [withWiki.slug] };
+  const claims = [
+    ...personClaims(withWiki, companies, sources),
+    ...encyclopediaClaims(personWikiSubject(withWiki), sources),
+    ...authorityPersonClaims(withWiki, companies, sources),
+  ];
   return {
     ...withWiki,
-    lead: thickenPersonLead(withWiki, sources, companies),
+    definition: linkLocalized(withWiki.definition, companies, pool, exclude),
+    lead: linkLocalized(thickenPersonLead(withWiki, sources, companies), companies, pool, exclude),
     sources,
-    sections,
-    faq,
-    claims: [
-      ...personClaims(withWiki, companies, sources),
-      ...encyclopediaClaims(personWikiSubject(withWiki), sources),
-      ...authorityPersonClaims(withWiki, companies, sources),
-    ],
+    sections: sections.map((section) => ({
+      ...section,
+      body: linkLocalized(section.body, companies, pool, exclude),
+    })),
+    faq: faq.map((item) => ({
+      ...item,
+      answer: linkLocalized(item.answer, companies, pool, exclude),
+    })),
+    claims: claims.map((item) => ({
+      ...item,
+      value: linkLocalized(item.value, companies, pool, exclude),
+    })),
   };
 }
 

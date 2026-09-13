@@ -9,7 +9,7 @@ export const companies: Company[] = [
     slug: "bytedance",
     name: { en: "ByteDance", zh: "字节跳动" },
     legalName: "ByteDance Ltd.",
-    aliases: ["字节跳动", "Toutiao", "TikTok parent"],
+    aliases: ["字节跳动", "Toutiao", "TikTok", "Douyin", "CapCut", "TikTok parent"],
     definition: {
       en: "ByteDance is a Beijing-headquartered internet company that builds algorithm-ranked content products, including Douyin, TikTok, Toutiao, and CapCut.",
       zh: "字节跳动是一家总部位于北京的互联网公司，开发以算法分发为核心的内容产品，包括抖音、TikTok、今日头条和剪映。",
@@ -185,7 +185,7 @@ export const companies: Company[] = [
     slug: "zoom",
     name: { en: "Zoom Communications", zh: "Zoom" },
     legalName: "Zoom Communications, Inc.",
-    aliases: ["Zoom Video Communications", "ZM", "Saasbee"],
+    aliases: ["Zoom", "Zoom Video Communications", "ZM", "Saasbee"],
     definition: {
       en: "Zoom Communications is a San Jose public company that sells videoconferencing and related workplace communication software.",
       zh: "Zoom Communications 是一家总部位于圣何塞的上市公司，销售视频会议及相关工作场所通信软件。",
@@ -1183,8 +1183,8 @@ export const companies: Company[] = [
     legalName: "Pony AI Inc.",
     aliases: ["小马智行", "Pony AI"],
     definition: {
-      en: "Pony.ai is a Sino-American autonomous-driving company that develops robotaxi software and operates public robotaxi services in selected Chinese cities.",
-      zh: "小马智行是一家中美自动驾驶公司，开发 Robotaxi 软件，并在部分中国城市运营公开 Robotaxi 服务。",
+      en: "Pony.ai is a Fremont-headquartered autonomous-driving company that develops robotaxi software and operates public robotaxi services in selected Chinese cities.",
+      zh: "小马智行是一家总部位于弗里蒙特的自动驾驶公司，开发 Robotaxi 软件，并在部分中国城市运营公开 Robotaxi 服务。",
     },
     lead: {
       en: "Pony.ai is an autonomous-vehicle company founded in 2016 by James Peng and Tiancheng Lou, with operations in California and China.[s1] Both founders are Chinese engineers formerly associated with Baidu's autonomous-driving work; that is the inclusion basis.[s1] The company has listed in the United States; confirm the live ticker from the latest exchange notice before stating a symbol.",

@@ -13,6 +13,7 @@ import {
   sectorName,
   sectorNamesOf,
   standaloneSentence,
+  tickerText,
   wikiId,
   yearDeltaPhrase,
 } from "./copy";
@@ -112,10 +113,10 @@ export function companyAuthoritySection(
     ? `本页法律名称为 ${company.legalName}；不要把产品品牌或证券代码当成第二个法律名称。`
     : `除常用名${company.name.zh}外，未另记法律名称。`;
   const tickerEn = company.stock
-    ? ` A ticker ${company.stock.exchange}:${company.stock.ticker} is recorded and is not a headquarters country.`
+    ? ` A ticker ${tickerText(company, "en")} is recorded and is not a headquarters country.`
     : " No exchange ticker is recorded.";
   const tickerZh = company.stock
-    ? ` 已记录证券代码 ${company.stock.exchange}:${company.stock.ticker}，这不是总部国家。`
+    ? ` 已记录证券代码 ${tickerText(company, "zh")}，这不是总部国家。`
     : " 未记录交易所代码。";
   const earlierEn = earlier
     ? ` Next-earlier same-sector neighbor: ${earlier.name.en} (${earlier.founded.slice(0, 4)}, ${yearDeltaPhrase(company, earlier, "en")}).`

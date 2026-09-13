@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { clipPlain, renderCitedBlocks, stripCitations } from "../src/lib/citations";
+import { clipPlain, renderCitedBlocks, renderCitedHtml, stripCitations } from "../src/lib/citations";
 import { headingId } from "../src/lib/i18n";
 
 const sources = [
@@ -43,6 +43,19 @@ describe("citation rendering", () => {
     expect(clipPlain("Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel", 28)).toBe("Alpha Bravo Charlie Delta…");
     expect(clipPlain("这是一句很长的中文定义，用来测试截断是否落在标点上。", 18)).toMatch(/…$/);
     expect(stripCitations("ByteDance [s1]  [s2]")).toBe("ByteDance");
+  });
+
+  test("renderCitedHtml turns markdown links into anchors", () => {
+    const html = renderCitedHtml(
+      "See [Jensen Huang](/people/jensen-huang) and [NVIDIA](https://techco.wiki/companies/nvidia)[s1]",
+      sources,
+    );
+    expect(html).toContain('<a href="/people/jensen-huang">Jensen Huang</a>');
+    expect(html).toContain('<a href="https://techco.wiki/companies/nvidia">NVIDIA</a>');
+    expect(html).toContain('href="#source-s1"');
+    expect(html).not.toContain("javascript:");
+    expect(renderCitedHtml("[bad](javascript:alert)", sources)).toBe("bad");
+    expect(stripCitations("See [Jensen Huang](/people/jensen-huang)[s1]")).toBe("See Jensen Huang");
   });
 
   test("headingId is stable across locales", () => {

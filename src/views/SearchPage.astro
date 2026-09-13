@@ -1,10 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import EntityCard from "../components/EntityCard.astro";
-import { allCompanies, allPeople } from "../data/catalog";
+import { allCompanies, allPeople, companyHaystack, personHaystack, personRegions, personSectors } from "../data/catalog";
+import { searchGraph } from "../lib/schema";
 import { regions, sectors, ui } from "../data/site";
 import type { Locale } from "../data/types";
-import { t } from "../lib/i18n";
+import { localePath, t } from "../lib/i18n";
+import { catalogNav } from "../lib/nav";
 
 interface Props {
   locale: Locale;
@@ -20,9 +23,22 @@ const people = allPeople();
   title={t(ui.search, locale)}
   description={t(ui.search, locale)}
   path="/search"
+  jsonLd={searchGraph(locale)}
 >
   <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: t(ui.navSearch, locale) },
+      ]}
+    />
     <h1>{t(ui.search, locale)}</h1>
+    <div class="chips">
+      {catalogNav(locale).map((link) => (
+        <a class="chip" href={link.href}>{link.label}</a>
+      ))}
+    </div>
     <p class="meta">
       {locale === "zh"
         ? "完整目录写在本页 HTML 中。查询参数只用于筛选显示，不会隐藏给爬虫的内容。"
@@ -48,7 +64,7 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="company"
-          data-haystack={`${company.slug} ${company.name.en} ${company.name.zh} ${company.aliases.join(" ")} ${company.legalName ?? ""} ${company.definition.en} ${company.definition.zh} ${company.products.map((product) => product.name).join(" ")} ${company.founders.map((founder) => founder.personSlug).join(" ")}`}
+          data-haystack={companyHaystack(company)}
           data-sector={company.sectors.join(" ")}
           data-region={company.regions.join(" ")}
         >
@@ -64,9 +80,9 @@ const people = allPeople();
         <div
           class="entity"
           data-kind="person"
-          data-haystack={`${person.slug} ${person.name.en} ${person.name.zh} ${person.aliases.join(" ")} ${person.definition.en} ${person.definition.zh} ${person.companies.map((item) => item.companySlug).join(" ")}`}
-          data-sector=""
-          data-region=""
+          data-haystack={personHaystack(person)}
+          data-sector={personSectors(person).join(" ")}
+          data-region={personRegions(person).join(" ")}
         >
           <EntityCard locale={locale} person={person} />
         </div>
@@ -90,10 +106,9 @@ const people = allPeople();
         var hay = (node.getAttribute("data-haystack") || "").toLowerCase();
         var sectors = node.getAttribute("data-sector") || "";
         var regions = node.getAttribute("data-region") || "";
-        var kind = node.getAttribute("data-kind");
         var ok = !q || hay.indexOf(q) !== -1;
-        if (kind === "company" && sector) ok = ok && sectors.indexOf(sector) !== -1;
-        if (kind === "company" && region) ok = ok && regions.indexOf(region) !== -1;
+        if (sector) ok = ok && sectors.indexOf(sector) !== -1;
+        if (region) ok = ok && regions.indexOf(region) !== -1;
         node.hidden = !ok;
       });
       var visible = Array.prototype.some.call(document.querySelectorAll(".entity"), function (node) {

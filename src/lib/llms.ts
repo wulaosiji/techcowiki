@@ -1,5 +1,6 @@
-import { companies, people } from "../data/catalog";
+import { allCityHubs, allCountryHubs, companies, people } from "../data/catalog";
 import { regions, sectors, SITE_NAME, SITE_ORIGIN, tagline } from "../data/site";
+import type { Locale } from "../data/types";
 import { companyMarkdown, homeMarkdown, personMarkdown } from "./markdown";
 
 export function llmsTxt(): string {
@@ -25,6 +26,18 @@ export function llmsTxt(): string {
     .map(
       (region) =>
         `- [${region.name.en}](${SITE_ORIGIN}/regions/${region.slug}.md): ${region.definition.en}`,
+    )
+    .join("\n");
+  const countryLinks = allCountryHubs()
+    .map(
+      (hub) =>
+        `- [${hub.name.en}](${SITE_ORIGIN}/countries/${hub.slug}.md): ${hub.count} companies headquartered in ${hub.name.en} (${hub.code})`,
+    )
+    .join("\n");
+  const cityLinks = allCityHubs()
+    .map(
+      (hub) =>
+        `- [${hub.name.en}](${SITE_ORIGIN}/cities/${hub.slug}.md): ${hub.count} companies headquartered in ${hub.name.en}, ${hub.country.en}`,
     )
     .join("\n");
 
@@ -54,22 +67,38 @@ How to use this file: start here, then fetch only the Markdown twins you need. P
 - [All companies](${SITE_ORIGIN}/api/v1/companies.json)
 - [All people](${SITE_ORIGIN}/api/v1/people.json)
 - [Entity graph](${SITE_ORIGIN}/api/v1/graph.json)
+- [RSS feed](${SITE_ORIGIN}/feed.xml)
+- [Chinese full dump](${SITE_ORIGIN}/zh/llms-full.txt)
 
 ## Companies
 
+- [All companies](${SITE_ORIGIN}/companies.md)
 ${companyLinks}
 
 ## People
 
+- [All people](${SITE_ORIGIN}/people.md)
 ${peopleLinks}
 
 ## Sectors
 
+- [All sectors](${SITE_ORIGIN}/sectors.md)
 ${sectorLinks}
 
 ## Regions
 
+- [All regions](${SITE_ORIGIN}/regions.md)
 ${regionLinks}
+
+## Countries
+
+- [All countries](${SITE_ORIGIN}/countries.md)
+${countryLinks}
+
+## Cities
+
+- [All cities](${SITE_ORIGIN}/cities.md)
+${cityLinks}
 
 ## Optional
 
@@ -80,11 +109,11 @@ ${regionLinks}
 `;
 }
 
-export function llmsFullTxt(): string {
+export function llmsFullTxt(locale: Locale = "en"): string {
   const parts = [
-    homeMarkdown("en"),
-    ...companies.map((company) => companyMarkdown(company, "en")),
-    ...people.map((person) => personMarkdown(person, "en")),
+    homeMarkdown(locale),
+    ...companies.map((company) => companyMarkdown(company, locale)),
+    ...people.map((person) => personMarkdown(person, locale)),
   ];
   return parts.join("\n---\n\n");
 }

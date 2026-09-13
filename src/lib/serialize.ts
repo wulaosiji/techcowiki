@@ -60,6 +60,7 @@ export function companyRecord(company: Company) {
       en: pageUrl("en", `/companies/${company.slug}`),
       zh: pageUrl("zh", `/companies/${company.slug}`),
       markdown: `${SITE_ORIGIN}/companies/${company.slug}.md`,
+      markdownZh: `${SITE_ORIGIN}/zh/companies/${company.slug}.md`,
       json: `${SITE_ORIGIN}/api/v1/companies/${company.slug}.json`,
     },
     sources: company.sources,
@@ -102,6 +103,7 @@ export function personRecord(person: Person) {
       en: pageUrl("en", `/people/${person.slug}`),
       zh: pageUrl("zh", `/people/${person.slug}`),
       markdown: `${SITE_ORIGIN}/people/${person.slug}.md`,
+      markdownZh: `${SITE_ORIGIN}/zh/people/${person.slug}.md`,
       json: `${SITE_ORIGIN}/api/v1/people/${person.slug}.json`,
     },
     sources: person.sources,
@@ -123,6 +125,8 @@ export function datasetRecord(stats: {
   people: number;
   sectors: number;
   regions: number;
+  countries?: number;
+  cities?: number;
   sources: number;
 }) {
   return {
@@ -137,10 +141,19 @@ export function datasetRecord(stats: {
     endpoints: {
       llmsTxt: `${SITE_ORIGIN}/llms.txt`,
       llmsFull: `${SITE_ORIGIN}/llms-full.txt`,
+      llmsFullZh: `${SITE_ORIGIN}/zh/llms-full.txt`,
       openapi: `${SITE_ORIGIN}/api/v1/openapi.json`,
       companies: `${SITE_ORIGIN}/api/v1/companies.json`,
       people: `${SITE_ORIGIN}/api/v1/people.json`,
       graph: `${SITE_ORIGIN}/api/v1/graph.json`,
+      feed: `${SITE_ORIGIN}/feed.xml`,
+      companiesMarkdown: `${SITE_ORIGIN}/companies.md`,
+      peopleMarkdown: `${SITE_ORIGIN}/people.md`,
+      companiesMarkdownZh: `${SITE_ORIGIN}/zh/companies.md`,
+      peopleMarkdownZh: `${SITE_ORIGIN}/zh/people.md`,
+      sectorsMarkdown: `${SITE_ORIGIN}/sectors.md`,
+      countriesMarkdown: `${SITE_ORIGIN}/countries.md`,
+      citiesMarkdown: `${SITE_ORIGIN}/cities.md`,
     },
   };
 }

@@ -13,6 +13,8 @@ describe("GEO surfaces", () => {
     expect(text.startsWith("# TechCo.Wiki")).toBe(true);
     expect(text).toContain("The publisher is written TechCo.Wiki");
     expect(text).toContain("https://techco.wiki/for-models.md");
+    expect(text).toContain("https://techco.wiki/companies.md");
+    expect(text).toContain("https://techco.wiki/people.md");
     expect(text).not.toContain("https://TechCo.Wiki");
     for (const company of allCompanies()) {
       expect(text).toContain(`/companies/${company.slug}.md`);
@@ -84,6 +86,7 @@ describe("GEO surfaces", () => {
   test("JSON records expose both locales and machine URLs", () => {
     const record = companyRecord(allCompanies().find((company) => company.slug === "bytedance")!);
     expect(record.urls.json).toContain("/api/v1/companies/bytedance.json");
+    expect(record.urls.markdownZh).toContain("/zh/companies/bytedance.md");
     expect(record.definition.zh).toContain("字节跳动");
     expect(record.license).toBe("CC BY-SA 4.0");
     expect(record.sections.length).toBeGreaterThanOrEqual(12);
@@ -95,6 +98,10 @@ describe("GEO surfaces", () => {
     expect(person.claims.length).toBeGreaterThanOrEqual(6);
     expect(person.sections.some((section) => section.id === "model-notes")).toBe(true);
     expect(datasetRecord(catalogStats()).endpoints.llmsTxt).toBe("https://techco.wiki/llms.txt");
+    expect(datasetRecord(catalogStats()).endpoints.companiesMarkdown).toBe("https://techco.wiki/companies.md");
+    expect(datasetRecord(catalogStats()).endpoints.companiesMarkdownZh).toBe("https://techco.wiki/zh/companies.md");
+    expect(datasetRecord(catalogStats()).endpoints.llmsFullZh).toBe("https://techco.wiki/zh/llms-full.txt");
+    expect(datasetRecord(catalogStats()).counts.countries).toBeGreaterThanOrEqual(8);
   });
 
   test("wiki matching keeps attributed extracts and drops crossed Wikidata labels", () => {

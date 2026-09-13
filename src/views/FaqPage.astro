@@ -1,7 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { faqs } from "../data/site";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import SeeAlso from "../components/SeeAlso.astro";
+import { allCompanies, allPeople } from "../data/catalog";
+import { faqs, ui } from "../data/site";
 import type { Locale } from "../data/types";
+import { linkCatalogCopy } from "../lib/autolink";
+import { renderCitedHtml } from "../lib/citations";
+import { localePath, t } from "../lib/i18n";
+import { catalogNav, docNav } from "../lib/nav";
 import { faqGraph } from "../lib/schema";
 
 interface Props {
@@ -9,6 +16,8 @@ interface Props {
 }
 
 const { locale } = Astro.props;
+const companies = allCompanies();
+const people = allPeople();
 ---
 
 <BaseLayout
@@ -19,12 +28,26 @@ const { locale } = Astro.props;
   jsonLd={faqGraph(faqs, locale)}
 >
   <div class="wrap">
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { label: locale === "zh" ? "常见问题" : "FAQ" },
+      ]}
+    />
     <h1>{locale === "zh" ? "常见问题" : "Frequently asked questions"}</h1>
     {faqs.map((item) => (
       <section class="faq-item" id={item.id}>
         <h2>{item.question[locale]}</h2>
-        <p>{item.answer[locale]}</p>
+        <p set:html={renderCitedHtml(linkCatalogCopy(item.answer[locale], locale, companies, people), [])} />
       </section>
     ))}
+    <SeeAlso
+      locale={locale}
+      groups={[
+        { title: locale === "zh" ? "目录" : "Catalog", links: catalogNav(locale) },
+        { title: locale === "zh" ? "文档" : "Docs", links: docNav(locale) },
+      ]}
+    />
   </div>
 </BaseLayout>

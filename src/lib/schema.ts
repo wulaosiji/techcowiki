@@ -1,4 +1,5 @@
-import { getCompany, getPerson, relatedCompanies } from "../data/catalog";
+import { getCompany, getPerson, seeAlsoCompanies } from "../data/catalog";
+import { citySlug, countrySlug } from "../data/places";
 import {
   CONTENT_LICENSE,
   CONTENT_LICENSE_URL,
@@ -121,6 +122,7 @@ export function companyGraph(company: Company, locale: Locale) {
         foundingLocation: {
           "@type": "Place",
           name: `${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`,
+          url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
           address: {
             "@type": "PostalAddress",
             addressLocality: company.headquarters.city[locale],
@@ -148,13 +150,23 @@ export function companyGraph(company: Company, locale: Locale) {
           name: product.name,
           description: product.description[locale],
         })),
-        tickerSymbol: company.stock ? `${company.stock.exchange}:${company.stock.ticker}` : undefined,
+        tickerSymbol: company.stock
+          ? [
+              `${company.stock.exchange}:${company.stock.ticker}`,
+              company.stock.adr
+                ? `${company.stock.adr.exchange}:${company.stock.adr.ticker}`
+                : undefined,
+              ...(company.stock.secondary ?? []).map((item) => `${item.exchange}:${item.ticker}`),
+            ]
+              .filter(Boolean)
+              .join(" / ")
+          : undefined,
         additionalProperty: (company.claims ?? []).map((claim) => ({
           "@type": "PropertyValue",
           name: claim.label[locale],
           value: stripCitations(claim.value[locale]),
         })),
-        mentions: relatedCompanies(company, 6).map((other) => ({
+        mentions: seeAlsoCompanies(company, 6).map((other) => ({
           "@type": "Organization",
           name: other.name[locale],
           url: pageUrl(locale, `/companies/${other.slug}`),
@@ -178,6 +190,14 @@ export function companyGraph(company: Company, locale: Locale) {
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
         { name: locale === "zh" ? "公司" : "Companies", url: pageUrl(locale, "/companies") },
+        {
+          name: company.headquarters.country[locale],
+          url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+        },
+        {
+          name: company.headquarters.city[locale],
+          url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
+        },
         { name: company.name[locale], url },
       ]),
     ],
@@ -237,6 +257,20 @@ export function personGraph(person: Person, locale: Locale) {
       breadcrumb([
         { name: SITE_NAME, url: pageUrl(locale, "/") },
         { name: locale === "zh" ? "人物" : "People", url: pageUrl(locale, "/people") },
+        ...(() => {
+          const company = getCompany(person.companies[0]?.companySlug ?? "");
+          if (!company) return [];
+          return [
+            {
+              name: company.headquarters.country[locale],
+              url: pageUrl(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+            },
+            {
+              name: company.headquarters.city[locale],
+              url: pageUrl(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
+            },
+          ];
+        })(),
         { name: person.name[locale], url },
       ]),
     ],
@@ -253,7 +287,7 @@ export function faqGraph(items: FaqItem[], locale: Locale) {
       name: item.question[locale],
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.answer[locale],
+        text: stripCitations(item.answer[locale]),
       },
     })),
   };
@@ -295,6 +329,53 @@ function webPageNode(input: {
       ],
     },
     copyrightNotice: CONTENT_LICENSE,
+  };
+}
+
+export function editorialGraph(locale: Locale, path: string, name: string, description: string) {
+  const url = pageUrl(locale, path);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationNode(),
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name,
+        description,
+        inLanguage: locale === "zh" ? "zh-Hans" : "en",
+        isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+        publisher: { "@id": `${SITE_ORIGIN}/#org` },
+        license: CONTENT_LICENSE_URL,
+        isAccessibleForFree: true,
+      },
+      breadcrumb([
+        { name: SITE_NAME, url: pageUrl(locale, "/") },
+        { name, url },
+      ]),
+    ],
+  };
+}
+
+export function searchGraph(locale: Locale) {
+  const url = pageUrl(locale, "/search");
+  return {
+    "@context": "https://schema.org",
+    "@type": "SearchResultsPage",
+    url,
+    name: locale === "zh" ? "搜索" : "Search",
+    inLanguage: locale === "zh" ? "zh-Hans" : "en",
+    isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
+    publisher: { "@id": `${SITE_ORIGIN}/#org` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${url}?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 }
 

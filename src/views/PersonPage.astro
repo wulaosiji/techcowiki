@@ -1,12 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import CitedBody from "../components/CitedBody.astro";
 import OnThisPage from "../components/OnThisPage.astro";
-import { getCompany } from "../data/catalog";
-import { confidenceLabel, SITE_NAME, SITE_ORIGIN, ui } from "../data/site";
+import SeeAlso from "../components/SeeAlso.astro";
+import { getCompany, relatedPeople } from "../data/catalog";
+import { citySlug, countrySlug } from "../data/places";
+import { confidenceLabel, sectors, SITE_NAME, ui } from "../data/site";
 import type { Locale, Person } from "../data/types";
 import { clipPlain, renderCitedHtml, splitParagraphs } from "../lib/citations";
-import { formatDate, localePath, pageUrl, t } from "../lib/i18n";
+import { formatDate, localePath, markdownPath, pageUrl, t } from "../lib/i18n";
+import { docNav } from "../lib/nav";
 import { personGraph } from "../lib/schema";
 
 interface Props {
@@ -15,6 +19,34 @@ interface Props {
 }
 
 const { locale, person } = Astro.props;
+const related = relatedPeople(person, 6);
+const linkedCompanies = person.companies
+  .map((item) => getCompany(item.companySlug))
+  .filter((item): item is NonNullable<typeof item> => Boolean(item));
+const placeLinks = [
+  ...new Map(
+    linkedCompanies.flatMap((company) => [
+      ...company.sectors.map((slug) => [
+        slug,
+        { href: localePath(locale, `/sectors/${slug}`), label: sectors.find((item) => item.slug === slug)?.name[locale] ?? slug },
+      ] as const),
+      [
+        `country:${company.headquarters.countryCode}`,
+        {
+          href: localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`),
+          label: company.headquarters.country[locale],
+        },
+      ] as const,
+      [
+        `city:${citySlug(company.headquarters.city.en)}`,
+        {
+          href: localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`),
+          label: company.headquarters.city[locale],
+        },
+      ] as const,
+    ]),
+  ).values(),
+];
 const cite = `${SITE_NAME}, "${person.name.en}," ${pageUrl(locale, `/people/${person.slug}`)}, last reviewed ${person.lastReviewed}, ${person.id}.`;
 const toc = [
   (person.claims ?? []).length > 0
@@ -25,6 +57,7 @@ const toc = [
     .map((section) => ({ id: section.id, title: t(section.title, locale) })),
   (person.faq ?? []).length > 0 ? { id: "faq", title: t(ui.faq, locale) } : undefined,
   { id: "company-links", title: t(ui.navCompanies, locale) },
+  { id: "see-also", title: t(ui.related, locale) },
   { id: "sources", title: t(ui.sources, locale) },
 ].filter((item): item is { id: string; title: string } => Boolean(item));
 ---
@@ -38,13 +71,26 @@ const toc = [
   lastModified={person.lastReviewed}
 >
   <div class="wrap">
-    <nav class="breadcrumbs">
-      <a href={localePath(locale, "/")}>{t(ui.home, locale)}</a>
-      {" / "}
-      <a href={localePath(locale, "/people")}>{t(ui.navPeople, locale)}</a>
-      {" / "}
-      {person.name[locale]}
-    </nav>
+    <Breadcrumbs
+      locale={locale}
+      items={[
+        { href: localePath(locale, "/"), label: t(ui.home, locale) },
+        { href: localePath(locale, "/people"), label: t(ui.navPeople, locale) },
+        ...(linkedCompanies[0]
+          ? [
+              {
+                href: localePath(locale, `/countries/${countrySlug(linkedCompanies[0].headquarters.countryCode)}`),
+                label: linkedCompanies[0].headquarters.country[locale],
+              },
+              {
+                href: localePath(locale, `/cities/${citySlug(linkedCompanies[0].headquarters.city.en)}`),
+                label: linkedCompanies[0].headquarters.city[locale],
+              },
+            ]
+          : []),
+        { label: person.name[locale] },
+      ]}
+    />
     <div class="article-layout">
       <article>
         <p class="entity-id">{person.id}</p>
@@ -60,8 +106,8 @@ const toc = [
             {t(ui.confidence, locale)}:
             <b class={`conf-${person.confidence}`}>{t(confidenceLabel[person.confidence], locale)}</b>
           </span>
-          <a href={`${SITE_ORIGIN}/people/${person.slug}.md`}>{t(ui.markdown, locale)}</a>
-          <a href={`${SITE_ORIGIN}/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
+          <a href={markdownPath(locale, `/people/${person.slug}`)}>{t(ui.markdown, locale)}</a>
+          <a href={`/api/v1/people/${person.slug}.json`}>{t(ui.json, locale)}</a>
         </div>
         <OnThisPage locale={locale} items={toc} />
         {(person.claims ?? []).length > 0 && (
@@ -111,13 +157,51 @@ const toc = [
                 )}
                 {" — "}
                 {t(item.role, locale)}
-                {company
-                  ? ` · ${company.headquarters.city[locale]}, ${company.headquarters.country[locale]}`
-                  : ""}
+                {company ? (
+                  <>
+                    {" · "}
+                    <a href={localePath(locale, `/cities/${citySlug(company.headquarters.city.en)}`)}>
+                      {company.headquarters.city[locale]}
+                    </a>
+                    {", "}
+                    <a href={localePath(locale, `/countries/${countrySlug(company.headquarters.countryCode)}`)}>
+                      {company.headquarters.country[locale]}
+                    </a>
+                  </>
+                ) : (
+                  ""
+                )}
               </li>
             );
           })}
         </ul>
+        <SeeAlso
+          locale={locale}
+          groups={[
+            {
+              title: t(ui.navCompanies, locale),
+              links: linkedCompanies.map((company) => ({
+                href: localePath(locale, `/companies/${company.slug}`),
+                label: company.name[locale],
+              })),
+            },
+            {
+              title: t(ui.navPeople, locale),
+              links: related.map((item) => ({
+                href: localePath(locale, `/people/${item.slug}`),
+                label: item.name[locale],
+              })),
+            },
+            {
+              title: locale === "zh" ? "地点与行业" : "Places and sectors",
+              links: placeLinks,
+            },
+            {
+              title: locale === "zh" ? "文档" : "Docs",
+              links: docNav(locale).slice(0, 3),
+            },
+          ]}
+        />
         <h2 id="sources">{t(ui.sources, locale)}</h2>
         <ol class="sources">
           {person.sources.map((source) => (
@@ -151,6 +235,14 @@ const toc = [
           <div>
             <dt>{t(ui.roles, locale)}</dt>
             <dd>{person.roles.map((role) => t(role, locale)).join(locale === "zh" ? "、" : ", ")}</dd>
+          </div>
+          <div>
+            <dt>{t(ui.navCompanies, locale)}</dt>
+            <dd class="sameas">
+              {linkedCompanies.map((company) => (
+                <a href={localePath(locale, `/companies/${company.slug}`)}>{company.name[locale]}</a>
+              ))}
+            </dd>
           </div>
           <div>
             <dt>{t(ui.identifiers, locale)}</dt>

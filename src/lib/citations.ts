@@ -1,22 +1,40 @@
 import type { Source } from "../data/types";
 
 const CITE_RE = /\[(s\d+)\]/g;
+const MD_LINK_RE = /\[([^\]]+)\]\(([^)\s]+)\)/g;
 
 export function sourceNumber(sources: Source[], id: string): number {
   return sources.findIndex((source) => source.id === id) + 1;
 }
 
+function isSafeHref(href: string): boolean {
+  return href.startsWith("/") || href.startsWith("https://") || href.startsWith("#");
+}
+
 export function renderCitedHtml(text: string, sources: Source[]): string {
   const escaped = escapeHtml(text);
-  return escaped.replace(CITE_RE, (_match, id: string) => {
+  const cited = escaped.replace(CITE_RE, (_match, id: string) => {
     const number = sourceNumber(sources, id);
     if (number < 1) return "";
     return `<sup class="cite"><a href="#source-${id}" data-source="${id}">${number}</a></sup>`;
   });
+  return cited.replace(MD_LINK_RE, (_match, label: string, href: string) => {
+    const url = href.replaceAll("&amp;", "&");
+    if (!isSafeHref(url)) return label;
+    return `<a href="${escapeHtml(url)}">${label}</a>`;
+  });
+}
+
+export function stripMarkdownLinks(text: string): string {
+  return text.replace(MD_LINK_RE, "$1");
+}
+
+export function stripCiteMarks(text: string): string {
+  return text.replace(CITE_RE, "");
 }
 
 export function stripCitations(text: string): string {
-  return text.replace(CITE_RE, "").replace(/\s+/g, " ").trim();
+  return stripMarkdownLinks(stripCiteMarks(text)).replace(/\s+/g, " ").trim();
 }
 
 /** Truncate sourced prose for meta descriptions and JSON-LD. */

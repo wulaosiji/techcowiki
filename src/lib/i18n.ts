@@ -12,15 +12,36 @@ export function localePath(locale: Locale, path = "/"): string {
   return `/zh${clean}`.replace(/\/$/, "");
 }
 
-export function switchLocale(locale: Locale, path: string): string {
+/** Append a query string only when the href does not already have one. */
+export function appendSearch(href: string, search = ""): string {
+  if (!href || !search || search === "?") return href;
+  const query = search.startsWith("?") ? search : `?${search}`;
+  return href.includes("?") ? href : `${href}${query}`;
+}
+
+export function switchLocale(locale: Locale, path: string, search = ""): string {
   const next = locale === "en" ? "zh" : "en";
   const stripped = path.replace(/^\/zh(?=\/|$)/, "") || "/";
-  return localePath(next, stripped);
+  return appendSearch(localePath(next, stripped), search);
 }
 
 export function pageUrl(locale: Locale, path = "/"): string {
   const local = localePath(locale, path);
   return local === "/" ? SITE_ORIGIN : `${SITE_ORIGIN}${local}`;
+}
+
+/** Same-origin Markdown twin. Use this for clickable UI so preview hosts stay on-site. */
+export function markdownPath(locale: Locale, path: string): string {
+  const clean = path === "/" ? "/" : path.startsWith("/") ? path : `/${path}`;
+  if (locale === "zh") {
+    return clean === "/" ? "/zh/index.md" : `/zh${clean}.md`;
+  }
+  return clean === "/" ? "/index.md" : `${clean}.md`;
+}
+
+/** Canonical absolute Markdown URL for citations, sitemaps, and machine dumps. */
+export function markdownUrl(locale: Locale, path: string): string {
+  return `${SITE_ORIGIN}${markdownPath(locale, path)}`;
 }
 
 export function otherLocale(locale: Locale): Locale {

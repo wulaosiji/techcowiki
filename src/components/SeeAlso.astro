@@ -1,0 +1,32 @@
+---
+import type { Locale } from "../data/types";
+
+export interface SeeAlsoGroup {
+  title: string;
+  links: { href: string; label: string }[];
+}
+
+interface Props {
+  locale: Locale;
+  groups: SeeAlsoGroup[];
+}
+
+const { locale, groups } = Astro.props;
+const visible = groups.filter((group) => group.links.length > 0);
+---
+
+{visible.length > 0 && (
+  <section class="see-also" id="see-also">
+    <h2>{locale === "zh" ? "参见" : "See also"}</h2>
+    {visible.map((group) => (
+      <div class="see-also-group">
+        <h3>{group.title}</h3>
+        <div class="chips">
+          {group.links.map((link) => (
+            <a class="chip" href={link.href}>{link.label}</a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+)}
