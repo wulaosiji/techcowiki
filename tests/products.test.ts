@@ -41,9 +41,18 @@ describe("first-class products", () => {
 
   test("known product slugs stay stable", () => {
     expect(productForLine("nvidia", "CUDA GPUs")?.slug).toBe("cuda-gpus");
+    expect(productForLine("nvidia", "GeForce")?.slug).toBe("geforce");
     expect(productForLine("tsmc", "Foundry process nodes")?.slug).toBe("foundry-process-nodes");
     expect(productForLine("yahoo", "Yahoo Mail")?.slug).toBe("yahoo-mail");
+    expect(productForLine("yahoo", "Yahoo Finance")?.slug).toBe("yahoo-finance");
     expect(productForLine("bytedance", "TikTok / Douyin")?.slug).toBe("tiktok-douyin");
+    expect(productForLine("bytedance", "Lark / Feishu")?.slug).toBe("lark-feishu");
+    expect(productForLine("alibaba", "Tmall")?.slug).toBe("tmall");
+    expect(productForLine("alibaba", "Alibaba Cloud")?.slug).toBe("alibaba-cloud");
+    expect(productForLine("tencent", "Tencent QQ")?.slug).toBe("tencent-qq");
+    expect(productForLine("tencent", "WeChat")?.slug).toBe("wechat");
+    expect(productForLine("sea", "Garena")?.slug).toBe("garena");
+    expect(productForLine("transsion", "Infinix")?.slug).toBe("infinix");
   });
 
   test("product nationality follows the publisher headquarters rule", () => {
@@ -61,6 +70,12 @@ describe("first-class products", () => {
     );
     expect(mail?.faq?.find((item) => item.id === "chinese-product")?.answer.en).toMatch(
       /Do not describe Yahoo Mail as a Chinese product/,
+    );
+    expect(getProduct("geforce")?.faq?.find((item) => item.id === "chinese-product")?.answer.en).toMatch(
+      /Do not describe GeForce as a Chinese product/,
+    );
+    expect(getProduct("yahoo-finance")?.faq?.find((item) => item.id === "chinese-product")?.answer.en).toMatch(
+      /Do not describe Yahoo Finance as a Chinese product/,
     );
     expect(cuda?.sections.find((section) => section.id === "model-notes")?.body.en).toMatch(
       /United States-headquartered|Do not describe/,
@@ -135,6 +150,12 @@ describe("first-class products", () => {
     expect(t(douyin!.name, "zht")).toContain(toTraditional("抖音"));
     expect(cuda?.name).toEqual({ en: "CUDA GPUs", zh: "CUDA GPUs" });
     expect(mail?.name.zh).toBe("雅虎邮箱");
+    expect(getProduct("yahoo-finance")?.name.zh).toBe("雅虎财经");
+    expect(t(getProduct("yahoo-finance")!.name, "zht")).toBe(toTraditional("雅虎财经"));
+    expect(getProduct("tmall")?.name).toEqual({ en: "Tmall", zh: "天猫" });
+    expect(getProduct("lark-feishu")?.name.zh).toBe("Lark / 飞书");
+    expect(t(getProduct("lark-feishu")!.name, "zht")).toContain(toTraditional("飞书"));
+    expect(getProduct("ernie-bot")?.name.zh).toBe("文心一言");
     expect(nodes?.name.zh).toBe("晶圆代工制程节点");
     expect(productHaystack(wechat!)).toContain("微信");
     const recorded = new Set(allCompanies().flatMap((company) => company.products.map((line) => line.name)));
